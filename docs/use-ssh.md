@@ -57,9 +57,11 @@ GPU 機に入ってくる通信は ssh だけでよい。
 
 ## 2. GPU 機の準備
 
+以下の `<gpu-host>` は、手元から GPU 機に ssh するときのホスト名（`user@192.168.0.10` や `~/.ssh/config` の `Host` 名）に読み替える。
+
 1. Isaac Sim 6.1 と agentic-sim-world-gen を入れる（[全部手元で使う「2. インストール」](use-local.md#2-インストール)の 1・2 と同じ）。
 2. 環境変数を `~/.profile` か、`~/.bashrc` の**冒頭**（`case $- in` で対話シェル以外を抜ける行より前）に書く。
-   末尾に書くと `ssh <GPU 機> 'コマンド'` のような対話でないシェルには効かない：
+   末尾に書くと `ssh <gpu-host> 'コマンド'` のような対話でないシェルには効かない：
 
    ```bash
    export ISAACSIM_PYTHON=~/isaacsim_venv/bin/python   # スタンドアロン版なら ISAACSIM_PATH=~/isaacsim
@@ -78,7 +80,7 @@ GPU 機に入ってくる通信は ssh だけでよい。
 4. 確かめる（ssh 越しに）：`out/study/check.png` ができれば headless の描画が動いている。
 
    ```bash
-   ssh <GPU 機> 'cd agentic-sim-world-gen && .venv/bin/agentic-sim-world-gen resolve examples/p0_study_room.json -o out/study \
+   ssh <gpu-host> 'cd agentic-sim-world-gen && .venv/bin/agentic-sim-world-gen resolve examples/p0_study_room.json -o out/study \
      && .venv/bin/agentic-sim-world-gen compose out/study/scene.resolved.json && .venv/bin/agentic-sim-world-gen check out/study'
    ```
 
@@ -87,7 +89,7 @@ GPU 機に入ってくる通信は ssh だけでよい。
 1. 手元から、プレビューのポートを転送して入り、tmux の中で Claude Code を起動する：
 
    ```bash
-   ssh -L 8765:127.0.0.1:8765 <GPU 機>
+   ssh -L 8765:127.0.0.1:8765 <gpu-host>
    tmux new -s agentic-sim-world-gen          # 回線が切れても Claude の作業が止まらないように
    cd ~/agentic-sim-world-gen-ws && claude
    ```
@@ -99,7 +101,7 @@ GPU 機に入ってくる通信は ssh だけでよい。
 
 3. **プレビュー**：GPU 機ではブラウザを開けないので、Claude の返答に URL（`http://127.0.0.1:8765/<名前>/preview.html`）と `ssh -L` の手順が出る。
    その URL を手元のブラウザで開く。ページはツールを呼ぶたびに自動で書き換わる（1 秒ごとに確かめる）。
-   ポートが 8765 でなければ、その番号で `ssh -L` し直す（別のターミナルで `ssh -N -L 8766:127.0.0.1:8766 <GPU 機>` でもよい）。
+   ポートが 8765 でなければ、その番号で `ssh -L` し直す（別のターミナルで `ssh -N -L 8766:127.0.0.1:8766 <gpu-host>` でもよい）。
 4. **check**：Isaac Sim は GPU 機で headless で動く（1 回 35〜50 秒）。結果はプレビューの「Isaac Sim チェック」に出る。
    物理のあと周りから撮った 24 枚をドラッグ（← → キー）で回せるので、3D の画面の代わりになる。
 5. **結果を開く**：GPU 機の画面で Isaac Sim を開くか、シーンを手元に持ってくる（次の節）。
@@ -108,10 +110,10 @@ GPU 機に入ってくる通信は ssh だけでよい。
 
 ```bash
 # 写真・動画・図面を GPU 機へ（Claude にはそのパスを渡す）
-scp -r ~/photos/living <GPU 機>:~/agentic_sim_world_gen_inputs/living
+scp -r ~/photos/living <gpu-host>:~/agentic_sim_world_gen_inputs/living
 # できたシーンを手元へ。手元の Isaac Sim で開くなら、アセットも同梱して出し直してから
-ssh <GPU 機> 'cd agentic-sim-world-gen && .venv/bin/agentic-sim-world-gen compose ~/agentic-sim-world-gen-ws/scenes/study/scene.resolved.json --localize'
-rsync -av <GPU 機>:~/agentic-sim-world-gen-ws/scenes/study ./
+ssh <gpu-host> 'cd agentic-sim-world-gen && .venv/bin/agentic-sim-world-gen compose ~/agentic-sim-world-gen-ws/scenes/study/scene.resolved.json --localize'
+rsync -av <gpu-host>:~/agentic-sim-world-gen-ws/scenes/study ./
 ```
 
 Claude に「USD をローカル参照で出し直して」と頼んでもよい（MCP `compose_scene(localize=true)`）。
@@ -132,7 +134,7 @@ Claude に「USD をローカル参照で出し直して」と頼んでもよい
 |---|---|
 | ブラウザで「接続できない」 | `ssh -L` のポートが返答の URL と同じか。ssh が切れていないか。`claude` が起動中か |
 | プレビューが更新されない | ページ上部の更新が止まっていれば、ssh か claude が止まっている。つなぎ直して「プレビューを開いて」 |
-| `Address already in use`（`ssh -L` のとき） | 手元でそのポートが使用中（別の転送など）。手元側の番号だけ変える：`ssh -L 9765:127.0.0.1:8765 <GPU 機>` で `http://127.0.0.1:9765/…` |
+| `Address already in use`（`ssh -L` のとき） | 手元でそのポートが使用中（別の転送など）。手元側の番号だけ変える：`ssh -L 9765:127.0.0.1:8765 <gpu-host>` で `http://127.0.0.1:9765/…` |
 | `Isaac Sim not found` / 止まったまま | `ISAACSIM_PYTHON`（か `ISAACSIM_PATH`）と `OMNI_KIT_ACCEPT_EULA=YES` が、`claude` を起動したシェルに入っているか（`echo $ISAACSIM_PYTHON`） |
 | GPU 機の画面にブラウザが開いた | `DISPLAY` を引き継いだシェル（`ssh -X` など）で起動した。`unset DISPLAY` してから `claude` |
 | スクショが真っ黒 | `nvidia-smi` で GPU が見えるか。ドライバーが RTX 描画に対応しているか |

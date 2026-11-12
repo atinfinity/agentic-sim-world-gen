@@ -57,6 +57,8 @@ The only inbound traffic the GPU machine needs is ssh.
 
 ## 2. Preparing the GPU machine
 
+Below, replace `<gpu-host>` with the host you ssh to the GPU machine with (`user@192.168.0.10` or a `Host` name in `~/.ssh/config`).
+
 1. Install Isaac Sim 6.1 and agentic-sim-world-gen (same as steps 1 and 2 of [Everything on one machine "2. Install"](use-local.md#2-install)).
 2. Set environment variables in `~/.profile`, or at the **top** of `~/.bashrc` (before the `case $- in` line that exits for non-interactive shells).
    If you put them at the end, they do not apply to non-interactive shells such as `ssh <gpu-host> 'command'`:
