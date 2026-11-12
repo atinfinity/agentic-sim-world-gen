@@ -95,7 +95,7 @@ The only inbound traffic the GPU machine needs is ssh.
    On the first run, approve the `agentic-sim-world-gen` MCP server from `.mcp.json`.
 2. Ask:
 
-   > Make a 6-tatami study. A desk and a chair, and a bookshelf against the wall.
+   > Make a 10 m² study. A desk and a chair, and a bookshelf against the wall.
 
    Japanese works too, e.g. 「6畳の書斎を作って。机と椅子、壁際に本棚」 (the same request).
 

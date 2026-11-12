@@ -79,7 +79,7 @@ That costs more and compaction comes sooner. Create the workspace outside the re
 
 On first start, approve the `agentic-sim-world-gen` MCP server in `.mcp.json` (the world-gen skill loads automatically). Then just ask:
 
-> Make a 6-tatami study. A desk and a chair, and a bookshelf against the wall.
+> Make a 10 m² study. A desk and a chair, and a bookshelf against the wall.
 
 Japanese works too, e.g. 「6畳の書斎を作って。机と椅子、壁際に本棚」 (the same request).
 
@@ -120,7 +120,7 @@ The check result shows as an "OK" (green) / "Needs fix" (要修正, red) badge.
 
 ![preview](../images/gs_preview.jpg)
 
-(After asking Claude Code 「6畳の書斎を作って。机と椅子、壁際に本棚を置いて」 (make a 6-tatami study; a desk and a chair, and put a bookshelf against the wall) and finishing the Isaac Sim check. The "Match against the request", "Mood" and "Assumptions" sections at the top of the page are omitted.)
+(After asking Claude Code 「6畳の書斎を作って。机と椅子、壁際に本棚を置いて」 (make a 10 m² study; a desk and a chair, and put a bookshelf against the wall) and finishing the Isaac Sim check. The "Match against the request", "Mood" and "Assumptions" sections at the top of the page are omitted.)
 
 You can keep refining with requests like "move the bookshelf to the wall opposite the window" or "swap the chair for a black one".
 
