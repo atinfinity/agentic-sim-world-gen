@@ -33,3 +33,16 @@ If you change an MCP tool's signature or docstring, regenerate the reference:
 Use the issue templates. Please include the request text, the asset sources (`AGENTIC_SIM_WORLD_GEN_SOURCES`),
 the version and the OS. Do not attach photos or videos that show people, or screenshots of assets you may not
 share. Security problems: see SECURITY.md.
+
+## Project page
+
+The project page (<https://atinfinity.github.io/agentic-sim-world-gen/>) is built with [Zensical](https://zensical.org/)
+and published by `.github/workflows/pages.yml` on every push to `main`. There are two sites with the same pages: English
+(`zensical.en.toml`: `README.md` and the guides in `docs/en/`) and Japanese under `/ja/` (`zensical.toml`:
+`README.ja.md` and the guides in `docs/`). `scripts/build_site.py` puts them together under `build/`, so edit the
+READMEs and `docs/`. When you change a guide, change both languages. To look at it locally:
+
+```bash
+uv pip install zensical==0.1.1
+python scripts/build_site.py --serve   # http://127.0.0.1:8000/agentic-sim-world-gen/
+```

@@ -1,6 +1,6 @@
 # agentic-sim-world-gen
 
-[English](README.md) | 日本語
+[English](README.md) | 日本語 | [プロジェクトページ](https://atinfinity.github.io/agentic-sim-world-gen/ja/)
 
 日本語（英語も可）の指示・間取り図・写真から、エージェント（Claude Code）がアセットを選んで配置し、Isaac Sim 用のワールド（USD）を生成するツール。
 アセットは [SimReady Central](https://huggingface.co/spaces/nvidia/simready-central)・Isaac Sim 同梱アセット・[Poly Haven](https://polyhaven.com/models) の CC0 モデル・手持ちの USD フォルダから選ぶ。
@@ -163,6 +163,8 @@ python_server は任意のコードを実行するので、127.0.0.1 以外で�
 | [docs/use-ssh.md](docs/use-ssh.md) | ssh 先：GPU 機は LAN の Ubuntu、手元の Mac などから ssh とブラウザで使う |
 | [CLAUDE.md](CLAUDE.md) | このリポジトリで開発するエージェント向けの前提・規約・環境変数 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 開発への参加 |
+
+手引きの英語版は [docs/en/](docs/en/getting-started.md) にある。
 
 ## ライセンス
 

@@ -243,7 +243,7 @@ USD の customData `agentic_sim_world_gen:origin`）。
 
 ## 次に読むもの
 
-- [README](../README.md)：MCP ツール一覧
+- [README](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/README.md)：MCP ツール一覧
 - [use-local.md](use-local.md)・[use-ssh.md](use-ssh.md)：全部手元／ssh 先での手順
-- [.claude/skills/world-gen/SKILL.md](../.claude/skills/world-gen/SKILL.md)：Claude の対話手順・家具の標準サイズ・和英クエリ例
-- [CLAUDE.md](../CLAUDE.md)：規約（座標系、USD の構造）
+- [.claude/skills/world-gen/SKILL.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/SKILL.md)：Claude の対話手順・家具の標準サイズ・和英クエリ例
+- [CLAUDE.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/CLAUDE.md)：規約（座標系、USD の構造）

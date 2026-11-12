@@ -65,10 +65,10 @@ flowchart TD
 同じように `create_scene`（`service.start_scene`）は、作った後に用途の記録・窓の作り込み・プレビューを開く・叩き台の 3D の撮影までを 1 回で進めます（個別のツールも残っています）。
 
 関係するファイル
-- [src/agentic_sim_world_gen/service.py](../src/agentic_sim_world_gen/service.py)：CLI と MCP 共通の操作（`create_scene`・`start_scene`・`_save`・`compose_scene`・`check_in_isaac`・`finish` など）
-- [src/agentic_sim_world_gen/mcp_server.py](../src/agentic_sim_world_gen/mcp_server.py)：MCP サーバー（ツールは service の関数を呼ぶだけ）
-- [src/agentic_sim_world_gen/cli.py](../src/agentic_sim_world_gen/cli.py)：CLI（`agentic-sim-world-gen ...`）
-- [.claude/skills/world-gen/SKILL.md](../.claude/skills/world-gen/SKILL.md)：Claude が従う手順
+- [src/agentic_sim_world_gen/service.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/service.py)：CLI と MCP 共通の操作（`create_scene`・`start_scene`・`_save`・`compose_scene`・`check_in_isaac`・`finish` など）
+- [src/agentic_sim_world_gen/mcp_server.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/mcp_server.py)：MCP サーバー（ツールは service の関数を呼ぶだけ）
+- [src/agentic_sim_world_gen/cli.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/cli.py)：CLI（`agentic-sim-world-gen ...`）
+- [.claude/skills/world-gen/SKILL.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/SKILL.md)：Claude が従う手順
 
 ## 2. データの形
 
@@ -184,9 +184,9 @@ classDiagram
 ```
 
 関係するファイル
-- [src/agentic_sim_world_gen/scene/spec.py](../src/agentic_sim_world_gen/scene/spec.py)：SceneSpec・Room・ObjectSpec・Layout・ResolvedScene・Placement
-- [src/agentic_sim_world_gen/scene/plan.py](../src/agentic_sim_world_gen/scene/plan.py)：開口（Opening）・間取り（FloorPlan）
-- [src/agentic_sim_world_gen/assets/record.py](../src/agentic_sim_world_gen/assets/record.py)：AssetRecord
+- [src/agentic_sim_world_gen/scene/spec.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/scene/spec.py)：SceneSpec・Room・ObjectSpec・Layout・ResolvedScene・Placement
+- [src/agentic_sim_world_gen/scene/plan.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/scene/plan.py)：開口（Opening）・間取り（FloorPlan）
+- [src/agentic_sim_world_gen/assets/record.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/record.py)：AssetRecord
 - 出力の説明：[getting-started.md「7. 出力」](getting-started.md#7-出力)
 
 ## 3. アセット検索
@@ -224,13 +224,13 @@ flowchart TD
 5. 最後の判断は Claude が `view_candidates`（サムネイル画像を返す）で行います。メタデータだけでは色・素材・形は分からないためです。
 
 関係するファイル
-- [src/agentic_sim_world_gen/assets/providers/base.py](../src/agentic_sim_world_gen/assets/providers/base.py)：`AssetProvider` プロトコル・`fits`
-- [src/agentic_sim_world_gen/assets/providers/composite.py](../src/agentic_sim_world_gen/assets/providers/composite.py)・[simready_central.py](../src/agentic_sim_world_gen/assets/providers/simready_central.py)・[isaac_index.py](../src/agentic_sim_world_gen/assets/providers/isaac_index.py)・[local_folder.py](../src/agentic_sim_world_gen/assets/providers/local_folder.py)・[polyhaven.py](../src/agentic_sim_world_gen/assets/providers/polyhaven.py)
-- [src/agentic_sim_world_gen/assets/sizes.py](../src/agentic_sim_world_gen/assets/sizes.py)：`TYPICAL`（種類ごとの標準サイズ）・[kinds.py](../src/agentic_sim_world_gen/assets/kinds.py)：種類の表
-- [src/agentic_sim_world_gen/assets/rerank.py](../src/agentic_sim_world_gen/assets/rerank.py)：`rerank`・`score`・`noun_last`
-- [src/agentic_sim_world_gen/assets/cards.py](../src/agentic_sim_world_gen/assets/cards.py)：アセットごとのカード（`of`・`physics_issue`・`brief`）。データは `src/agentic_sim_world_gen/data/asset_cards.jsonl.gz`、作り直しは `scripts/build_asset_cards.py`
-- [src/agentic_sim_world_gen/assets/domain.py](../src/agentic_sim_world_gen/assets/domain.py)：`off_place`
-- [src/agentic_sim_world_gen/service.py](../src/agentic_sim_world_gen/service.py)：`_find_candidates`・`_wrong_picture`・`research_object`
+- [src/agentic_sim_world_gen/assets/providers/base.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/providers/base.py)：`AssetProvider` プロトコル・`fits`
+- [src/agentic_sim_world_gen/assets/providers/composite.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/providers/composite.py)・[simready_central.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/providers/simready_central.py)・[isaac_index.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/providers/isaac_index.py)・[local_folder.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/providers/local_folder.py)・[polyhaven.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/providers/polyhaven.py)
+- [src/agentic_sim_world_gen/assets/sizes.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/sizes.py)：`TYPICAL`（種類ごとの標準サイズ）・[kinds.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/kinds.py)：種類の表
+- [src/agentic_sim_world_gen/assets/rerank.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/rerank.py)：`rerank`・`score`・`noun_last`
+- [src/agentic_sim_world_gen/assets/cards.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/cards.py)：アセットごとのカード（`of`・`physics_issue`・`brief`）。データは `src/agentic_sim_world_gen/data/asset_cards.jsonl.gz`、作り直しは `scripts/build_asset_cards.py`
+- [src/agentic_sim_world_gen/assets/domain.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/domain.py)：`off_place`
+- [src/agentic_sim_world_gen/service.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/service.py)：`_find_candidates`・`_wrong_picture`・`research_object`
 
 ## 4. レイアウト
 
@@ -272,13 +272,13 @@ flowchart TD
 ![layout.svg の例](images/gs_layout.png)
 
 関係するファイル
-- [src/agentic_sim_world_gen/layout/room.py](../src/agentic_sim_world_gen/layout/room.py)：`RoomGeometry`・`Wall`・`Face`・`Obstacle`
-- [src/agentic_sim_world_gen/layout/solver.py](../src/agentic_sim_world_gen/layout/solver.py)：`solve`
-- [src/agentic_sim_world_gen/layout/frame.py](../src/agentic_sim_world_gen/layout/frame.py)：正面方向（`asset_front_deg`・`yaw_for_facing`）
-- [src/agentic_sim_world_gen/layout/array.py](../src/agentic_sim_world_gen/layout/array.py)・[fill.py](../src/agentic_sim_world_gen/layout/fill.py)・[assets/shelves.py](../src/agentic_sim_world_gen/assets/shelves.py)
-- [src/agentic_sim_world_gen/scene/decor.py](../src/agentic_sim_world_gen/scene/decor.py)：`plan`・`PRODUCTS`・`fits_goods`
-- [src/agentic_sim_world_gen/scene/columns.py](../src/agentic_sim_world_gen/scene/columns.py)・[levels.py](../src/agentic_sim_world_gen/scene/levels.py)・[fixtures.py](../src/agentic_sim_world_gen/scene/fixtures.py)：柱・床の一部の仕上げ、段差・階段、天井の照明器具・梁
-- [src/agentic_sim_world_gen/preview/layout2d.py](../src/agentic_sim_world_gen/preview/layout2d.py)：layout.svg
+- [src/agentic_sim_world_gen/layout/room.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/room.py)：`RoomGeometry`・`Wall`・`Face`・`Obstacle`
+- [src/agentic_sim_world_gen/layout/solver.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/solver.py)：`solve`
+- [src/agentic_sim_world_gen/layout/frame.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/frame.py)：正面方向（`asset_front_deg`・`yaw_for_facing`）
+- [src/agentic_sim_world_gen/layout/array.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/array.py)・[fill.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/fill.py)・[assets/shelves.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/shelves.py)
+- [src/agentic_sim_world_gen/scene/decor.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/scene/decor.py)：`plan`・`PRODUCTS`・`fits_goods`
+- [src/agentic_sim_world_gen/scene/columns.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/scene/columns.py)・[levels.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/scene/levels.py)・[fixtures.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/scene/fixtures.py)：柱・床の一部の仕上げ、段差・階段、天井の照明器具・梁
+- [src/agentic_sim_world_gen/preview/layout2d.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/preview/layout2d.py)：layout.svg
 
 ## 5. 検証
 
@@ -310,11 +310,11 @@ flowchart LR
 椅子が机の下に入るのは奥行きの 60% まで許しますが（`tuck_pair`）、ソルバは自動では差し込みません。重なったまま物理を回すと PhysX が爆発するためです。
 
 関係するファイル
-- [src/agentic_sim_world_gen/layout/validate.py](../src/agentic_sim_world_gen/layout/validate.py)：`check`・`Issue`・`overlap_depth`
-- [src/agentic_sim_world_gen/layout/usability.py](../src/agentic_sim_world_gen/layout/usability.py)：`usability`・`AisleMap`・`aisle_map`
-- [src/agentic_sim_world_gen/layout/widths.py](../src/agentic_sim_world_gen/layout/widths.py)：`edt`（距離変換）・`widest`（入口からの最も広い道）・`narrowest`・`ridge`（中心線）。usability・nav（`routes`）・layout2d が共有
-- [src/agentic_sim_world_gen/layout/request.py](../src/agentic_sim_world_gen/layout/request.py)：`evaluate`・`summary`
-- [src/agentic_sim_world_gen/taste.py](../src/agentic_sim_world_gen/taste.py)：`report`・`analyze`
+- [src/agentic_sim_world_gen/layout/validate.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/validate.py)：`check`・`Issue`・`overlap_depth`
+- [src/agentic_sim_world_gen/layout/usability.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/usability.py)：`usability`・`AisleMap`・`aisle_map`
+- [src/agentic_sim_world_gen/layout/widths.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/widths.py)：`edt`（距離変換）・`widest`（入口からの最も広い道）・`narrowest`・`ridge`（中心線）。usability・nav（`routes`）・layout2d が共有
+- [src/agentic_sim_world_gen/layout/request.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/request.py)：`evaluate`・`summary`
+- [src/agentic_sim_world_gen/taste.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/taste.py)：`report`・`analyze`
 
 ## 6. USD の合成
 
@@ -347,11 +347,11 @@ flowchart TD
 - 物の色は `tint`（`usd/tint.py`）で、アセットのファイルを変えずにシーンの側からマテリアルの色を上書きします。
 
 関係するファイル
-- [src/agentic_sim_world_gen/usd/compose.py](../src/agentic_sim_world_gen/usd/compose.py)：`compose`・`build_room`・`build_site`・`_add_asset`・`add_box_collider`・`build_inputs`
-- [src/agentic_sim_world_gen/usd/look.py](../src/agentic_sim_world_gen/usd/look.py)：マテリアルと照明（`build_lights`）
-- [src/agentic_sim_world_gen/materials.py](../src/agentic_sim_world_gen/materials.py)・[pbr.py](../src/agentic_sim_world_gen/pbr.py)・[scene/moods.py](../src/agentic_sim_world_gen/scene/moods.py)：床・壁の材質の検索、雰囲気の見本
-- [src/agentic_sim_world_gen/usd/door.py](../src/agentic_sim_world_gen/usd/door.py)・[screen.py](../src/agentic_sim_world_gen/usd/screen.py)：自動ドア、画面に画像
-- [src/agentic_sim_world_gen/license.py](../src/agentic_sim_world_gen/license.py)・[origin.py](../src/agentic_sim_world_gen/origin.py)：ライセンスと入手先
+- [src/agentic_sim_world_gen/usd/compose.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/usd/compose.py)：`compose`・`build_room`・`build_site`・`_add_asset`・`add_box_collider`・`build_inputs`
+- [src/agentic_sim_world_gen/usd/look.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/usd/look.py)：マテリアルと照明（`build_lights`）
+- [src/agentic_sim_world_gen/materials.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/materials.py)・[pbr.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/pbr.py)・[scene/moods.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/scene/moods.py)：床・壁の材質の検索、雰囲気の見本
+- [src/agentic_sim_world_gen/usd/door.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/usd/door.py)・[screen.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/usd/screen.py)：自動ドア、画面に画像
+- [src/agentic_sim_world_gen/license.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/license.py)・[origin.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/origin.py)：ライセンスと入手先
 
 ## 7. Isaac Sim 側
 
@@ -392,9 +392,9 @@ Isaac Sim は Ubuntu（RTX）機にだけあり、agentic-sim-world-gen 本体�
 ![check の回り込み](images/check_orbit.gif)
 
 関係するファイル
-- [scripts/isaac/check_scene.py](../scripts/isaac/check_scene.py)・[check_core.py](../scripts/isaac/check_core.py)・[view.py](../scripts/isaac/view.py)・[front_views.py](../scripts/isaac/front_views.py)・[nav_map.py](../scripts/isaac/nav_map.py)
-- [src/agentic_sim_world_gen/service.py](../src/agentic_sim_world_gen/service.py)：`check_in_isaac`・`live_exec`・`summarize_report`・`generate_data`
-- [src/agentic_sim_world_gen/sdg.py](../src/agentic_sim_world_gen/sdg.py)・[scripts/isaac/sdg.py](../scripts/isaac/sdg.py)
+- [scripts/isaac/check_scene.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/check_scene.py)・[check_core.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/check_core.py)・[view.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/view.py)・[front_views.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/front_views.py)・[nav_map.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/nav_map.py)
+- [src/agentic_sim_world_gen/service.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/service.py)：`check_in_isaac`・`live_exec`・`summarize_report`・`generate_data`
+- [src/agentic_sim_world_gen/sdg.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/sdg.py)・[scripts/isaac/sdg.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/sdg.py)
 
 ## 8. 対話の流れ
 
@@ -448,15 +448,15 @@ sequenceDiagram
 ユーザーが直した値（`correction=true` の `set_room`・`set_layout`・`set_array`・`select_asset`、プレビューでの差し替え）は好みとして記録され、2 つ以上のシーンで同じなら次からの既定になります。
 
 関係するファイル
-- [.claude/skills/world-gen/SKILL.md](../.claude/skills/world-gen/SKILL.md)：手順の全文
-- [src/agentic_sim_world_gen/scene/questions.py](../src/agentic_sim_world_gen/scene/questions.py)：`plan_questions`
-- [src/agentic_sim_world_gen/scene/purpose.py](../src/agentic_sim_world_gen/scene/purpose.py)：用途（demo / amr / manipulation / sdg）からの既定
-- [src/agentic_sim_world_gen/scene/conflicts.py](../src/agentic_sim_world_gen/scene/conflicts.py)：食い違う仮定の検出（床の占有・天井高・ロボットの通路幅・人数と席数）。status の `conflicts`、あれば `create_scene` は叩き台を撮らない
-- [src/agentic_sim_world_gen/gallery.py](../src/agentic_sim_world_gen/gallery.py)：作例と過去のシーンの一覧（`entries`・`rank`）、ページ（`write_page`）、引き継いだ値（`inherited`）。作例の上面図は `scripts/make_gallery.py` で `data/gallery/` に作る
-- [src/agentic_sim_world_gen/preferences.py](../src/agentic_sim_world_gen/preferences.py)：`observe`・`apply`
-- [src/agentic_sim_world_gen/preview/server.py](../src/agentic_sim_world_gen/preview/server.py)：`serve`・`edit`（op move / select / try / feedback / choose_layout / mood / note）・`api/gallery/pick`（ギャラリーで選んだ作例）
-- [src/agentic_sim_world_gen/notes.py](../src/agentic_sim_world_gen/notes.py)：プレビューのメモの場所を言葉にする
-- [src/agentic_sim_world_gen/preview/page.py](../src/agentic_sim_world_gen/preview/page.py)・[changes.py](../src/agentic_sim_world_gen/preview/changes.py)：ページと変更履歴
+- [.claude/skills/world-gen/SKILL.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/SKILL.md)：手順の全文
+- [src/agentic_sim_world_gen/scene/questions.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/scene/questions.py)：`plan_questions`
+- [src/agentic_sim_world_gen/scene/purpose.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/scene/purpose.py)：用途（demo / amr / manipulation / sdg）からの既定
+- [src/agentic_sim_world_gen/scene/conflicts.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/scene/conflicts.py)：食い違う仮定の検出（床の占有・天井高・ロボットの通路幅・人数と席数）。status の `conflicts`、あれば `create_scene` は叩き台を撮らない
+- [src/agentic_sim_world_gen/gallery.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/gallery.py)：作例と過去のシーンの一覧（`entries`・`rank`）、ページ（`write_page`）、引き継いだ値（`inherited`）。作例の上面図は `scripts/make_gallery.py` で `data/gallery/` に作る
+- [src/agentic_sim_world_gen/preferences.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/preferences.py)：`observe`・`apply`
+- [src/agentic_sim_world_gen/preview/server.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/preview/server.py)：`serve`・`edit`（op move / select / try / feedback / choose_layout / mood / note）・`api/gallery/pick`（ギャラリーで選んだ作例）
+- [src/agentic_sim_world_gen/notes.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/notes.py)：プレビューのメモの場所を言葉にする
+- [src/agentic_sim_world_gen/preview/page.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/preview/page.py)・[changes.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/preview/changes.py)：ページと変更履歴
 
 ## 9. 写真・動画から部屋を推定
 
@@ -487,11 +487,11 @@ flowchart TD
 結果は `set_room` と `set_input`（カメラ）でシーンに入れます。写真で家具の足元を拾っていれば、`place_from_photos` が選んだアセットの footprint をその点に当てはめて位置と向きを決めます。写真上で物を囲んだ矩形（`outlines`）も渡すと、アセットの箱を当てはめたカメラで写真に投影し、足元の画素と矩形に合うように位置を詰めます（`photo_refine.py`）。最後に `compare_photo` で同じ視点から描いて写真と見比べ、`measure_photo` で部屋と通路の幅を写真と数値で比べます。通路をまたぐ画素の組を `aisle_pair` で指すと、その幅が配置の目標になります（`SceneSpec.photo_aisle`。配列の通路、`usability.photo_aisle` を通した歩行幅・広すぎの判定、status の `photo_aisle` の比）。写真に写った寸法の分かる物（棚 1 台・ドア・床タイルなど）の画素を `known` で渡すと、その物を物差しにした幅とカメラの高さも出します。
 
 関係するファイル
-- [src/agentic_sim_world_gen/photo_fit.py](../src/agentic_sim_world_gen/photo_fit.py)：`fit`（結果の `scale` ＝ 縮尺の根拠の一覧は `_scale_evidence`）・`FitRequest`・`PointObs`・`LineObs`・`SurfaceObs`・`RelativePose`
-- [src/agentic_sim_world_gen/video.py](../src/agentic_sim_world_gen/video.py)：`extract`（コマ抜き）
-- [src/agentic_sim_world_gen/video_pose.py](../src/agentic_sim_world_gen/video_pose.py)：`relative_poses`（ORB でコマの間の回転・動いた向き）
-- [src/agentic_sim_world_gen/photo_refine.py](../src/agentic_sim_world_gen/photo_refine.py)：`refine`（箱の投影と足元・輪郭の画素の差を最小化）
-- [src/agentic_sim_world_gen/photo_place.py](../src/agentic_sim_world_gen/photo_place.py)・[photo_measure.py](../src/agentic_sim_world_gen/photo_measure.py)：写真から家具の位置、写真との幅の比較（幅には誤差の幅を付ける）。[photo_vanish.py](../src/agentic_sim_world_gen/photo_vanish.py)：写真の縦の線の消失点からカメラのピッチ・ロール
-- [src/agentic_sim_world_gen/depth.py](../src/agentic_sim_world_gen/depth.py)・[scripts/depth/moge_depth.py](../scripts/depth/moge_depth.py)：単眼の深度
-- [src/agentic_sim_world_gen/inputs.py](../src/agentic_sim_world_gen/inputs.py)：入力の出典（`<stem>.source.json`）
-- [scripts/isaac/render_view.py](../scripts/isaac/render_view.py)：写真と同じ視点で描く
+- [src/agentic_sim_world_gen/photo_fit.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_fit.py)：`fit`（結果の `scale` ＝ 縮尺の根拠の一覧は `_scale_evidence`）・`FitRequest`・`PointObs`・`LineObs`・`SurfaceObs`・`RelativePose`
+- [src/agentic_sim_world_gen/video.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/video.py)：`extract`（コマ抜き）
+- [src/agentic_sim_world_gen/video_pose.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/video_pose.py)：`relative_poses`（ORB でコマの間の回転・動いた向き）
+- [src/agentic_sim_world_gen/photo_refine.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_refine.py)：`refine`（箱の投影と足元・輪郭の画素の差を最小化）
+- [src/agentic_sim_world_gen/photo_place.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_place.py)・[photo_measure.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_measure.py)：写真から家具の位置、写真との幅の比較（幅には誤差の幅を付ける）。[photo_vanish.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_vanish.py)：写真の縦の線の消失点からカメラのピッチ・ロール
+- [src/agentic_sim_world_gen/depth.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/depth.py)・[scripts/depth/moge_depth.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/depth/moge_depth.py)：単眼の深度
+- [src/agentic_sim_world_gen/inputs.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/inputs.py)：入力の出典（`<stem>.source.json`）
+- [scripts/isaac/render_view.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/render_view.py)：写真と同じ視点で描く

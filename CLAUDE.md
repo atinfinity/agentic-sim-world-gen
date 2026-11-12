@@ -19,7 +19,7 @@
 
 ## アーキテクチャ
 
-図での説明は [docs/architecture.md](docs/architecture.md)（コードと名前を合わせてある。仕組みを変えたらそちらも直す）。
+図での説明は [docs/architecture.md](docs/architecture.md)（コードと名前を合わせてある。仕組みを変えたらそちらも直す）。手引き（docs/*.md）には英語版 docs/en/ があり、直すときは両方直す。
 
 ```
 入力（NL / 写真 / 間取り図） → SceneSpec(JSON) → AssetProvider で候補検索 → ResolvedScene
