@@ -4,14 +4,14 @@ From `git clone` to opening your first world in Isaac Sim (about 15 minutes, not
 
 ## 0. Where to run it
 
-In both setups, Isaac Sim, Claude Code and agentic-sim-world-gen are installed on the GPU machine (Ubuntu + RTX). The difference is whether you sit in front of it or use it over ssh from another PC.
+In both setups, Isaac Sim, Claude Code and agentic-sim-world-gen are installed on the GPU machine (Ubuntu + RTX). The difference is whether you work on the GPU machine's own screen and keyboard or over ssh from another PC.
 
 ```mermaid
 flowchart LR
   q1{"An Ubuntu + RTX<br/>GPU machine?"} -- "No" --> nogpu["Search, preview, USD only<br/>(no check)"]
-  q1 -- "Yes" --> q2{"Do you sit<br/>in front of it?"}
-  q2 -- "Yes" --> local["1. All local<br/>live check too"]
-  q2 -- "No" --> ssh["2. Over ssh<br/>ssh and a browser locally"]
+  q1 -- "Yes" --> q2{"Where do you<br/>work from?"}
+  q2 -- "its own screen<br/>and keyboard" --> local["1. All local<br/>live check too"]
+  q2 -- "another PC<br/>over ssh" --> ssh["2. Over ssh<br/>ssh and a browser locally"]
 ```
 
 | Setup | GPU machine | What you see locally | Live mode | Guide |

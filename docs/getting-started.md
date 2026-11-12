@@ -4,14 +4,14 @@ clone してから Isaac Sim で最初のワールドを開くまで（目安 15
 
 ## 0. どこで動かすか
 
-Isaac Sim・Claude Code・agentic-sim-world-gen は、どちらの形でも GPU 機（Ubuntu＋RTX）に入れる。違うのは、その GPU 機の前に座るか、別の PC から ssh で使うか。
+Isaac Sim・Claude Code・agentic-sim-world-gen は、どちらの形でも GPU 機（Ubuntu＋RTX）に入れる。違うのは、GPU 機の画面とキーボードで直接操作するか、別の PC から ssh で使うか。
 
 ```mermaid
 flowchart LR
   q1{"Ubuntu＋RTX の<br/>GPU 機がある？"} -- "ない" --> nogpu["検索・プレビュー・USD まで<br/>（チェックは無し）"]
-  q1 -- "ある" --> q2{"その機械の前で<br/>使う？"}
-  q2 -- "はい" --> local["1. 全部手元<br/>ライブ確認もできる"]
-  q2 -- "いいえ" --> ssh["2. ssh 先<br/>手元は ssh とブラウザ"]
+  q1 -- "ある" --> q2{"どこから<br/>操作する？"}
+  q2 -- "GPU 機の画面と<br/>キーボードで" --> local["1. 全部手元<br/>ライブ確認もできる"]
+  q2 -- "別の PC から<br/>ssh で" --> ssh["2. ssh 先<br/>手元は ssh とブラウザ"]
 ```
 
 | 形 | GPU 機 | 手元で見るもの | ライブモード | 手順 |
