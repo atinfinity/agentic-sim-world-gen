@@ -41,14 +41,18 @@ flowchart TB
 
 ## デモ：倉庫
 
-![倉庫：パレットラック 24 台に段ボール箱、フォークリフト、パレット](docs/images/warehouse.gif)
+[![倉庫を作る様子：Claude Code とプレビュー、Isaac Sim のチェック](docs/images/warehouse_demo.gif)](docs/videos/warehouse_demo.mp4)
 
-24 m × 16 m の倉庫。パレットラック 24 台（6 台 × 4 列、通路 3.2 m）の棚に段ボール箱 192 個、北の壁際にパレット 5 枚、フォークリフト 1 台（222 物体）。
+動作の様子（1 ターンの会話、待ち時間は早送り）：作業フォルダの Claude Code に「24m×16m の倉庫を作って。パレットラックを通路を挟んで 4 列に並べて、ラックの棚には段ボール箱を載せて。
+手前の荷さばき場にパレットとフォークリフト。Isaac Sim で物理チェックして、ライセンスもまとめて。」と頼むと、Claude が既定を決めて一度に検索・配置し、
+在庫が載ったラックを候補から空のラックに替えて（`select_asset`）棚に段ボール箱を並べる（`set_fill`）。Isaac Sim 6.1 の物理チェックで滑った箱 2 個と動いたフォークリフトを見つけ、
+箱の間隔を広げ、フォークリフトは候補を 3 つ試して（座席やハンドルの部品がずれる）歩行型の電動スタッカーに替えて合格させる（221 物体）。
+最後に指示との突き合わせ・ライセンス（すべて CC BY 4.0）を報告し、出来上がりを周り 24 方向から見る。
 アセットは **SimReady Central だけ**（`AGENTIC_SIM_WORLD_GEN_SOURCES=simready-central`、`AGENTIC_SIM_WORLD_GEN_MDL=0`）、床・壁はこのリポジトリの色とテクスチャ。
-`examples/warehouse_racks.json` を resolve し、ラックを棚だけの物に替え（`select_asset`）、箱を棚に並べて（`set_fill`）、Isaac Sim 6.1 の物理チェックに合格した後の、周り 24 方向からの画像。
+Ubuntu の画面の録画（Isaac Sim は開かず、check は headless）。高画質版は [docs/videos/warehouse_demo.mp4](docs/videos/warehouse_demo.mp4)。
 
 使ったアセット（すべて CC BY 4.0。詳細は [LICENSES.md](docs/images/warehouse_LICENSES.md)）：
-"sm_rack_h3m_s02_01"・"sm_vehicle_forklift_red_b01_01"・"sm_box_cardboard_b02_01" by NVIDIA（[nvidia/simready-assets](https://huggingface.co/datasets/nvidia/simready-assets)）、
+"sm_rack_h3m_s02_01"・"sm_box_cardboard_b02_01"・"sm_vehicle_forklift_orange_a01_01" by NVIDIA（[nvidia/simready-assets](https://huggingface.co/datasets/nvidia/simready-assets)）、
 "pallet" by ForgeCAD（[ForgeCAD/simready-assets](https://huggingface.co/datasets/ForgeCAD/simready-assets)）、
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。
 

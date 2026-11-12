@@ -33,4 +33,4 @@ def test_readmes_convert():
     root = Path(__file__).parents[1]
     for name, ja in (("README.md", False), ("README.ja.md", True)):
         out = build_site.convert((root / name).read_text(encoding="utf-8"), ja=ja)
-        assert "[!" not in out and "](docs/" not in out
+        assert "> [!" not in out and "](docs/" not in out  # alerts converted; [![image](...)](...) is fine
