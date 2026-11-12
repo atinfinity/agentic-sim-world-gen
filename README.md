@@ -7,6 +7,25 @@ or photos: it searches for assets, picks them, lays them out, checks the result 
 records the license of every asset. Assets come from [SimReady Central](https://huggingface.co/spaces/nvidia/simready-central),
 the Isaac Sim bundled assets, [Poly Haven](https://polyhaven.com/models) CC0 models and your own USD folders.
 
+```mermaid
+flowchart TB
+  IN["<b>Input</b><br/>text (Japanese or English)<br/>floor plan: JSON / DXF / IFC / image<br/>photos / video"]
+  SRC["<b>Asset sources</b><br/>SimReady Central<br/>Isaac Sim bundled assets<br/>Poly Haven CC0<br/>your USD folders"]
+  subgraph AG["Claude Code + MCP server"]
+    direction LR
+    S["Search and pick assets"] --> L["Lay out<br/>relations, arrays, shelves"] --> V["Review in the browser<br/>thumbnails, top view"]
+  end
+  subgraph OUT["Result"]
+    direction LR
+    U["USD world"] --> C["Isaac Sim check<br/>physics, screenshots"]
+    U --> LIC["LICENSES.md"]
+  end
+  IN --> AG
+  SRC --> AG
+  AG --> OUT
+  OUT -- "fix" --> AG
+```
+
 > [!IMPORTANT]
 > This is a personal project. It is not an official NVIDIA product and is not sponsored or endorsed by NVIDIA.
 > Isaac Sim, Omniverse, SimReady and Replicator are trademarks of NVIDIA Corporation.

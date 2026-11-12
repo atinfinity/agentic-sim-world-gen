@@ -5,6 +5,25 @@
 日本語（英語も可）の指示・間取り図・写真から、エージェント（Claude Code）がアセットを選んで配置し、Isaac Sim 用のワールド（USD）を生成するツール。
 アセットは [SimReady Central](https://huggingface.co/spaces/nvidia/simready-central)・Isaac Sim 同梱アセット・[Poly Haven](https://polyhaven.com/models) の CC0 モデル・手持ちの USD フォルダから選ぶ。
 
+```mermaid
+flowchart TB
+  IN["<b>入力</b><br/>文章（日本語・英語）<br/>間取り図：JSON / DXF / IFC / 画像<br/>写真・動画"]
+  SRC["<b>アセットの出どころ</b><br/>SimReady Central<br/>Isaac Sim 同梱アセット<br/>Poly Haven CC0<br/>手持ちの USD フォルダ"]
+  subgraph AG["Claude Code + MCP server"]
+    direction LR
+    S["アセットを検索して選ぶ"] --> L["配置<br/>関係・繰り返し・棚への陳列"] --> V["ブラウザで確認<br/>候補の一覧・上面図"]
+  end
+  subgraph OUT["結果"]
+    direction LR
+    U["USD のワールド"] --> C["Isaac Sim で検証<br/>物理・スクリーンショット"]
+    U --> LIC["LICENSES.md"]
+  end
+  IN --> AG
+  SRC --> AG
+  AG --> OUT
+  OUT -- "手直し" --> AG
+```
+
 > [!IMPORTANT]
 > NVIDIA の公式の製品ではなく、NVIDIA の後援・承認も受けていない個人のプロジェクトです。Isaac Sim・Omniverse・SimReady・Replicator は NVIDIA Corporation の商標です。
 
