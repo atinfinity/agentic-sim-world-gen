@@ -63,4 +63,5 @@ gh actions-lock            # pins full version tags (@v7 -> @v7.0.1) and updates
 gh actions-lock --verify   # check
 ```
 
-and commit the workflows together with `actions.lock`.
+and commit the workflows together with `actions.lock`. The `lockfile` job of CI runs `gh actions-lock --verify`
+on every pull request, and the repository's Require lockfile policy stops a workflow whose actions are not in the lockfile.
