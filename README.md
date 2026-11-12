@@ -47,14 +47,21 @@ flowchart TB
 
 ## Demo: a warehouse
 
-![Warehouse: 24 pallet racks stocked with cardboard boxes, a forklift and pallets](docs/images/warehouse.gif)
+[![Building a warehouse: Claude Code, the browser preview and the Isaac Sim check](docs/images/warehouse_demo.gif)](docs/videos/warehouse_demo.mp4)
 
-A 24 m × 16 m warehouse: 24 pallet racks (4 rows of 6, 3.2 m aisles) stocked with 192 cardboard boxes, 5 pallets
-and a forklift (222 objects), from **SimReady Central only** (`AGENTIC_SIM_WORLD_GEN_SOURCES=simready-central`,
-`AGENTIC_SIM_WORLD_GEN_MDL=0`), viewed from 24 directions after it passed the physics check in Isaac Sim 6.1.
+One turn, asked in Japanese, waits fast-forwarded: "Make a 24 m × 16 m warehouse. Put pallet racks in 4 rows with
+aisles between them and cardboard boxes on the shelves; pallets and a forklift in the loading area at the front.
+Check it with physics in Isaac Sim and sum up the licenses." Claude fills in the defaults, searches and lays out
+everything at once, swaps the stocked racks for empty ones from the candidates (`select_asset`) and puts boxes on
+the shelves (`set_fill`). The physics check in Isaac Sim 6.1 finds 2 boxes that slid and a forklift that moved:
+Claude spaces the boxes out, tries three forklifts (their seat or handle parts come loose) and settles on a walk-behind
+electric stacker, and the check passes (221 objects). It ends with the request checklist, the licenses (all
+CC BY 4.0) and a view from 24 directions. Assets from **SimReady Central only**
+(`AGENTIC_SIM_WORLD_GEN_SOURCES=simready-central`, `AGENTIC_SIM_WORLD_GEN_MDL=0`). A screen recording on Ubuntu
+(Isaac Sim not opened, the check runs headless); full quality: [docs/videos/warehouse_demo.mp4](docs/videos/warehouse_demo.mp4).
 
 Assets (all CC BY 4.0, details in [LICENSES.md](docs/images/warehouse_LICENSES.md)): "sm_rack_h3m_s02_01",
-"sm_vehicle_forklift_red_b01_01" and "sm_box_cardboard_b02_01" by NVIDIA
+"sm_box_cardboard_b02_01" and "sm_vehicle_forklift_orange_a01_01" by NVIDIA
 ([nvidia/simready-assets](https://huggingface.co/datasets/nvidia/simready-assets)), "pallet" by ForgeCAD
 ([ForgeCAD/simready-assets](https://huggingface.co/datasets/ForgeCAD/simready-assets)),
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
