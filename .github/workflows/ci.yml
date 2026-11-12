@@ -12,12 +12,23 @@ jobs:
   test:
     runs-on: ubuntu-24.04  # pinned; ubuntu-latest moves to 26.04 (tested on 24.04)
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # the extras the README and Getting Started install: a test that needs another extra must skip, not fail
+          - name: documented
+            extras: --extra usd --extra hf --extra mcp --extra dev
+          # everything but taste (torch): runs the floor plan and video tests too
+          - name: all
+            extras: --extra usd --extra mcp --extra dxf --extra ifc --extra video --extra hf --extra dev
+    name: test (${{ matrix.name }})
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: astral-sh/setup-uv@v10.3.3
         with:
           python-version: "3.12"
       - name: Install
-        run: uv sync --extra usd --extra mcp --extra dxf --extra ifc --extra video --extra hf --extra dev
+        run: uv sync --locked ${{ matrix.extras }}
       - name: Test
         run: uv run pytest -q

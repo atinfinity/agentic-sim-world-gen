@@ -11,6 +11,9 @@ uv run pytest -q              # offline tests (about 2 minutes)
 uv run pytest -q -m network   # optional: calls the real SimReady Central / Poly Haven APIs
 ```
 
+CI runs the tests twice: with the extras the README installs (`usd`, `hf`, `mcp`, `dev`) and with all but `taste`.
+A test that needs another extra skips without it (`pytest.importorskip`).
+
 Checking a scene in Isaac Sim (`check`) needs an NVIDIA RTX GPU and Isaac Sim 6.1 on Linux; everything else
 (search, layout, USD, previews) runs without a GPU. Pull requests that cannot be tested on Isaac Sim are fine:
 say so in the description.
