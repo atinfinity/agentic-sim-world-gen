@@ -60,8 +60,7 @@ There are two ports, both on 127.0.0.1 (not exposed to the network).
    ```bash
    git clone https://github.com/atinfinity/agentic-sim-world-gen.git
    cd agentic-sim-world-gen
-   uv venv --python 3.11 .venv
-   uv pip install -e ".[usd,hf,mcp,dev]"
+   uv sync --extra usd --extra hf --extra mcp --extra dev
    ```
 
    **Do not pip install anything into Isaac Sim's Python** (Isaac Sim has its own pxr, and mixing in usd-core breaks it).

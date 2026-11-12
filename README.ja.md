@@ -78,7 +78,7 @@ GPU の無い環境でも検索・プレビュー・USD 出力まではできる
 ## クイックスタート（CLI）
 
 ```bash
-uv venv --python 3.11 .venv && uv pip install -e ".[usd,hf,mcp,dev]"
+uv sync --extra usd --extra hf --extra mcp --extra dev
 source .venv/bin/activate
 
 agentic-sim-world-gen resolve examples/p0_study_room.json -o out/study   # 検索 → candidates.html・layout.svg
@@ -156,8 +156,8 @@ usd-core は `.venv` にだけ入れる（Isaac Sim の Python には入れな�
 
 ## 間取り図・屋外・ライブモード
 
-間取り図：`agentic-sim-world-gen plan examples/plans/1ldk.json -o out/1ldk_plan`（DXF は `pip install -e ".[dxf]"`、
-IFC は `".[ifc]"` が必要）。出力の plan.json を `room.plan_file` に指定すると、部屋（ゾーン）ごとに壁際配置でき、
+間取り図：`agentic-sim-world-gen plan examples/plans/1ldk.json -o out/1ldk_plan`（DXF は `--extra dxf`、
+IFC は `--extra ifc` を付けて `uv sync` し直す）。出力の plan.json を `room.plan_file` に指定すると、部屋（ゾーン）ごとに壁際配置でき、
 ドア前を空け、USD の壁に開口が開く。形式は `src/agentic_sim_world_gen/scene/plan.py` の docstring。
 IFC の家具は BIM の位置・向きのままアセットを置ける。
 

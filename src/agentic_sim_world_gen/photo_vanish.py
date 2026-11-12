@@ -175,7 +175,7 @@ def estimate_from(segs: list[tuple[float, float, float, float]], size: tuple[int
 
 def estimate(path: str | Path, hfov_deg: float | None = None) -> dict[str, Any]:
     if not available():
-        return {"ok": False, "why": "needs OpenCV and numpy (pip install -e '.[video]')"}
+        return {"ok": False, "why": "needs OpenCV and numpy (uv sync again with --extra video added)"}
     try:
         segs, size = segments(path)
     except Exception as e:  # unreadable file

@@ -132,7 +132,7 @@ def test_skipped_without_the_model(tmp_path, catalog, monkeypatch):
     real = taste.importlib.util.find_spec
     monkeypatch.setattr(taste.importlib.util, "find_spec", lambda n: None if n == "torch" else real(n))
     why = service.check_taste(st["scene_dir"])["taste"]["skipped"]
-    assert "torch" in why and "[taste]" in why
+    assert "torch" in why and "--extra taste" in why
 
 
 def test_model_not_in_hf_cache(tmp_path, monkeypatch):

@@ -3,8 +3,9 @@ is rendered from the scene's own boxes, so the answer is known."""
 
 import json
 
-import numpy as np
 import pytest
+
+np = pytest.importorskip("numpy")  # the `video` extra
 
 from agentic_sim_world_gen import depth, service
 from agentic_sim_world_gen.photo_measure import View, depth_floor

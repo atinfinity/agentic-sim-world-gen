@@ -29,11 +29,13 @@ GPU の無い Mac / PC でも、検索・プレビュー・USD 出力までは�
 ```bash
 git clone https://github.com/atinfinity/agentic-sim-world-gen.git
 cd agentic-sim-world-gen
-uv venv --python 3.11 .venv
-uv pip install -e ".[usd,hf,mcp,dev]"     # 間取り図も使うなら ".[usd,hf,mcp,dev,dxf,ifc]"
+uv sync --extra usd --extra hf --extra mcp --extra dev   # 間取り図も使うなら --extra dxf --extra ifc も
 source .venv/bin/activate
 pytest -q                                  # オフラインのテスト（約 2 分）
 ```
+
+`uv sync` は `uv.lock` の版で `.venv` を作り、このリポジトリを編集可能な形で入れる（Python は `requires-python` の 3.10 以上から uv が選ぶ）。
+あとで extra を足すときは、使う `--extra` を全部付けて `uv sync` し直す（付けなかった extra は `.venv` から外れる）。
 
 **usd-core は `.venv` にだけ入れる。** Isaac Sim の Python（`python.sh` や pip 版の venv）には何も pip install しない
 （Isaac Sim は自前の pxr を持っていて、混ざると壊れる）。
