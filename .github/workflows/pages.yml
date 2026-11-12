@@ -27,8 +27,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install zensical==0.1.1
-      - run: python scripts/build_site.py
-      - run: zensical build --clean --strict
+      - run: python scripts/build_site.py --build --strict  # English -> site/, Japanese -> site/ja/
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site
