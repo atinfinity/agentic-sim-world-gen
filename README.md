@@ -76,6 +76,11 @@ Assets (all CC BY 4.0, details in [LICENSES.md](docs/images/warehouse_LICENSES.m
 - Synthetic data with Replicator: RGB, 2D boxes, segmentation, depth (COCO / KITTI)
 - Licenses: source and license of every asset recorded in the USD and in `LICENSES.md`
 
+Objects are placed by relation, not by coordinates; the solver works out the position and the direction, and keeps
+them when an asset is swapped for one of another size:
+
+![Layout relations: against_wall, in_front_of, next_to, on, facing, array](docs/images/layout_relations.svg)
+
 When no asset fits, a close one is used instead and reported (no 3D generation). Your own asset folders can be
 added with `local:`.
 

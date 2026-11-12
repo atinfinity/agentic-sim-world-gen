@@ -4,14 +4,22 @@ clone してから Isaac Sim で最初のワールドを開くまで（目安 15
 
 ## 0. どこで動かすか
 
-Isaac Sim と Claude Code を動かす場所で、2 つの形がある。どれも Isaac Sim・Claude Code・agentic-sim-world-gen は GPU 機に置き、手元の PC はプレビューを見るブラウザだけになる（1 は同じ機械）。
+Isaac Sim・Claude Code・agentic-sim-world-gen は、どちらの形でも GPU 機（Ubuntu＋RTX）に入れる。違うのは、その GPU 機の前に座るか、別の PC から ssh で使うか。
+
+```mermaid
+flowchart LR
+  q1{"Ubuntu＋RTX の<br/>GPU 機がある？"} -- "ない" --> nogpu["検索・プレビュー・USD まで<br/>（チェックは無し）"]
+  q1 -- "ある" --> q2{"その機械の前で<br/>使う？"}
+  q2 -- "はい" --> local["1. 全部手元<br/>ライブ確認もできる"]
+  q2 -- "いいえ" --> ssh["2. ssh 先<br/>手元は ssh とブラウザ"]
+```
 
 | 形 | GPU 機 | 手元で見るもの | ライブモード | 手順 |
 |---|---|---|---|---|
 | 1. 全部手元 | 手元の Ubuntu＋RTX（画面あり） | Isaac Sim の画面・プレビュー・ターミナル | 使える | [use-local.md](use-local.md) |
 | 2. ssh 先 | LAN の Ubuntu＋RTX など（画面は無くてよい） | ssh のターミナルと、ブラウザのプレビュー（`ssh -L`） | 使えない（headless） | [use-ssh.md](use-ssh.md) |
 
-迷ったら、GPU 機の前で作業するなら 1、Mac などから使うなら 2。下の節は 2 つに共通の内容（インストール・環境変数・流れ・出力）。
+下の節は 2 つに共通の内容（インストール・環境変数・流れ・出力）。
 
 ## 1. 必要なもの
 
@@ -73,17 +81,44 @@ agentic-sim-world-gen workspace ~/agentic-sim-world-gen-ws     # .mcp.json・ス
 cd ~/agentic-sim-world-gen-ws && claude
 ```
 
-リポジトリの中で `claude` を起動しても動くが、そのときはリポジトリの開発メモ（CLAUDE.md）を毎ターン読むので
-料金が高く、会話の圧縮も早く来る。作業フォルダはリポジトリの外に作る（中に作るとエラー）。シーンは `~/agentic-sim-world-gen-ws/scenes`
-（`--out` か `AGENTIC_SIM_WORLD_GEN_OUT` で変える）。MCP サーバーの環境変数は `--env AGENTIC_SIM_WORLD_GEN_SOURCES=simready-central,isaac,local:/path` のように
-足せる（Claude Code の環境変数も引き継ぐ）。`--allow-tools` で agentic-sim-world-gen のツールの許可を省く。`--model sonnet` でこのフォルダの Claude Code のモデルを決める（安いモデルで作る時。出来の比較はまだしていない）。スキルはリンクなので `git pull` で更新される
-（`--copy-skill` で写しに）。作り直すときは `--force`。
+作業フォルダは**リポジトリの外**に作る（中に作るとエラー）。リポジトリの中で `claude` を起動しても動くが、
+開発メモ（CLAUDE.md）を毎ターン読むので料金が高く、会話の圧縮も早く来る。シーンは `~/agentic-sim-world-gen-ws/scenes` にできる。
+
+`workspace` のオプション：
+
+| オプション | 内容 |
+|---|---|
+| `--out <dir>` | シーンの保存先（`AGENTIC_SIM_WORLD_GEN_OUT` でも可） |
+| `--env 名前=値` | MCP サーバーの環境変数（例 `--env AGENTIC_SIM_WORLD_GEN_SOURCES=simready-central,isaac,local:/path`）。Claude Code の環境変数も引き継ぐ |
+| `--allow-tools` | agentic-sim-world-gen のツールを使うたびの許可を省く |
+| `--model sonnet` | このフォルダの Claude Code のモデル（安いモデルで作る時。出来の比較はまだしていない） |
+| `--copy-skill` | スキルをリンクでなく写しにする（リンクなら `git pull` で更新される） |
+| `--force` | 作り直す |
 
 初回に `.mcp.json` の `agentic-sim-world-gen` MCP サーバーを承認する（スキル world-gen は自動で読み込まれる）。あとは頼むだけ：
 
 > 6畳の書斎を作って。机と椅子、壁際に本棚
 
-Claude は次の順に進める（質問が来たら答える。2–3 分、API 料金は 1 回 $1 前後）：
+Claude は次の順に進める（質問が来たら答える。2–3 分、API 料金は 1 回 $1 前後）。
+大きく分けると、`create_scene` で叩き台を作って見せ、あなたが「これでいい」と言ったら `finish` で仕上げる：
+
+```mermaid
+flowchart TD
+  ask(["頼む"]) --> cs
+  subgraph cs["create_scene（1〜5）"]
+    direction LR
+    a1["既定を決める"] --> a2["アセット検索"] --> a3["配置・検査"] --> a4["叩き台を描画"]
+  end
+  cs --> look{"直したい所は？"}
+  look -- "ある：言葉で頼む・プレビューで動かす" --> cs
+  look -- "これでいい" --> fin
+  subgraph fin["finish（5〜7）"]
+    direction LR
+    f1["USD を出力"] --> f2["Isaac Sim で物理チェック<br/>（倒れた物は直して再チェック）"] --> f3["指示との突き合わせ<br/>ライセンス"]
+  end
+  fin --> done(["scene.usda・LICENSES.md"])
+```
+
 
 1. 指示に無いこと（広さ・床・照明など）は既定で決め、先には聞かない（`plan_questions`）
 2. 部屋と家具を SceneSpec にし、英語のクエリ＋類義語でアセットを検索（`create_scene`）。プレビューもここでブラウザに開く
@@ -129,7 +164,16 @@ ssh 先でのプレビューの開き方（`ssh -L`）は [use-ssh.md](use-ssh.m
 
 ## 5. CLI で同じことをする
 
-Claude Code を使わず、SceneSpec（JSON）を自分で書いても同じ処理を呼べる。
+Claude Code を使わず、SceneSpec（JSON）を自分で書いても同じ処理を呼べる。コマンドと、できるファイル：
+
+```mermaid
+flowchart LR
+  spec["SceneSpec<br/>examples/*.json"] -- "resolve" --> r["scene.resolved.json<br/>candidates.html<br/>layout.svg"]
+  r -- "compose" --> u["scene.usda"]
+  u -- "check" --> c["check.json・check.png<br/>check_orbit/"]
+  r -- "licenses" --> l["LICENSES.md"]
+  r -. "編集して preview" .-> r
+```
 
 ```bash
 agentic-sim-world-gen search "office chair" --limit 5                 # 検索だけ
@@ -245,7 +289,8 @@ USD の customData `agentic_sim_world_gen:origin`）。
 
 ## 次に読むもの
 
-- [README](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/README.md)：MCP ツール一覧
+- [tools.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/tools.md)：全 MCP ツールと引数
 - [use-local.md](use-local.md)・[use-ssh.md](use-ssh.md)：全部手元／ssh 先での手順
+- [architecture.md](architecture.md)：仕組みを図で
 - [.claude/skills/world-gen/SKILL.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/SKILL.md)：Claude の対話手順・家具の標準サイズ・和英クエリ例
 - [CLAUDE.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/CLAUDE.md)：規約（座標系、USD の構造）

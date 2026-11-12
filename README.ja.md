@@ -66,6 +66,10 @@ Ubuntu の画面の録画（Isaac Sim は開かず、check は headless）。高
 - 合成データ：Replicator で RGB・bbox・セグメンテーション・深度（COCO / KITTI）
 - ライセンス：アセットごとに出典・ライセンスを USD と LICENSES.md に記録
 
+物は座標ではなく関係で置く。位置と向きはソルバが計算し、アセットを大きさの違う物に替えても関係は保たれる：
+
+![配置の関係：against_wall・in_front_of・next_to・on・facing・array](docs/images/layout_relations_ja.svg)
+
 該当するアセットが無いときは近い物で代用し、そう報告する（3D の生成はしない）。
 手持ちのアセットのフォルダがあれば `local:` で足せる（下の「手持ちの USD フォルダ」）。
 
