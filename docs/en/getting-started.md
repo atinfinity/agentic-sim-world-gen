@@ -4,14 +4,22 @@ From `git clone` to opening your first world in Isaac Sim (about 15 minutes, not
 
 ## 0. Where to run it
 
-There are two setups, depending on where Isaac Sim and Claude Code run. In both, Isaac Sim, Claude Code and agentic-sim-world-gen live on the GPU machine. Your own PC is only a browser for the preview (in setup 1 it is the same machine).
+In both setups, Isaac Sim, Claude Code and agentic-sim-world-gen are installed on the GPU machine (Ubuntu + RTX). The difference is whether you sit in front of it or use it over ssh from another PC.
+
+```mermaid
+flowchart LR
+  q1{"An Ubuntu + RTX<br/>GPU machine?"} -- "No" --> nogpu["Search, preview, USD only<br/>(no check)"]
+  q1 -- "Yes" --> q2{"Do you sit<br/>in front of it?"}
+  q2 -- "Yes" --> local["1. All local<br/>live check too"]
+  q2 -- "No" --> ssh["2. Over ssh<br/>ssh and a browser locally"]
+```
 
 | Setup | GPU machine | What you see locally | Live mode | Guide |
 |---|---|---|---|---|
 | 1. All local | Your own Ubuntu + RTX machine (with a display) | The Isaac Sim window, the preview, the terminal | Available | [use-local.md](use-local.md) |
 | 2. Over ssh | An Ubuntu + RTX machine on the LAN, etc. (no display needed) | The ssh terminal and the preview in a browser (`ssh -L`) | Not available (headless) | [use-ssh.md](use-ssh.md) |
 
-If unsure: pick 1 if you work in front of the GPU machine, 2 if you use it from a Mac or another PC. The sections below apply to both setups (install, environment variables, workflow, output).
+The sections below apply to both setups (install, environment variables, workflow, output).
 
 ## 1. Requirements
 
@@ -73,11 +81,19 @@ agentic-sim-world-gen workspace ~/agentic-sim-world-gen-ws     # .mcp.json, the 
 cd ~/agentic-sim-world-gen-ws && claude
 ```
 
-Starting `claude` inside the repository also works, but then it reads the repository's development notes (CLAUDE.md) on every turn.
-That costs more and compaction comes sooner. Create the workspace outside the repository (creating it inside is an error). Scenes go to `~/agentic-sim-world-gen-ws/scenes`
-(change with `--out` or `AGENTIC_SIM_WORLD_GEN_OUT`). You can add environment variables for the MCP server, e.g. `--env AGENTIC_SIM_WORLD_GEN_SOURCES=simready-central,isaac,local:/path`
-(Claude Code's own environment variables are passed through too). `--allow-tools` skips the permission prompts for agentic-sim-world-gen tools. `--model sonnet` sets the Claude Code model for this folder (for building with a cheaper model; output quality has not been compared yet). The skill is a link, so `git pull` updates it
-(`--copy-skill` makes a copy instead). Use `--force` to recreate the workspace.
+Create the workspace **outside the repository** (creating it inside is an error). Starting `claude` inside the repository also works,
+but then it reads the development notes (CLAUDE.md) on every turn: that costs more and compaction comes sooner. Scenes go to `~/agentic-sim-world-gen-ws/scenes`.
+
+Options of `workspace`:
+
+| Option | |
+|---|---|
+| `--out <dir>` | where scenes are saved (or `AGENTIC_SIM_WORLD_GEN_OUT`) |
+| `--env NAME=value` | environment variables for the MCP server, e.g. `--env AGENTIC_SIM_WORLD_GEN_SOURCES=simready-central,isaac,local:/path`. Claude Code's own environment is passed through too |
+| `--allow-tools` | skip the permission prompts for agentic-sim-world-gen tools |
+| `--model sonnet` | the Claude Code model for this folder (for building with a cheaper model; output quality has not been compared yet) |
+| `--copy-skill` | copy the skill instead of linking it (a link is updated by `git pull`) |
+| `--force` | recreate the workspace |
 
 On first start, approve the `agentic-sim-world-gen` MCP server in `.mcp.json` (the world-gen skill loads automatically). Then just ask:
 
@@ -85,7 +101,26 @@ On first start, approve the `agentic-sim-world-gen` MCP server in `.mcp.json` (t
 
 Japanese works too, e.g. 「6畳の書斎を作って。机と椅子、壁際に本棚」 (the same request).
 
-Claude goes through these steps (answer its questions if it asks; 2–3 minutes, about $1 in API cost per run):
+Claude goes through these steps (answer its questions if it asks; 2–3 minutes, about $1 in API cost per run).
+In short: `create_scene` builds a draft and shows it, and once you say it is fine, `finish` completes it:
+
+```mermaid
+flowchart TD
+  ask(["Ask"]) --> cs
+  subgraph cs["create_scene (1-5)"]
+    direction LR
+    a1["Fill in defaults"] --> a2["Search assets"] --> a3["Lay out, check"] --> a4["Render a draft"]
+  end
+  cs --> look{"Anything<br/>to change?"}
+  look -- "Yes: ask in words or move things in the preview" --> cs
+  look -- "Looks good" --> fin
+  subgraph fin["finish (5-7)"]
+    direction LR
+    f1["Write the USD"] --> f2["Physics check in Isaac Sim<br/>(fix what fell, check again)"] --> f3["Check against the request<br/>licenses"]
+  end
+  fin --> done(["scene.usda, LICENSES.md"])
+```
+
 
 1. Anything not in the request (size, floor, lighting, etc.) gets a default; it does not ask up front (`plan_questions`)
 2. Turns the room and furniture into a SceneSpec and searches assets with English queries plus synonyms (`create_scene`). The preview also opens in the browser here
@@ -131,7 +166,16 @@ How to open the preview over ssh (`ssh -L`) is in [use-ssh.md](use-ssh.md#3-your
 
 ## 5. The same from the CLI
 
-You can call the same processing without Claude Code by writing the SceneSpec (JSON) yourself.
+You can call the same processing without Claude Code by writing the SceneSpec (JSON) yourself. The commands and the files they write:
+
+```mermaid
+flowchart LR
+  spec["SceneSpec<br/>examples/*.json"] -- "resolve" --> r["scene.resolved.json<br/>candidates.html<br/>layout.svg"]
+  r -- "compose" --> u["scene.usda"]
+  u -- "check" --> c["check.json, check.png<br/>check_orbit/"]
+  r -- "licenses" --> l["LICENSES.md"]
+  r -. "edit, then preview" .-> r
+```
 
 ```bash
 agentic-sim-world-gen search "office chair" --limit 5                 # search only
@@ -164,10 +208,10 @@ The SceneSpec format is in `src/agentic_sim_world_gen/scene/spec.py`; examples a
 | Photos | "Make the room in examples/photos/living_room.jpg". The source is in the neighboring `<stem>.source.json`. `agentic-sim-world-gen photo <scene>` shows it side by side with a render from the same viewpoint | photos.md in the skill |
 | Depth for photos and videos | Create the venv from "Monocular depth" below, then run `agentic-sim-world-gen fit-photos req.json --depth` (photos in `image`). Room dimensions are easier to pin down | [Monocular depth](#monocular-depth-optional) below |
 | Video | "Make the room in walk.mp4" (a video taken while walking through the room, with no people in it). The source is in the neighboring `walk.source.json`. `agentic-sim-world-gen frames walk.mp4 -o <scene>` picks frames to use as input photos (needs ffmpeg) | videos.md in the skill |
-| Repeated placement | `agentic-sim-world-gen resolve examples/warehouse_racks.json -o out/racks` (rows of racks + aisles) | set_array in the README |
+| Repeated placement | `agentic-sim-world-gen resolve examples/warehouse_racks.json -o out/racks` (rows of racks + aisles) | [Layout](architecture.md#4-layout) (`set_array`) |
 | Outdoor | `agentic-sim-world-gen resolve examples/outdoor_yard.json -o out/yard` (road, sidewalk, buildings, sky) | `src/agentic_sim_world_gen/scene/site.py` |
 | See missing assets, most frequent first | `agentic-sim-world-gen missing` (substitutions, objects with no candidates and skipped small items across all scenes made on this machine) | `src/agentic_sim_world_gen/missing.py` |
-| Your own USD folder | `AGENTIC_SIM_WORLD_GEN_SOURCES=+local:/data/usd`; list its contents with `agentic-sim-world-gen index /data/usd --list` | README |
+| Your own USD folder | `AGENTIC_SIM_WORLD_GEN_SOURCES=+local:/data/usd`; list its contents with `agentic-sim-world-gen index /data/usd --list` | [Asset search](architecture.md#3-asset-search) |
 | Floor, walls, lighting | `room.floor: "wood_light"`, `room.lighting: "office"`, etc. (plain words such as "wood flooring, night lighting" work too) | `src/agentic_sim_world_gen/scene/looks.py` |
 | Synthetic data | `agentic-sim-world-gen sdg out/study --frames 24 --coco` → RGB, bbox, segmentation, depth | `src/agentic_sim_world_gen/sdg.py` |
 
@@ -247,7 +291,8 @@ For unknown licenses, check the license of the original folder or switch to a di
 
 ## What to read next
 
-- [README](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/README.md): list of MCP tools
+- [tools.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/tools.md): every MCP tool and its arguments
 - [use-local.md](use-local.md) / [use-ssh.md](use-ssh.md): steps for the all-local and over-ssh setups
+- [architecture.md](architecture.md): how it works, with diagrams
 - [.claude/skills/world-gen/SKILL.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/SKILL.md): Claude's conversation steps, standard furniture sizes, Japanese-to-English query examples
 - [CLAUDE.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/CLAUDE.md): conventions (coordinate system, USD structure)
