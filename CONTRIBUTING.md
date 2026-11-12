@@ -37,9 +37,10 @@ share. Security problems: see SECURITY.md.
 ## Project page
 
 The project page (<https://atinfinity.github.io/agentic-sim-world-gen/>) is built with [Zensical](https://zensical.org/)
-and published by `.github/workflows/pages.yml` on every push to `main`. There are two sites: English (`zensical.en.toml`,
-the top page only) and Japanese under `/ja/` (`zensical.toml`, the top page and the guides in `docs/`). The top pages
-are written from `README.md` and `README.ja.md`, so edit those. To look at it locally:
+and published by `.github/workflows/pages.yml` on every push to `main`. There are two sites with the same pages: English
+(`zensical.en.toml`: `README.md` and the guides in `docs/en/`) and Japanese under `/ja/` (`zensical.toml`:
+`README.ja.md` and the guides in `docs/`). `scripts/build_site.py` puts them together under `build/`, so edit the
+READMEs and `docs/`. When you change a guide, change both languages. To look at it locally:
 
 ```bash
 uv pip install zensical==0.1.1

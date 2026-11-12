@@ -9,5 +9,4 @@ dist/
 
 # project page (scripts/build_site.py, zensical build)
 /site/
-/docs/index.md
-/build/site_en/
+/build/

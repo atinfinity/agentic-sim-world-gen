@@ -1,12 +1,13 @@
-"""Project page: write the top pages from the READMEs and build the two sites with Zensical.
+"""Project page: put together the English and the Japanese site under build/ and build them with Zensical.
 
-    python scripts/build_site.py            # README.ja.md -> docs/index.md, README.md -> build/site_en/index.md
-    python scripts/build_site.py --build    # ... and build: English (zensical.en.toml) -> site/, Japanese -> site/ja/
+    python scripts/build_site.py            # assemble build/site_en (README.md, docs/en/) and build/site_ja (README.ja.md, docs/)
+    python scripts/build_site.py --build    # ... and build: English (zensical.en.toml) -> site/, Japanese (zensical.toml) -> site/ja/
     python scripts/build_site.py --serve    # ... and serve site/ at http://127.0.0.1:8000/agentic-sim-world-gen/
 
-The English site is the top page only, so its menu stays English; the Japanese one (zensical.toml) has the top page
-and the guides in docs/. The written top pages are not committed: edit the READMEs. GitHub alerts (> [!WARNING])
-become admonitions; links to docs/ stay inside the site, links to other files of the repository go to GitHub.
+Each site has its top page (from the README) and the four guides in its language: docs/en/*.md and docs/*.md, with
+docs/images shared. Nothing under build/ is committed: edit the READMEs and docs/. GitHub alerts (> [!WARNING]) become
+admonitions; README links to the guides stay inside the site, links to other files of the repository go to GitHub.
+The language switch opens the same page in the other language (docs/javascripts/lang.js).
 """
 
 from __future__ import annotations
@@ -20,9 +21,12 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+DOCS = ROOT / "docs"
 REPO = "https://github.com/atinfinity/agentic-sim-world-gen"
 BASE = "/agentic-sim-world-gen/"  # the path of the GitHub Pages site
 EN_DIR = ROOT / "build" / "site_en"
+JA_DIR = ROOT / "build" / "site_ja"
+SHARED = ("images", "javascripts")  # folders of docs/ copied into both sites
 
 ALERTS = {  # GitHub alert -> admonition type, title in English, title in Japanese
     "NOTE": ("note", "Note", "メモ"),
@@ -54,8 +58,13 @@ def _alerts(text: str, ja: bool) -> str:
     return "\n".join(out) + "\n"
 
 
+def _page_url(rest: str) -> str:
+    """docs-relative path -> URL of that page on a site (getting-started.md -> getting-started/)."""
+    return rest[: -len(".md")] + "/" if rest.endswith(".md") and not rest.startswith("images/") else rest
+
+
 def _link(target: str, ja: bool) -> str:
-    """A README link as seen from the top page of the Japanese site (docs/index.md) or the English one (site root)."""
+    """A README link as seen from the top page of the Japanese site (served at ja/) or the English one (the root)."""
     if re.match(r"^[a-z]+:", target) or target.startswith("#"):
         return target
     path, _, frag = target.partition("#")
@@ -64,11 +73,14 @@ def _link(target: str, ja: bool) -> str:
         return ("../" if ja else "index.md") + frag
     if path == "README.ja.md":
         return ("index.md" if ja else "ja/") + frag
-    if path.startswith("docs/"):
+    if path.startswith("docs/en/"):  # English guides
+        rest = path[len("docs/en/") :]
+        return ("../" + _page_url(rest) if ja else rest) + frag
+    if path.startswith("docs/"):  # Japanese guides and the shared images
         rest = path[len("docs/") :]
-        if ja:
+        if ja or rest.split("/")[0] in SHARED:
             return rest + frag
-        return "ja/" + (rest[: -len(".md")] + "/" if rest.endswith(".md") else rest) + frag  # pages of the Japanese site
+        return "ja/" + _page_url(rest) + frag
     kind = "tree" if (ROOT / path).is_dir() else "blob"
     return f"{REPO}/{kind}/main/{path}{frag}"
 
@@ -79,11 +91,19 @@ def convert(text: str, *, ja: bool) -> str:
     return re.sub(r"\]\(([^)\s]+)\)", lambda m: "](" + _link(m.group(1), ja) + ")", text)
 
 
-def write_pages() -> None:
-    for src, out, ja in (("README.ja.md", ROOT / "docs" / "index.md", True), ("README.md", EN_DIR / "index.md", False)):
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(convert((ROOT / src).read_text(encoding="utf-8"), ja=ja), encoding="utf-8")
-        print(f"{src} -> {out.relative_to(ROOT)}")
+def assemble() -> None:
+    for out, readme, guides, ja in ((EN_DIR, "README.md", DOCS / "en", False), (JA_DIR, "README.ja.md", DOCS, True)):
+        shutil.rmtree(out, ignore_errors=True)
+        out.mkdir(parents=True)
+        (out / "index.md").write_text(convert((ROOT / readme).read_text(encoding="utf-8"), ja=ja), encoding="utf-8")
+        for page in sorted(guides.glob("*.md")):
+            text = page.read_text(encoding="utf-8")
+            if not ja:  # docs/en/x.md refers to ../images/; in the site the images sit next to it
+                text = text.replace("](../images/", "](images/")
+            (out / page.name).write_text(text, encoding="utf-8")
+        for folder in SHARED:
+            shutil.copytree(DOCS / folder, out / folder)
+        print(f"{readme} + {guides.relative_to(ROOT)}/*.md -> {out.relative_to(ROOT)}")
 
 
 def build(strict: bool) -> None:
@@ -111,7 +131,7 @@ def main() -> None:
     ap.add_argument("--serve", action="store_true", help="build, then serve site/ locally")
     ap.add_argument("--port", type=int, default=8000)
     args = ap.parse_args()
-    write_pages()
+    assemble()
     if args.build or args.serve:
         build(args.strict)
     if args.serve:

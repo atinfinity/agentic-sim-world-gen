@@ -164,6 +164,8 @@ python_server は任意のコードを実行するので、127.0.0.1 以外で�
 | [CLAUDE.md](CLAUDE.md) | このリポジトリで開発するエージェント向けの前提・規約・環境変数 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 開発への参加 |
 
+手引きの英語版は [docs/en/](docs/en/getting-started.md) にある。
+
 ## ライセンス
 
 コードは [Apache License 2.0](LICENSE)（[NOTICE](NOTICE)）。次の物は別の条件：

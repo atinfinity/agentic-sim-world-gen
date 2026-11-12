@@ -12,15 +12,21 @@ def test_alerts_become_admonitions():
 
 
 def test_links_stay_in_the_site_or_go_to_github():
-    text = "English | [日本語](README.ja.md) | [Project page](https://x/)\n[a](docs/use-ssh.md#2-x) [b](LICENSE) [c](examples/photos) [d](README.ja.md) [e](https://y/) [f](docs/images/w.gif)\n"
+    text = (
+        "English | [日本語](README.ja.md) | [Project page](https://x/)\n"
+        "[a](docs/use-ssh.md#2-x) [b](LICENSE) [c](examples/photos) [d](README.ja.md) [e](https://y/) [f](docs/images/w.gif)"
+        " [g](docs/en/use-ssh.md#2-install)\n"
+    )
     en = build_site.convert(text, ja=False)
     assert "Project page" not in en
-    assert "[a](ja/use-ssh/#2-x)" in en and "[f](ja/images/w.gif)" in en and "[d](ja/)" in en
+    assert "[a](ja/use-ssh/#2-x)" in en and "[f](images/w.gif)" in en and "[d](ja/)" in en
+    assert "[g](use-ssh.md#2-install)" in en
     assert "[b](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/LICENSE)" in en
     assert "[c](https://github.com/atinfinity/agentic-sim-world-gen/tree/main/examples/photos)" in en
     assert "[e](https://y/)" in en
     ja = build_site.convert(text, ja=True)
     assert "[a](use-ssh.md#2-x)" in ja and "[f](images/w.gif)" in ja and "[d](index.md)" in ja
+    assert "[g](../use-ssh/#2-install)" in ja
 
 
 def test_readmes_convert():

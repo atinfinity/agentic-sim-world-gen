@@ -83,7 +83,18 @@ Install usd-core only in this venv, never in Isaac Sim's Python. Point to Isaac 
 With Claude Code: `.mcp.json` registers the `agentic-sim-world-gen` MCP server and `.claude/skills/world-gen`
 is the skill. To only make worlds, create a workspace outside the repository with
 `agentic-sim-world-gen workspace <dir>`, start `claude` there and ask, e.g. "Make a 6-tatami study with a desk,
-a chair and a bookshelf". The full guide is in Japanese: [docs/getting-started.md](docs/getting-started.md).
+a chair and a bookshelf".
+
+## Guides
+
+| Guide | |
+|---|---|
+| [Getting Started](docs/en/getting-started.md) | from the install to your first world |
+| [Everything on one machine](docs/en/use-local.md) | Ubuntu with an RTX GPU and a screen (live mode too) |
+| [Over ssh](docs/en/use-ssh.md) | the GPU machine is an Ubuntu box on the LAN; you use ssh and a browser from a Mac or similar |
+| [How it works](docs/en/architecture.md) | the flow, data, search, layout, checks, USD, Isaac Sim, the conversation and rooms from photos, with diagrams |
+
+The Japanese versions are in [docs/](docs/getting-started.md).
 
 ## License
 

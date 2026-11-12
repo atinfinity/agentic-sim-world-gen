@@ -1,14 +1,16 @@
 # Project page (GitHub Pages), Japanese site: https://atinfinity.github.io/agentic-sim-world-gen/ja/
-# The English one is zensical.en.toml. Build both: python scripts/build_site.py --build (or --serve to look at it)
+# The top page (README.ja.md) and the guides in docs/. The English one is zensical.en.toml. Build both: python scripts/build_site.py --build (or --serve to look at it)
 [project]
 site_name = "agentic-sim-world-gen"
 site_description = "日本語の指示・間取り図・写真から、エージェントが Isaac Sim のワールド（USD）を作る"
 site_url = "https://atinfinity.github.io/agentic-sim-world-gen/ja/"
+docs_dir = "build/site_ja"  # put together by scripts/build_site.py from README.ja.md and docs/
 site_dir = "site/ja"
 repo_url = "https://github.com/atinfinity/agentic-sim-world-gen"
 repo_name = "atinfinity/agentic-sim-world-gen"
 edit_uri = "edit/main/docs/"
 copyright = "コードは Apache License 2.0。NVIDIA の公式の製品ではありません。"
+extra_javascript = ["javascripts/lang.js"]  # the language switch keeps the page
 nav = [
   { "トップ" = "index.md" },
   { "はじめに" = "getting-started.md" },

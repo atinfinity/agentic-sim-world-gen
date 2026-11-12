@@ -1,5 +1,5 @@
 # Project page (GitHub Pages), English site: https://atinfinity.github.io/agentic-sim-world-gen/
-# The top page only (written from README.md into build/site_en); the guides are on the Japanese site (zensical.toml).
+# The top page (README.md) and the guides in docs/en/, put together in build/site_en by scripts/build_site.py.
 # Build both: python scripts/build_site.py --build (or --serve to look at it)
 [project]
 site_name = "agentic-sim-world-gen"
@@ -10,11 +10,16 @@ site_dir = "site"
 repo_url = "https://github.com/atinfinity/agentic-sim-world-gen"
 repo_name = "atinfinity/agentic-sim-world-gen"
 copyright = "Code under the Apache License 2.0. Not an official NVIDIA product."
+extra_javascript = ["javascripts/lang.js"]  # the language switch keeps the page
 nav = [
   { "Home" = "index.md" },
-  { "Getting started (Japanese)" = "ja/getting-started/" },
-  { "Architecture (Japanese)" = "ja/architecture/" },
+  { "Getting started" = "getting-started.md" },
+  { "Everything on one machine" = "use-local.md" },
+  { "Over ssh" = "use-ssh.md" },
+  { "How it works" = "architecture.md" },
 ]
+not_in_nav = "images/*.md"
+edit_uri = "edit/main/docs/en/"
 
 [project.extra]
 alternate = [
