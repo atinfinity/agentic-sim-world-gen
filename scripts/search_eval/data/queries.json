@@ -1,0 +1,340 @@
+[
+ {
+  "id": "desk",
+  "ja": "事務机",
+  "q": "office desk",
+  "alt": [
+   "writing desk",
+   "computer desk"
+  ],
+  "rel": "a desk/work table for one person"
+ },
+ {
+  "id": "chair",
+  "ja": "オフィスチェア",
+  "q": "office chair",
+  "alt": [
+   "swivel chair",
+   "task chair"
+  ],
+  "rel": "office/swivel/task chair"
+ },
+ {
+  "id": "bookshelf",
+  "ja": "本棚",
+  "q": "bookshelf",
+  "alt": [
+   "bookcase",
+   "shelving unit"
+  ],
+  "rel": "open shelves for books (not closed cabinet)"
+ },
+ {
+  "id": "sofa",
+  "ja": "ソファ",
+  "q": "sofa",
+  "alt": [
+   "couch",
+   "loveseat"
+  ],
+  "rel": "sofa/couch"
+ },
+ {
+  "id": "bed",
+  "ja": "ベッド",
+  "q": "bed",
+  "alt": [
+   "single bed",
+   "double bed"
+  ],
+  "rel": "bed for sleeping (incl. hospital bed ok? no: home bed preferred; hospital bed counts)"
+ },
+ {
+  "id": "dining_table",
+  "ja": "ダイニングテーブル",
+  "q": "dining table",
+  "alt": [
+   "kitchen table"
+  ],
+  "rel": "table for eating"
+ },
+ {
+  "id": "tv",
+  "ja": "テレビ",
+  "q": "television",
+  "alt": [
+   "tv",
+   "flat screen tv"
+  ],
+  "rel": "tv / display screen"
+ },
+ {
+  "id": "fridge",
+  "ja": "冷蔵庫",
+  "q": "refrigerator",
+  "alt": [
+   "fridge"
+  ],
+  "rel": "refrigerator"
+ },
+ {
+  "id": "plant",
+  "ja": "観葉植物",
+  "q": "potted plant",
+  "alt": [
+   "houseplant",
+   "indoor plant"
+  ],
+  "rel": "plant in a pot"
+ },
+ {
+  "id": "trash",
+  "ja": "ゴミ箱",
+  "q": "trash can",
+  "alt": [
+   "waste bin",
+   "garbage can"
+  ],
+  "rel": "trash/waste bin"
+ },
+ {
+  "id": "lamp",
+  "ja": "デスクライト",
+  "q": "desk lamp",
+  "alt": [
+   "table lamp",
+   "reading lamp"
+  ],
+  "rel": "lamp standing on a desk/table"
+ },
+ {
+  "id": "whiteboard",
+  "ja": "ホワイトボード",
+  "q": "whiteboard",
+  "alt": [
+   "dry erase board"
+  ],
+  "rel": "whiteboard"
+ },
+ {
+  "id": "conf_table",
+  "ja": "会議机",
+  "q": "conference table",
+  "alt": [
+   "meeting table",
+   "boardroom table"
+  ],
+  "rel": "large meeting table"
+ },
+ {
+  "id": "locker",
+  "ja": "ロッカー",
+  "q": "locker",
+  "alt": [
+   "storage locker",
+   "metal locker"
+  ],
+  "rel": "locker"
+ },
+ {
+  "id": "filing",
+  "ja": "書類キャビネット",
+  "q": "filing cabinet",
+  "alt": [
+   "file cabinet",
+   "drawer cabinet"
+  ],
+  "rel": "filing/drawer cabinet"
+ },
+ {
+  "id": "monitor",
+  "ja": "PCモニター",
+  "q": "computer monitor",
+  "alt": [
+   "display",
+   "pc screen"
+  ],
+  "rel": "computer monitor"
+ },
+ {
+  "id": "laptop",
+  "ja": "ノートパソコン",
+  "q": "laptop",
+  "alt": [
+   "notebook computer"
+  ],
+  "rel": "laptop"
+ },
+ {
+  "id": "mug",
+  "ja": "マグカップ",
+  "q": "mug",
+  "alt": [
+   "coffee cup",
+   "cup"
+  ],
+  "rel": "mug/cup"
+ },
+ {
+  "id": "pallet",
+  "ja": "パレット",
+  "q": "pallet",
+  "alt": [
+   "wooden pallet",
+   "shipping pallet"
+  ],
+  "rel": "pallet (empty or loaded)"
+ },
+ {
+  "id": "cardboard",
+  "ja": "段ボール箱",
+  "q": "cardboard box",
+  "alt": [
+   "carton",
+   "shipping box"
+  ],
+  "rel": "cardboard box"
+ },
+ {
+  "id": "rack",
+  "ja": "倉庫ラック",
+  "q": "warehouse rack",
+  "alt": [
+   "pallet rack",
+   "storage rack",
+   "shelving"
+  ],
+  "rel": "large warehouse/pallet rack"
+ },
+ {
+  "id": "hand_truck",
+  "ja": "台車",
+  "q": "hand truck",
+  "alt": [
+   "dolly",
+   "cart",
+   "trolley"
+  ],
+  "rel": "hand truck / dolly / push cart"
+ },
+ {
+  "id": "forklift",
+  "ja": "フォークリフト",
+  "q": "forklift",
+  "alt": [
+   "lift truck"
+  ],
+  "rel": "forklift"
+ },
+ {
+  "id": "cone",
+  "ja": "カラーコーン",
+  "q": "traffic cone",
+  "alt": [
+   "safety cone",
+   "pylon"
+  ],
+  "rel": "traffic cone"
+ },
+ {
+  "id": "bin",
+  "ja": "コンテナ（通い箱）",
+  "q": "plastic storage bin",
+  "alt": [
+   "tote",
+   "klt bin",
+   "crate"
+  ],
+  "rel": "plastic bin/tote/crate"
+ },
+ {
+  "id": "barrel",
+  "ja": "ドラム缶",
+  "q": "drum barrel",
+  "alt": [
+   "oil drum",
+   "steel barrel"
+  ],
+  "rel": "barrel/drum"
+ },
+ {
+  "id": "fire_ext",
+  "ja": "消火器",
+  "q": "fire extinguisher",
+  "alt": [],
+  "rel": "fire extinguisher"
+ },
+ {
+  "id": "hosp_bed",
+  "ja": "病院のベッド",
+  "q": "hospital bed",
+  "alt": [
+   "medical bed",
+   "patient bed"
+  ],
+  "rel": "hospital bed"
+ },
+ {
+  "id": "wheelchair",
+  "ja": "車椅子",
+  "q": "wheelchair",
+  "alt": [],
+  "rel": "wheelchair"
+ },
+ {
+  "id": "shelf_retail",
+  "ja": "商品棚",
+  "q": "store shelf",
+  "alt": [
+   "retail shelving",
+   "gondola shelf"
+  ],
+  "rel": "retail store shelf/gondola"
+ },
+ {
+  "id": "bench",
+  "ja": "ベンチ",
+  "q": "bench",
+  "alt": [
+   "park bench",
+   "seat bench"
+  ],
+  "rel": "bench for sitting"
+ },
+ {
+  "id": "car",
+  "ja": "乗用車",
+  "q": "car",
+  "alt": [
+   "sedan",
+   "automobile"
+  ],
+  "rel": "passenger car"
+ },
+ {
+  "id": "server_rack",
+  "ja": "サーバーラック",
+  "q": "server rack",
+  "alt": [
+   "data center rack",
+   "network cabinet"
+  ],
+  "rel": "server/network rack"
+ },
+ {
+  "id": "vending",
+  "ja": "自動販売機",
+  "q": "vending machine",
+  "alt": [],
+  "rel": "vending machine"
+ },
+ {
+  "id": "microwave",
+  "ja": "電子レンジ",
+  "q": "microwave oven",
+  "alt": [
+   "microwave"
+  ],
+  "rel": "microwave"
+ }
+]

@@ -1,0 +1,42 @@
+name: Bug report
+description: Something went wrong (不具合の報告)
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        English or Japanese is fine. **Do not attach photos or videos that show people, or screenshots of
+        assets you may not share.** Security problems: use Private vulnerability reporting (see SECURITY.md).
+  - type: textarea
+    id: request
+    attributes:
+      label: Request text / 指示文
+      description: What you asked for (the text given to the agent or the CLI command).
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened and what you expected / 起きたことと期待したこと
+      description: Error messages, logs, the scene's layout.svg or a screenshot.
+    validations:
+      required: true
+  - type: input
+    id: sources
+    attributes:
+      label: Asset sources
+      description: Value of AGENTIC_SIM_WORLD_GEN_SOURCES (or "default").
+  - type: input
+    id: version
+    attributes:
+      label: agentic-sim-world-gen version or commit
+    validations:
+      required: true
+  - type: input
+    id: isaac
+    attributes:
+      label: Isaac Sim version (if used)
+  - type: input
+    id: os
+    attributes:
+      label: OS and Python version

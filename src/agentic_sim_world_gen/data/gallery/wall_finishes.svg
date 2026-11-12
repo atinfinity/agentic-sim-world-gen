@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="546" height="466" viewBox="0 0 546 466" font-family="sans-serif" font-size="12" class="wg-plan" data-x0="-0.1200" data-y1="2.8500" data-ppm="120.0000" data-margin="40">
+<rect width="546" height="466" fill="#fafafa"/>
+<defs><marker id="front" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3b82b6"/></marker></defs>
+<text x="40.0" y="26.0" fill="#444">床 wood_light / 壁 paint_white（北 custom） / 腰壁 0.9 m / 巾木 0.08 m / 照明 home / 天井 ceiling_board</text>
+<polygon points="54.4,382.0 491.2,382.0 491.2,54.4 54.4,54.4" fill="#e4d7cb"/>
+<line x1="100.0" y1="396.4" x2="100.0" y2="40.0" stroke="#000" stroke-opacity="0.06"/>
+<line x1="160.0" y1="396.4" x2="160.0" y2="40.0" stroke="#000" stroke-opacity="0.06"/>
+<line x1="220.0" y1="396.4" x2="220.0" y2="40.0" stroke="#000" stroke-opacity="0.06"/>
+<line x1="280.0" y1="396.4" x2="280.0" y2="40.0" stroke="#000" stroke-opacity="0.06"/>
+<line x1="340.0" y1="396.4" x2="340.0" y2="40.0" stroke="#000" stroke-opacity="0.06"/>
+<line x1="400.0" y1="396.4" x2="400.0" y2="40.0" stroke="#000" stroke-opacity="0.06"/>
+<line x1="460.0" y1="396.4" x2="460.0" y2="40.0" stroke="#000" stroke-opacity="0.06"/>
+<line x1="40.0" y1="336.4" x2="505.6" y2="336.4" stroke="#000" stroke-opacity="0.06"/>
+<line x1="40.0" y1="276.4" x2="505.6" y2="276.4" stroke="#000" stroke-opacity="0.06"/>
+<line x1="40.0" y1="216.4" x2="505.6" y2="216.4" stroke="#000" stroke-opacity="0.06"/>
+<line x1="40.0" y1="156.4" x2="505.6" y2="156.4" stroke="#000" stroke-opacity="0.06"/>
+<line x1="40.0" y1="96.4" x2="505.6" y2="96.4" stroke="#000" stroke-opacity="0.06"/>
+<polygon points="40.0,396.4 505.6,396.4 505.6,382.0 40.0,382.0" fill="#aeaeac"/>
+<polygon points="40.0,54.4 354.4,54.4 354.4,40.0 40.0,40.0" fill="#304565"/>
+<polygon points="450.4,54.4 505.6,54.4 505.6,40.0 450.4,40.0" fill="#304565"/>
+<polygon points="354.4,54.4 450.4,54.4 450.4,40.0 354.4,40.0" fill="none" stroke="#aeaeac" stroke-width="0.8"/>
+<line x1="354.4" y1="54.4" x2="354.4" y2="150.4" stroke="#555" stroke-width="1.5"/>
+<path d="M354.4,150.4 A96.0,96.0 0 0 0 450.4,54.4" fill="none" stroke="#555" stroke-dasharray="3 2"/>
+<polygon points="54.4,382.0 54.4,54.4 40.0,54.4 40.0,382.0" fill="#aeaeac"/>
+<polygon points="505.6,382.0 505.6,290.8 491.2,290.8 491.2,382.0" fill="#aeaeac"/>
+<polygon points="505.6,146.8 505.6,54.4 491.2,54.4 491.2,146.8" fill="#aeaeac"/>
+<polygon points="505.6,290.8 505.6,146.8 491.2,146.8 491.2,290.8" fill="#9ad0f5" stroke="#3b82b6" stroke-width="1"/>
+<line x1="54.4" y1="54.4" x2="354.4" y2="54.4" stroke="#957659" stroke-width="3"/>
+<line x1="450.4" y1="54.4" x2="491.2" y2="54.4" stroke="#957659" stroke-width="3"/>
+<line x1="491.2" y1="382.0" x2="491.2" y2="290.8" stroke="#957659" stroke-width="3"/>
+<line x1="491.2" y1="290.8" x2="491.2" y2="146.8" stroke="#957659" stroke-width="3"/>
+<line x1="491.2" y1="146.8" x2="491.2" y2="54.4" stroke="#957659" stroke-width="3"/>
+<line x1="54.4" y1="382.0" x2="491.2" y2="382.0" stroke="#a28161" stroke-width="1.5"/>
+<line x1="54.4" y1="54.4" x2="354.4" y2="54.4" stroke="#a28161" stroke-width="1.5"/>
+<line x1="450.4" y1="54.4" x2="491.2" y2="54.4" stroke="#a28161" stroke-width="1.5"/>
+<line x1="54.4" y1="382.0" x2="54.4" y2="54.4" stroke="#a28161" stroke-width="1.5"/>
+<line x1="491.2" y1="382.0" x2="491.2" y2="54.4" stroke="#a28161" stroke-width="1.5"/>
+<circle cx="163.6" cy="300.1" r="4" fill="#ffd54f" stroke="#b08900"/>
+<circle cx="382.0" cy="300.1" r="4" fill="#ffd54f" stroke="#b08900"/>
+<circle cx="163.6" cy="136.3" r="4" fill="#ffd54f" stroke="#b08900"/>
+<circle cx="382.0" cy="136.3" r="4" fill="#ffd54f" stroke="#b08900"/>
+<g class="wg-obj edit" data-id="shelf" data-label="shelf" data-x="0.9386" data-y="2.5023" data-yaw="0.000" data-front="270.000" data-r="0.570" data-layout="1">
+<polygon points="102.4,104.0 231.7,104.0 231.7,59.4 102.4,59.4" fill="#4e79a7" fill-opacity="0.35" stroke="#333" stroke-width="1.5"/>
+<line x1="167.0" y1="81.7" x2="167.0" y2="104.0" stroke="#333" stroke-width="1" marker-end="url(#front)"/>
+<text x="167.0" y="79.7" text-anchor="middle" font-weight="bold">shelf</text>
+<text x="167.0" y="93.7" text-anchor="middle" fill="#444" font-size="10">1.08×0.37×1.56m</text>
+</g>
+<g class="wg-widths" opacity="0.6" data-need="0.9">
+<rect x="96.4" y="142.0" width="6.0" height="6.0" fill="#f57c00"/>
+<rect x="90.4" y="136.0" width="6.0" height="6.0" fill="#f57c00"/>
+<rect x="84.4" y="130.0" width="6.0" height="6.0" fill="#f57c00"/>
+<rect x="186.4" y="244.0" width="48.0" height="6.0" fill="#43a047"/>
+<rect x="234.4" y="238.0" width="54.0" height="6.0" fill="#43a047"/>
+<rect x="288.4" y="232.0" width="24.0" height="6.0" fill="#43a047"/>
+<rect x="312.4" y="226.0" width="18.0" height="6.0" fill="#43a047"/>
+<rect x="330.4" y="220.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="336.4" y="214.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="336.4" y="208.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="342.4" y="202.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="342.4" y="196.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="342.4" y="190.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="78.4" y="124.0" width="6.0" height="6.0" fill="#d32f2f"/>
+<rect x="78.4" y="118.0" width="6.0" height="6.0" fill="#d32f2f"/>
+<rect x="78.4" y="112.0" width="6.0" height="6.0" fill="#d32f2f"/>
+<rect x="78.4" y="106.0" width="6.0" height="6.0" fill="#d32f2f"/>
+<rect x="72.4" y="100.0" width="6.0" height="6.0" fill="#d32f2f"/>
+<rect x="72.4" y="94.0" width="6.0" height="6.0" fill="#d32f2f"/>
+<rect x="72.4" y="88.0" width="6.0" height="6.0" fill="#d32f2f"/>
+<rect x="72.4" y="82.0" width="6.0" height="6.0" fill="#d32f2f"/>
+<rect x="72.4" y="76.0" width="6.0" height="6.0" fill="#d32f2f"/>
+<rect x="72.4" y="70.0" width="6.0" height="6.0" fill="#d32f2f"/>
+</g>
+<g class="wg-narrowest" data-width="2.25"><title>shelf への道で一番狭い所：約 2.25 m（必要 0.9 m）</title><circle cx="214.0" cy="240.4" r="9" fill="none" stroke="#2e7d32" stroke-width="2.5"/><text x="226.0" y="244.4" fill="#2e7d32" font-size="11" font-weight="bold" stroke="#fff" stroke-width="3" paint-order="stroke">2.25 m</text></g>
+<g class="wg-widths-legend" font-size="10" fill="#444">
+<rect x="54.4" y="400.0" width="14" height="5" fill="#d32f2f" opacity="0.6"/><text x="72.4" y="408.0">通れない</text>
+<rect x="122.4" y="400.0" width="14" height="5" fill="#f57c00" opacity="0.6"/><text x="140.4" y="408.0">狭い</text>
+<rect x="168.4" y="400.0" width="14" height="5" fill="#43a047" opacity="0.6"/><text x="186.4" y="408.0">通路</text>
+</g>
+<line x1="40.0" y1="448.40000000000003" x2="160.0" y2="448.40000000000003" stroke="#000" stroke-width="2"/>
+<text x="166.0" y="452.40000000000003">1 m</text>
+<text x="505.6" y="452.40000000000003" text-anchor="end">wall_finishes — 3.64×2.73 m</text>
+</svg>

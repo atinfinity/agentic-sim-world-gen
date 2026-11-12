@@ -1,0 +1,15 @@
+{
+ "bookshelf": {"sm_rack_bulk_storage_a03_01.usd": 1},
+ "bed": {"sm_conveyor_belt_a05_01.usd": 0},
+ "dining_table": {"sm_Xray_machine_buckyTable_a01_01.usd": 0},
+ "whiteboard": {"D00038.usd": 0},
+ "pallet": {"sm_pallet_block_b02_01.usd": 2},
+ "cone": {"traffic_cones_barriers.usda": 1},
+ "bin": {"attached_lid_tote.usda": 2, "sm_equipment_multi_tier_bin_cart_c01_01.usd": 0},
+ "wheelchair": {"shower_seat.usda": 0, "sm_trolley_instrument_b03_01.usd": 0},
+ "shelf_retail": {"gondola_shelf.usda": 2},
+ "bench": {"articulation_test_bench.usda": 0, "shower_seat.usda": 1, "security_divest_station.usda": 0},
+ "server_rack": {"VR3307_main.usd": 2, "_16OCP_ORV3_racks_Computer_racks_main.usd": 2, "VR3357_main.usd": 2,
+                 "sm_cabinet_file_a01_01.usd": 0},
+ "vending": {"atm_cash_machine.usda": 0, "sm_hemodialysis_machine_a01_01.usd": 0}
+}

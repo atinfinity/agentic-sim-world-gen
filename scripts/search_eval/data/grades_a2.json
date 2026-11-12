@@ -1,0 +1,26 @@
+{
+ "dining_table": {
+  "sm_table_deluxe_packing_a01_01.usd": 0
+ },
+ "conf_table": {
+  "sm_facilitySystem_beverageStation_breakArea_a01_01.usd": 0,
+  "sm_table_deluxe_packing_a01_01.usd": 0
+ },
+ "car": {
+  "sm_bodyPart_car_side_mirror_a01_01.usd": 0,
+  "sm_bodyPart_boot_lid_a01_01.usd": 0,
+  "sm_steeringSystem_steering_wheel_d01_01.usd": 0,
+  "sm_bodyPart_hood_d01_01.usd": 0
+ },
+ "server_rack": {
+  "sm_rack_composition_a05_01.usd": 0,
+  "sm_rack_composition_a04_01.usd": 0,
+  "sm_rack_f10_01.usd": 0,
+  "sm_rack_large_empty_a02_01.usd": 0
+ },
+ "vending": {
+  "sm_safety_mobileShutoff_a01_01.usd": 0,
+  "sm_safety_mobileShutoff_a02_01.usd": 0,
+  "sm_safety_mobileShutoff_a03_01.usd": 0
+ }
+}

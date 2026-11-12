@@ -1,0 +1,63 @@
+[project]
+name = "agentic-sim-world-gen"
+version = "0.1.0"
+description = "Agentic tooling (MCP server, Claude Code skill, CLI) to build Isaac Sim worlds from natural language, photos and floor plans"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "atinfinity" }]
+keywords = ["isaac-sim", "usd", "openusd", "mcp", "simready", "robotics", "simulation"]
+classifiers = [
+    # not published to PyPI: install from a clone
+    "Private :: Do Not Upload",
+    "Programming Language :: Python :: 3",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Topic :: Scientific/Engineering",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31",
+    "pydantic>=2.6",
+    # screen images on signage (agentic_sim_world_gen.usd.screen)
+    "Pillow>=10",
+]
+
+[project.optional-dependencies]
+# Isaac Sim ships its own pxr. Install `usd` only in a plain venv (not in Isaac Sim's Python).
+usd = ["usd-core>=25.5"]
+hf = ["huggingface_hub>=0.36"]
+mcp = ["mcp>=2.3,<3"]
+# floor plan importers (agentic_sim_world_gen.plan): DXF and IFC
+dxf = ["ezdxf>=1.3"]
+ifc = ["ifcopenshell>=0.8", "shapely>=2"]
+# taste check (agentic_sim_world_gen.taste): SigLIP2 image embeddings on CPU. Linux only (on macOS pip install torch
+# transformers by hand). The model is
+# not downloaded unless AGENTIC_SIM_WORLD_GEN_TASTE_DOWNLOAD=1; without these packages the check is skipped.
+taste = ["torch>=2.4; sys_platform == 'linux'", "transformers>=4.49; sys_platform == 'linux'"]
+# video frames (agentic_sim_world_gen.video_pose): how the camera turned / moved between the chosen frames (ORB +
+# essential matrix), and the people check (HOG; gone from the main module in OpenCV 5)
+video = ["opencv-python-headless>=4.9,<5", "numpy>=1.26"]
+dev = ["pytest>=8"]
+
+[project.urls]
+Homepage = "https://github.com/atinfinity/agentic-sim-world-gen"
+Issues = "https://github.com/atinfinity/agentic-sim-world-gen/issues"
+
+[project.scripts]
+agentic-sim-world-gen = "agentic_sim_world_gen.cli:main"
+agentic-sim-world-gen-mcp = "agentic_sim_world_gen.mcp_server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agentic_sim_world_gen"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = ["network: hits the live SimReady Central API",
+           "no_auto_fix: the issues stay as reported (AGENTIC_SIM_WORLD_GEN_AUTO_FIX=0)"]
+addopts = "-m 'not network'"

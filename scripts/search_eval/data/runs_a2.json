@@ -1,0 +1,1299 @@
+{
+ "desk": {
+  "names": [
+   "sm_desk_a01_01.usd",
+   "sm_electrical_main_terminal_a01_01.usd",
+   "sm_facilitySystem_beverageStation_breakArea_a01_01.usd"
+  ],
+  "matched": [
+   [
+    "'office desk' in class/tags"
+   ],
+   [
+    "'desk' in tags"
+   ],
+   [
+    "'desk' in tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "chair": {
+  "names": [
+   "sm_chair_office_fabric_manager_a01_01.usd",
+   "sm_chair_hospital_b01_01.usd",
+   "sm_warehouse_chair_office_amf_black_a01_01.usd",
+   "sm_chair_hospital_b03_01.usd",
+   "sm_chair_office_amf_black_a01_01.usd",
+   "sm_chair_surgical_a01_01.usd",
+   "sm_chair_surgical_b01_01.usd",
+   "sm_chair_hospital_b02_01.usd",
+   "sm_chair_patient_mobile_a01_01.usd"
+  ],
+  "matched": [
+   [
+    "'office chair' in class/tags"
+   ],
+   [
+    "'office chair' in class/tags"
+   ],
+   [
+    "'office chair' in class/tags"
+   ],
+   [
+    "'office chair' in class/tags"
+   ],
+   [
+    "'office chair' in class/tags"
+   ],
+   [
+    "'chair' in class"
+   ],
+   [
+    "'chair' in class"
+   ],
+   [
+    "'chair' in tags"
+   ],
+   [
+    "'chair' in caption"
+   ]
+  ],
+  "substitute": false
+ },
+ "bookshelf": {
+  "names": [
+   "sm_storage_shelf_basic_a01_01.usd",
+   "sm_storage_shelf_basic_b01_01.usd",
+   "sm_shelve_steel_heavyDuty_a06_01.usd",
+   "D00661.usd",
+   "D00092.usd",
+   "sm_rack_bulk_storage_a03_01.usd",
+   "sm_storage_shelf_basic_c01_01.usd",
+   "sm_rack_composition_l05_01.usd",
+   "sm_rack_composition_l08_01.usd",
+   "sm_rack_composition_l03_01.usd"
+  ],
+  "matched": [
+   [
+    "'shelving unit' in class/tags"
+   ],
+   [
+    "'shelving unit' in class/tags"
+   ],
+   [
+    "'shelving unit' in class/tags"
+   ],
+   [
+    "'shelving unit' in class/tags"
+   ],
+   [
+    "'shelving unit' in class/tags"
+   ],
+   [
+    "'shelving unit' in class/tags"
+   ],
+   [
+    "'shelving unit' in class/tags"
+   ],
+   [
+    "'shelving unit' in class/tags"
+   ],
+   [
+    "'shelving unit' in class/tags"
+   ],
+   [
+    "'shelving unit' in class/tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "sofa": {
+  "names": [
+   "sm_sofa_soft_b02_01.usd",
+   "sm_sofa_soft_b03_01.usd",
+   "sm_sofa_soft_b01_01.usd"
+  ],
+  "matched": [
+   [
+    "'couch' in class"
+   ],
+   [
+    "'couch' in class"
+   ],
+   [
+    "'couch' in class"
+   ]
+  ],
+  "substitute": false
+ },
+ "bed": {
+  "names": [
+   "sm_bed_hospital_standard_a01_01.usd"
+  ],
+  "matched": [
+   [
+    "'bed' in class"
+   ]
+  ],
+  "substitute": false
+ },
+ "dining_table": {
+  "names": [
+   "sm_table_metal_stainless_a03_01.usd",
+   "sm_table_packing_heavyduty_c01_01.usd",
+   "sm_table_packing_heavyduty_c02_01.usd",
+   "sm_facilitySystem_beverageStation_breakArea_a01_01.usd",
+   "sm_table_deluxe_packing_a01_01.usd",
+   "sm_table_deluxe_packing_a01_01.usd",
+   "sm_Xray_machine_buckyTable_a01_01.usd"
+  ],
+  "matched": [
+   [
+    "'table' in class"
+   ],
+   [
+    "'table' in class"
+   ],
+   [
+    "'table' in class"
+   ],
+   [
+    "'table' in class"
+   ],
+   [
+    "'table' in class"
+   ],
+   [
+    "'table' in class"
+   ],
+   [
+    "'table' in caption"
+   ]
+  ],
+  "substitute": false
+ },
+ "tv": {
+  "names": [
+   "tv_100mrgb95bu.usd",
+   "tv_oled77g6wua.usd",
+   "sm_TV_a01_01.usd",
+   "sm_digitalSystem_displayPanel_wall_a01_01.usd"
+  ],
+  "matched": [
+   [
+    "'television' in class"
+   ],
+   [
+    "'television' in class"
+   ],
+   [
+    "'television' in class"
+   ],
+   [
+    "'television' in tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "fridge": {
+  "names": [
+   "refrigerator.usda",
+   "sm_facilityEquipment_beverageFridge_display_a01_01.usd",
+   "sm_refrigerator_e01_01.usd",
+   "sm_refrigerator_d01_01.usd",
+   "sm_refrigerator_c01_01.usd",
+   "sm_appliance_refrigerator_a01_01.usd",
+   "refrigerator_lrfs28xbs.usd",
+   "sm_refrigerator_a01_01.usd",
+   "refrigerator_lf31s6360s.usd",
+   "sm_refrigerator_f01_01.usd"
+  ],
+  "matched": [
+   [
+    "'refrigerator' in class"
+   ],
+   [
+    "'refrigerator' in class"
+   ],
+   [
+    "'refrigerator' in class"
+   ],
+   [
+    "'refrigerator' in class"
+   ],
+   [
+    "'refrigerator' in class"
+   ],
+   [
+    "'refrigerator' in class"
+   ],
+   [
+    "'refrigerator' in class"
+   ],
+   [
+    "'refrigerator' in class"
+   ],
+   [
+    "'refrigerator' in class"
+   ],
+   [
+    "'refrigerator' in class"
+   ]
+  ],
+  "substitute": false
+ },
+ "plant": {
+  "names": [
+   "D00378.usd",
+   "D00262.usd",
+   "D00621.usd",
+   "D00377.usd",
+   "D00647.usd",
+   "D00655.usd",
+   "D00456.usd",
+   "D00832.usd",
+   "D00531.usd",
+   "D00267.usd"
+  ],
+  "matched": [
+   [
+    "'potted plant' in class/tags"
+   ],
+   [
+    "'potted plant' in class/tags"
+   ],
+   [
+    "'potted plant' in class/tags"
+   ],
+   [
+    "'potted plant' in class/tags"
+   ],
+   [
+    "'potted plant' in class/tags"
+   ],
+   [
+    "'potted plant' in class/tags"
+   ],
+   [
+    "'potted plant' in class/tags"
+   ],
+   [
+    "'potted plant' in class/tags"
+   ],
+   [
+    "'plant' in tags"
+   ],
+   [
+    "'plant' in tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "trash": {
+  "names": [
+   "pedal_trash_can.usda",
+   "sm_bin_waste_a04_01.usd",
+   "sm_trashCan_office_gray_a03_01.usd",
+   "sm_bin_waste_a03_01.usd",
+   "sm_wasteManagement_trashCan_roundPlastic_a01_01.usd",
+   "sm_bin_waste_a01_01.usd",
+   "sm_trashCan_office_black_a03_01.usd",
+   "sm_wasteManagement_recyclingBin_multiStream_a01_01.usd",
+   "sm_trashCan_office_beige_a03_01.usd",
+   "sm_bin_waste_a02_01.usd"
+  ],
+  "matched": [
+   [
+    "'trash can' in class/tags"
+   ],
+   [
+    "'trash can' in class/tags"
+   ],
+   [
+    "'trash can' in class/tags"
+   ],
+   [
+    "'trash can' in class/tags"
+   ],
+   [
+    "'trash can' in class/tags"
+   ],
+   [
+    "'trash can' in class/tags"
+   ],
+   [
+    "'trash can' in class/tags"
+   ],
+   [
+    "'trash can' in class/tags"
+   ],
+   [
+    "'trash can' in class/tags"
+   ],
+   [
+    "'trash can' in class/tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "lamp": {
+  "names": [
+   "desk_lamp.usda",
+   "sm_lamp_table_bedside_a01_01.usd",
+   "sm_lighting_taskLight_adjustableArmBench_a01_01.usd",
+   "D00261.usd",
+   "sm_lamp_uvc_a01_01.usd",
+   "sm_lamp_ceiling_1m_rectangle_a02_01.usd",
+   "sm_lamp_uvc_b01_01.usd",
+   "sm_lamp_ceiling_50cm_square_a02_01.usd",
+   "sm_lamp_ceiling_1m_rectangle_a01_01.usd",
+   "sm_lamp_ceiling_50cm_square_a01_01.usd"
+  ],
+  "matched": [
+   [
+    "'desk lamp' in class/tags"
+   ],
+   [
+    "'desk lamp' in class/tags"
+   ],
+   [
+    "'desk lamp' in class/tags"
+   ],
+   [
+    "'table lamp' in class/tags"
+   ],
+   [
+    "'lamp' in class"
+   ],
+   [
+    "'lamp' in class"
+   ],
+   [
+    "'lamp' in class"
+   ],
+   [
+    "'lamp' in class"
+   ],
+   [
+    "'lamp' in class"
+   ],
+   [
+    "'lamp' in class"
+   ]
+  ],
+  "substitute": false
+ },
+ "whiteboard": {
+  "names": [
+   "D00040.usd",
+   "D00145.usd",
+   "D00583.usd"
+  ],
+  "matched": [
+   [
+    "'board' in class"
+   ],
+   [
+    "'board' in class"
+   ],
+   [
+    "'board' in tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "conf_table": {
+  "names": [
+   "sm_table_packing_heavyduty_c01_01.usd",
+   "sm_table_metal_stainless_a03_01.usd",
+   "sm_table_packing_heavyduty_c02_01.usd",
+   "sm_facilitySystem_beverageStation_breakArea_a01_01.usd",
+   "sm_table_deluxe_packing_a01_01.usd",
+   "sm_Xray_machine_buckyTable_a01_01.usd"
+  ],
+  "matched": [
+   [
+    "'table' in class"
+   ],
+   [
+    "'table' in class"
+   ],
+   [
+    "'table' in class"
+   ],
+   [
+    "'table' in class"
+   ],
+   [
+    "'table' in class"
+   ],
+   [
+    "'table' in caption"
+   ]
+  ],
+  "substitute": false
+ },
+ "locker": {
+  "names": [
+   "sm_facilityFurniture_lockerUnit_multiDoor_a01_01.usd",
+   "sm_storage_locker_double_bench_b01_01.usd",
+   "sm_storage_locker_double_bench_b03_01.usd",
+   "sm_table_bedside_b01_01.usd",
+   "sm_table_bedside_b01_01.usd"
+  ],
+  "matched": [
+   [
+    "'storage locker' in class/tags"
+   ],
+   [
+    "'storage locker' in class/tags"
+   ],
+   [
+    "'storage locker' in class/tags"
+   ],
+   [
+    "'locker' in tags"
+   ],
+   [
+    "'locker' in tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "filing": {
+  "names": [
+   "sm_cabinet_file_d04_01.usd",
+   "sm_cabinet_file_d01_01.usd",
+   "sm_cabinet_file_c04_01.usd",
+   "sm_cabinet_file_a01_01.usd",
+   "sm_cabinet_file_a02_01.usd",
+   "sm_cabinet_file_b01_01.usd",
+   "sm_cabinet_file_c03_01.usd",
+   "sm_cabinet_file_b02_01.usd",
+   "sm_cabinet_file_c01_01.usd",
+   "sm_cabinet_file_a03_01.usd"
+  ],
+  "matched": [
+   [
+    "'filing cabinet' in class/tags"
+   ],
+   [
+    "'filing cabinet' in class/tags"
+   ],
+   [
+    "'filing cabinet' in class/tags"
+   ],
+   [
+    "'filing cabinet' in class/tags"
+   ],
+   [
+    "'filing cabinet' in class/tags"
+   ],
+   [
+    "'filing cabinet' in class/tags"
+   ],
+   [
+    "'filing cabinet' in class/tags"
+   ],
+   [
+    "'filing cabinet' in class/tags"
+   ],
+   [
+    "'filing cabinet' in class/tags"
+   ],
+   [
+    "'filing cabinet' in class/tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "monitor": {
+  "names": [
+   "sm_computer_monitor_office_a01_01.usd",
+   "sm_panel_control_surgery_room_a01_01.usd",
+   "monitor_27gx790a.usd",
+   "sm_monitor_c02_01.usd",
+   "sm_monitor_b01_01.usd",
+   "monitor_45gx950a.usd",
+   "sm_monitor_c03_01.usd",
+   "sm_monitor_c01_01.usd",
+   "sm_monitor_a03_01.usd",
+   "sm_monitor_a02_01.usd"
+  ],
+  "matched": [
+   [
+    "'computer monitor' in class/tags"
+   ],
+   [
+    "'computer monitor' in class/tags"
+   ],
+   [
+    "'computer monitor' in class/tags"
+   ],
+   [
+    "'computer monitor' in class/tags"
+   ],
+   [
+    "'computer monitor' in class/tags"
+   ],
+   [
+    "'computer monitor' in class/tags"
+   ],
+   [
+    "'computer monitor' in class/tags"
+   ],
+   [
+    "'computer monitor' in class/tags"
+   ],
+   [
+    "'computer monitor' in class/tags"
+   ],
+   [
+    "'computer monitor' in class/tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "laptop": {
+  "names": [
+   "laptop_16z90tl.usd"
+  ],
+  "matched": [
+   [
+    "'laptop' in class"
+   ]
+  ],
+  "substitute": false
+ },
+ "mug": {
+  "names": [
+   "sm_food_beverage_coffeeCup_a03_01.usd",
+   "sm_kitchenware_mug_b01_01.usd",
+   "sm_food_beverage_coffeeCup_f01_01.usd",
+   "D00160.usd",
+   "sm_food_beverage_coffeeCup_e01_01.usd",
+   "D00223.usd",
+   "sm_kitchenware_mug_h01_01.usd",
+   "sm_food_beverage_coffeeCup_d01_01.usd",
+   "sm_consumable_cup_paper_a01_01.usd",
+   "sm_kitchenware_mug_e01_01.usd"
+  ],
+  "matched": [
+   [
+    "'coffee cup' in class/tags"
+   ],
+   [
+    "'coffee cup' in class/tags"
+   ],
+   [
+    "'coffee cup' in class/tags"
+   ],
+   [
+    "'coffee cup' in class/tags"
+   ],
+   [
+    "'coffee cup' in class/tags"
+   ],
+   [
+    "'coffee cup' in class/tags"
+   ],
+   [
+    "'coffee cup' in class/tags"
+   ],
+   [
+    "'coffee cup' in class/tags"
+   ],
+   [
+    "'coffee cup' in class/tags"
+   ],
+   [
+    "'coffee cup' in class/tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "pallet": {
+  "names": [
+   "pallet.usda",
+   "sm_pallet_block_a07_01.usd",
+   "sm_pallet_collar_wood_a06_01.usd",
+   "sm_pallet_b01_01.usd",
+   "sm_pallet_b03_01.usd",
+   "sm_pallet_wood_recycled_a05_01.usd",
+   "sm_pallet_block_b02_01.usd",
+   "sm_pallet_block_a09_01.usd",
+   "sm_pallet_block_a04_01.usd",
+   "sm_pallet_block_b03_01.usd"
+  ],
+  "matched": [
+   [
+    "'shipping pallet' in class/tags"
+   ],
+   [
+    "'shipping pallet' in class/tags"
+   ],
+   [
+    "'shipping pallet' in class/tags"
+   ],
+   [
+    "'shipping pallet' in class/tags"
+   ],
+   [
+    "'shipping pallet' in class/tags"
+   ],
+   [
+    "'shipping pallet' in class/tags"
+   ],
+   [
+    "'shipping pallet' in class/tags"
+   ],
+   [
+    "'shipping pallet' in class/tags"
+   ],
+   [
+    "'shipping pallet' in class/tags"
+   ],
+   [
+    "'shipping pallet' in class/tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "cardboard": {
+  "names": [
+   "sm_box_cardboard_b02_01.usd",
+   "shipping_box.usda",
+   "sm_box_cardboard_large_b02_01.usd",
+   "sm_box_flat_a06_01.usd",
+   "sm_box_cardboard_b01_01.usd",
+   "sm_box_printer_a10_01.usd",
+   "sm_box_cardboard_large_b01_01.usd",
+   "sm_box_cardboard_d02_01.usd",
+   "sm_box_cardboard_a01_01.usd",
+   "D00927.usd"
+  ],
+  "matched": [
+   [
+    "'cardboard box' in class/tags"
+   ],
+   [
+    "'cardboard box' in class/tags"
+   ],
+   [
+    "'cardboard box' in class/tags"
+   ],
+   [
+    "'cardboard box' in class/tags"
+   ],
+   [
+    "'cardboard box' in class/tags"
+   ],
+   [
+    "'cardboard box' in class/tags"
+   ],
+   [
+    "'cardboard box' in class/tags"
+   ],
+   [
+    "'cardboard box' in class/tags"
+   ],
+   [
+    "'cardboard box' in class/tags"
+   ],
+   [
+    "'cardboard box' in class/tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "rack": {
+  "names": [
+   "sm_rack_f04_01.usd",
+   "sm_rack_composition_l04_01.usd",
+   "sm_storage_shelf_basic_c01_01.usd",
+   "sm_rack_composition_l06_01.usd",
+   "sm_rack_composition_l04_01.usd",
+   "sm_rack_f04_01.usd",
+   "sm_storage_shelf_basic_c01_01.usd",
+   "sm_rack_large_empty_a01_01.usd",
+   "sm_rack_composition_a05_01.usd",
+   "sm_storage_tire_rack_d01_01.usd"
+  ],
+  "matched": [
+   [
+    "'warehouse rack' in class/tags"
+   ],
+   [
+    "'warehouse rack' in class/tags"
+   ],
+   [
+    "'warehouse rack' in class/tags"
+   ],
+   [
+    "'warehouse rack' in class/tags"
+   ],
+   [
+    "'warehouse rack' in class/tags"
+   ],
+   [
+    "'warehouse rack' in class/tags"
+   ],
+   [
+    "'warehouse rack' in class/tags"
+   ],
+   [
+    "'storage rack' in class/tags"
+   ],
+   [
+    "'storage rack' in class/tags"
+   ],
+   [
+    "'storage rack' in class/tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "hand_truck": {
+  "names": [
+   "sm_handTruck_convertible_steel_orange_a01_01.usd",
+   "sm_handTruck_convertible_steel_red_a01_01.usd",
+   "sm_handTruck_convertible_aluminum_a02_01.usd",
+   "sm_handTruck_convertible_aluminum_a04_01.usd",
+   "sm_vehicleSupport_hydraulic_rolling_platform_b01_01.usd",
+   "sm_handTruck_convertible_aluminum_a02_01.usd",
+   "sm_handTruck_convertible_aluminum_a04_01.usd",
+   "sm_cart_computer_a01_01.usd",
+   "sm_trolley_instrument_b03_01.usd",
+   "sm_vehicleSupport_rolling_dolly_b01_01.usd"
+  ],
+  "matched": [
+   [
+    "'hand truck' in class/tags"
+   ],
+   [
+    "'hand truck' in class/tags"
+   ],
+   [
+    "'hand truck' in class/tags"
+   ],
+   [
+    "'hand truck' in class/tags"
+   ],
+   [
+    "'hand truck' in class/tags"
+   ],
+   [
+    "'hand truck' in class/tags"
+   ],
+   [
+    "'hand truck' in class/tags"
+   ],
+   [
+    "'cart' in class"
+   ],
+   [
+    "'cart' in class"
+   ],
+   [
+    "'dolly' in class"
+   ]
+  ],
+  "substitute": false
+ },
+ "forklift": {
+  "names": [
+   "sm_vehicle_forklift_red_c01_01.usd",
+   "sm_vehicleSupport_hydraulic_rolling_platform_b01_01.usd",
+   "sm_vehicle_forklift_blue_c01_01.usd",
+   "sm_vehicle_forklift_orange_a01_01.usd",
+   "sm_vehicle_forklift_red_b01_01.usd",
+   "sm_vehicle_forklift_blue_a01_01.usd",
+   "sm_pallet_rough_black_a03_01.usd",
+   "S_ForkliftFork.usd",
+   "forklift.usd",
+   "sm_consumable_antifreeze_diesel_engine_a01_01.usd"
+  ],
+  "matched": [
+   [
+    "'lift truck' in class/tags"
+   ],
+   [
+    "'lift truck' in class/tags"
+   ],
+   [
+    "'lift truck' in class/tags"
+   ],
+   [
+    "'lift truck' in class/tags"
+   ],
+   [
+    "'forklift' in class"
+   ],
+   [
+    "'forklift' in class"
+   ],
+   [
+    "'forklift' in tags"
+   ],
+   [
+    "'forklift' in tags"
+   ],
+   [
+    "'forklift' in tags"
+   ],
+   [
+    "'truck' in tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "cone": {
+  "names": [
+   "sm_sign_wetFloor_a02_01.usd",
+   "sm_sign_floor_movable_a01_01.usd"
+  ],
+  "matched": [
+   [
+    "'safety cone' in class/tags"
+   ],
+   [
+    "'safety cone' in class/tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "bin": {
+  "names": [
+   "D00814.usd",
+   "D00731.usd",
+   "D00443.usd",
+   "small_KLT.usd",
+   "small_KLT_visual.usd",
+   "small_KLT_visual_collision.usd",
+   "sm_crate_gray_a14_01.usd",
+   "sm_crate_plywood_b02_01.usd",
+   "sm_crate_plywood_b06_01.usd",
+   "sm_crate_white_a01_01.usd"
+  ],
+  "matched": [
+   [
+    "'bin' in class"
+   ],
+   [
+    "'bin' in class"
+   ],
+   [
+    "'bin' in class"
+   ],
+   [
+    "'klt bin' in class/tags"
+   ],
+   [
+    "'klt bin' in class/tags"
+   ],
+   [
+    "'klt bin' in class/tags"
+   ],
+   [
+    "'crate' in class"
+   ],
+   [
+    "'crate' in class"
+   ],
+   [
+    "'crate' in class"
+   ],
+   [
+    "'crate' in class"
+   ]
+  ],
+  "substitute": false
+ },
+ "barrel": {
+  "names": [
+   "sm_waste_recycling_container_c01_01.usd",
+   "sm_drum_plastic_natural_a05_01.usd",
+   "sm_drum_plastic_black_a05_01.usd",
+   "sm_drum_plastic_natural_a04_01.usd",
+   "sm_drum_plastic_blue_a04_01.usd",
+   "sm_drum_fiber_a04_01.usd",
+   "sm_drum_plastic_blue_a02_01.usd",
+   "sm_drum_plastic_nesting_a02_01.usd",
+   "sm_drum_plastic_blue_a03_01.usd",
+   "sm_drum_plastic_blue_a01_01.usd"
+  ],
+  "matched": [
+   [
+    "'steel barrel' in class/tags"
+   ],
+   [
+    "'barrel' in tags"
+   ],
+   [
+    "'barrel' in tags"
+   ],
+   [
+    "'barrel' in tags"
+   ],
+   [
+    "'barrel' in tags"
+   ],
+   [
+    "'barrel' in tags"
+   ],
+   [
+    "'barrel' in tags"
+   ],
+   [
+    "'barrel' in tags"
+   ],
+   [
+    "'barrel' in tags"
+   ],
+   [
+    "'barrel' in tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "fire_ext": {
+  "names": [
+   "sm_fireProtection_extinguisher_portable_a01_01.usd",
+   "sm_fireProtection_extinguisher_portable_b01_01.usd",
+   "sm_tools_fireExtinguisher_powder_a01_01.usd",
+   "sm_tools_fireExtinguisher_CO2_a01_01.usd",
+   "sm_fireExtinguisher_abc_a03_01.usd",
+   "sm_fireExtinguisher_stand_a01_01.usd",
+   "sm_fireProtection_suppressionCylinder_fixed_a01_01.usd",
+   "sm_fireProtection_suppressionCylinder_fixed_b01_01.usd"
+  ],
+  "matched": [
+   [
+    "'fire extinguisher' in class/tags"
+   ],
+   [
+    "'fire extinguisher' in class/tags"
+   ],
+   [
+    "'fire extinguisher' in class/tags"
+   ],
+   [
+    "'fire extinguisher' in class/tags"
+   ],
+   [
+    "'fire extinguisher' in class/tags"
+   ],
+   [
+    "'fire extinguisher' in class/tags"
+   ],
+   [
+    "'fire extinguisher' in class/tags"
+   ],
+   [
+    "'fire extinguisher' in class/tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "hosp_bed": {
+  "names": [
+   "sm_bed_hospital_standard_a01_01.usd"
+  ],
+  "matched": [
+   [
+    "'hospital bed' in class/tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "wheelchair": {
+  "names": [
+   "sm_sign_hospital_sidewall_a02_01.usd",
+   "sm_chair_patient_mobile_a01_01.usd",
+   "sm_chair_surgical_b01_01.usd",
+   "sm_serviceTool_oil_pan_a01_01.usd",
+   "D00503.usd",
+   "sm_trolley_instrument_b03_01.usd",
+   "sm_cart_mobile_c01_01.usd",
+   "sm_chair_surgical_a01_01.usd",
+   "sm_stool_mobile_padded_vinyl_a01_01.usd",
+   "sm_trolley_instrument_b02_01.usd"
+  ],
+  "matched": [
+   [],
+   [],
+   [],
+   [],
+   [],
+   [],
+   [],
+   [],
+   [],
+   []
+  ],
+  "substitute": true
+ },
+ "shelf_retail": {
+  "names": [
+   "sm_rack_f04_01.usd",
+   "sm_rack_composition_l07_01.usd",
+   "sm_rack_composition_l06_01.usd",
+   "sm_shelve_steel_heavyDuty_a06_01.usd",
+   "sm_rack_l16_01.usd",
+   "sm_rack_composition_l04_01.usd",
+   "sm_rack_composition_l10_01.usd",
+   "sm_rack_composition_l03_01.usd",
+   "sm_rack_f10_01.usd",
+   "sm_rack_composition_l08_01.usd"
+  ],
+  "matched": [
+   [
+    "'shelf' in class"
+   ],
+   [
+    "'shelf' in class"
+   ],
+   [
+    "'shelf' in class"
+   ],
+   [
+    "'shelf' in class"
+   ],
+   [
+    "'shelf' in class"
+   ],
+   [
+    "'shelf' in class"
+   ],
+   [
+    "'shelf' in class"
+   ],
+   [
+    "'shelf' in class"
+   ],
+   [
+    "'shelf' in class"
+   ],
+   [
+    "'shelf' in class"
+   ]
+  ],
+  "substitute": false
+ },
+ "bench": {
+  "names": [
+   "gate_seating.usda",
+   "sm_testingTool_brake_test_benches_a01_01.usd",
+   "sm_storage_locker_double_bench_b01_01.usd",
+   "sm_storage_locker_double_bench_b03_01.usd",
+   "sm_furniture_workbench_standard_e01_01.usd",
+   "sm_table_packing_heavyduty_c02_01.usd",
+   "sm_furniture_workbench_standard_d01_01.usd",
+   "sm_table_packing_heavyduty_c01_01.usd",
+   "sm_testingTool_brake_testing_station_b01_01.usd",
+   "sm_testingTool_brake_testing_station_a01_01.usd"
+  ],
+  "matched": [
+   [
+    "'bench' in class"
+   ],
+   [
+    "'bench' in class"
+   ],
+   [
+    "'bench' in tags"
+   ],
+   [
+    "'bench' in tags"
+   ],
+   [
+    "'bench' in tags"
+   ],
+   [
+    "'bench' in tags"
+   ],
+   [
+    "'bench' in tags"
+   ],
+   [
+    "'bench' in tags"
+   ],
+   [
+    "'bench' in tags"
+   ],
+   [
+    "'bench' in tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "car": {
+  "names": [
+   "sm_bodyPart_bumper_rear_c01_01.usd",
+   "sm_bodyPart_car_side_mirror_a01_01.usd",
+   "sm_bodyPart_boot_lid_a01_01.usd",
+   "sm_steeringSystem_steering_wheel_d01_01.usd",
+   "sm_bodyPart_hood_d01_01.usd",
+   "sm_bodyPart_bumper_front_c01_01.usd",
+   "sm_bodyPart_spoiler_a01_01.usd",
+   "sm_bodyPart_tailLight_a01_01.usd",
+   "sm_steeringSystem_steering_wheel_e01_01.usd",
+   "sm_steeringSystem_steering_wheel_f01_01.usd"
+  ],
+  "matched": [
+   [
+    "'car' in tags"
+   ],
+   [
+    "'car' in tags"
+   ],
+   [
+    "'car' in tags"
+   ],
+   [
+    "'car' in tags"
+   ],
+   [
+    "'car' in tags"
+   ],
+   [
+    "'car' in tags"
+   ],
+   [
+    "'car' in tags"
+   ],
+   [
+    "'car' in tags"
+   ],
+   [
+    "'car' in tags"
+   ],
+   [
+    "'car' in tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "server_rack": {
+  "names": [
+   "gb300.usda",
+   "sm_rack_composition_a05_01.usd",
+   "sm_rack_composition_a04_01.usd",
+   "sm_rack_f10_01.usd",
+   "sm_rack_large_empty_a02_01.usd",
+   "sm_rack_composition_a08_01.usd",
+   "sm_rack_long_empty_a01_01.usd",
+   "sm_rack_composition_a20_01.usd",
+   "sm_rack_h3m_s02_01.usd",
+   "sm_rack_h3m_s01_01.usd"
+  ],
+  "matched": [
+   [
+    "'server rack' in class/tags"
+   ],
+   [
+    "'rack' in class"
+   ],
+   [
+    "'rack' in class"
+   ],
+   [
+    "'rack' in class"
+   ],
+   [
+    "'rack' in class"
+   ],
+   [
+    "'rack' in class"
+   ],
+   [
+    "'rack' in class"
+   ],
+   [
+    "'rack' in class"
+   ],
+   [
+    "'rack' in class"
+   ],
+   [
+    "'rack' in class"
+   ]
+  ],
+  "substitute": false
+ },
+ "vending": {
+  "names": [
+   "sm_machine_vending_snacksDrinks_a01_01.usd",
+   "sm_machine_coffee_vending_a01_01.usd",
+   "sm_safety_mobileShutoff_a01_01.usd",
+   "sm_safety_mobileShutoff_a02_01.usd",
+   "sm_safety_mobileShutoff_a03_01.usd",
+   "sm_computer_terminal_pos_c01_01.usd",
+   "sm_consumable_air_filter_cylindrical_a01_01.usd",
+   "sm_consumable_antifreeze_coolant_a01_01.usd",
+   "sm_bodyPart_boot_lid_b01_01.usd",
+   "sm_bodyPart_boot_lid_c01_01.usd"
+  ],
+  "matched": [
+   [
+    "'vending machine' in class/tags"
+   ],
+   [
+    "'vending machine' in class/tags"
+   ],
+   [
+    "'machine' in class"
+   ],
+   [
+    "'machine' in class"
+   ],
+   [
+    "'machine' in class"
+   ],
+   [
+    "'machine' in class"
+   ],
+   [
+    "'machine' in tags"
+   ],
+   [
+    "'machine' in tags"
+   ],
+   [
+    "'machine' in tags"
+   ],
+   [
+    "'machine' in tags"
+   ]
+  ],
+  "substitute": false
+ },
+ "microwave": {
+  "names": [
+   "microwave_oven.usda",
+   "cooking_mser1130b.usd",
+   "D00516.usd",
+   "range_oven.usda",
+   "cooking_wcep6423f.usd"
+  ],
+  "matched": [
+   [
+    "'microwave oven' in class/tags"
+   ],
+   [
+    "'microwave oven' in class/tags"
+   ],
+   [
+    "'microwave oven' in class/tags"
+   ],
+   [
+    "'oven' in tags"
+   ],
+   [
+    "'microwave' in tags"
+   ]
+  ],
+  "substitute": false
+ }
+}

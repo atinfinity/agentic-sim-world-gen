@@ -1,0 +1,983 @@
+{
+ "total": 200,
+ "hits": [
+  {
+   "id": "af451f2c2db78a13203d26ae1e37ceb2",
+   "score": 1.1267059,
+   "rrf_score": 0.01639344262295082,
+   "metadata": {},
+   "source": {
+    "ext": "usd",
+    "path": "hf://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_d02/simready_usd/sm_cabinet_file_d02_01.usd",
+    "usd_properties": [
+     {
+      "value_type": "string",
+      "name_sayt": "semantic:wikidata_class:params:semanticData",
+      "name": "semantic:wikidata_class:params:semanticData",
+      "value": "cabinet",
+      "value_sayt": "cabinet"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "semantic:wikidata_class:params:semanticType",
+      "name": "semantic:wikidata_class:params:semanticType",
+      "value": "wikidata_class",
+      "value_sayt": "wikidata_class"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "semantic:wikidata_qcode:params:semanticData",
+      "name": "semantic:wikidata_qcode:params:semanticData",
+      "value": "Q2741056",
+      "value_sayt": "Q2741056"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "semantic:wikidata_qcode:params:semanticType",
+      "name": "semantic:wikidata_qcode:params:semanticType",
+      "value": "wikidata_qcode",
+      "value_sayt": "wikidata_qcode"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__MuJoCo__activateOption",
+      "name": "simready_metadata_Variants__Physics__MuJoCo__activateOption",
+      "value": "Enabled",
+      "value_sayt": "Enabled"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__MuJoCo__prim",
+      "name": "simready_metadata_Variants__Physics__MuJoCo__prim",
+      "value": "/RootNode",
+      "value_sayt": "/RootNode"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__MuJoCo__variantSetName",
+      "name": "simready_metadata_Variants__Physics__MuJoCo__variantSetName",
+      "value": "MuJoCo",
+      "value_sayt": "MuJoCo"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__Newton__activateOption",
+      "name": "simready_metadata_Variants__Physics__Newton__activateOption",
+      "value": "Enabled",
+      "value_sayt": "Enabled"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__Newton__prim",
+      "name": "simready_metadata_Variants__Physics__Newton__prim",
+      "value": "/RootNode",
+      "value_sayt": "/RootNode"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__Newton__variantSetName",
+      "name": "simready_metadata_Variants__Physics__Newton__variantSetName",
+      "value": "Newton",
+      "value_sayt": "Newton"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__PhysX__activateOption",
+      "name": "simready_metadata_Variants__Physics__PhysX__activateOption",
+      "value": "Enabled",
+      "value_sayt": "Enabled"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__PhysX__prim",
+      "name": "simready_metadata_Variants__Physics__PhysX__prim",
+      "value": "/RootNode",
+      "value_sayt": "/RootNode"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__PhysX__variantSetName",
+      "name": "simready_metadata_Variants__Physics__PhysX__variantSetName",
+      "value": "PhysX",
+      "value_sayt": "PhysX"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_extents",
+      "name": "simready_metadata_asset_extents",
+      "value": "(0.37237918, 0.5293245, 0.8768117)",
+      "value_sayt": "(0.37237918, 0.5293245, 0.8768117)"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_license",
+      "name": "simready_metadata_asset_license",
+      "value": "CC-BY 4.0",
+      "value_sayt": "CC-BY 4.0"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_location",
+      "name": "simready_metadata_asset_location",
+      "value": "simready_content\\common_assets\\props_hospital\\cabinet_file_d02\\simready_physx_usd\\sm_cabinet_file_d02_01.usd",
+      "value_sayt": "simready_content\\common_assets\\props_hospital\\cabinet_file_d02\\simready_physx_usd\\sm_cabinet_file_d02_01.usd"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_name",
+      "name": "simready_metadata_asset_name",
+      "value": "cabinet_file_d02",
+      "value_sayt": "cabinet_file_d02"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_type",
+      "name": "simready_metadata_asset_type",
+      "value": "prop",
+      "value_sayt": "prop"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_author",
+      "name": "simready_metadata_author",
+      "value": "NVIDIA",
+      "value_sayt": "NVIDIA"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_category",
+      "name": "simready_metadata_category",
+      "value": "prop",
+      "value_sayt": "prop"
+     },
+     {
+      "value_type": "float",
+      "name_sayt": "simready_metadata_mass",
+      "name": "simready_metadata_mass",
+      "value_numeric": 30,
+      "value": "30.0",
+      "value_sayt": "30.0"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_qcode",
+      "name": "simready_metadata_qcode",
+      "value": "Q2741056",
+      "value_sayt": "Q2741056"
+     },
+     {
+      "value_type": "int",
+      "name_sayt": "simready_metadata_rigid_body_count",
+      "name": "simready_metadata_rigid_body_count",
+      "value_numeric": 1,
+      "value": "1",
+      "value_sayt": "1"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_source_file",
+      "name": "simready_metadata_source_file",
+      "value": "../simready_physx_usd/sm_cabinet_file_d02_01.usd",
+      "value_sayt": "../simready_physx_usd/sm_cabinet_file_d02_01.usd"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_usd_date_generated",
+      "name": "simready_metadata_usd_date_generated",
+      "value": "2026-04-22 15:26:07",
+      "value_sayt": "2026-04-22 15:26:07"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_uuid",
+      "name": "simready_metadata_uuid",
+      "value": "b73f1e2a-792b-4841-81c1-817b6dbd5784",
+      "value_sayt": "b73f1e2a-792b-4841-81c1-817b6dbd5784"
+     },
+     {
+      "value_type": "int",
+      "name_sayt": "__polygon_count",
+      "name": "__polygon_count",
+      "value_numeric": 0,
+      "value": "0",
+      "value_sayt": "0"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "central:category",
+      "name": "central:category",
+      "value": "Q2741056",
+      "value_sayt": "Q2741056"
+     }
+    ],
+    "usd_dimensions": {
+     "bbox_max_y": 0.2646622359752655,
+     "scale_z": 1,
+     "translate_z": 0,
+     "bbox_max_z": 0.876811683177948,
+     "scale_y": 1,
+     "translate_y": 0,
+     "bbox_dimension_x": 0.3723791837692261,
+     "bbox_dimension_z": 0.876811683177948,
+     "scale_x": 1,
+     "bbox_dimension_y": 0.529324471950531,
+     "scene_mpu": 1,
+     "scaled_bbox_dimension_y": 0.529324471950531,
+     "scaled_bbox_dimension_x": 0.3723791837692261,
+     "translate_x": 0,
+     "bbox_max_x": 0.18618959188461304,
+     "bbox_midpoint_x": 0,
+     "scaled_bbox_dimension_z": 0.876811683177948,
+     "scene_up_axis": "Z",
+     "bbox_min_z": 0,
+     "bbox_midpoint_y": 0,
+     "bbox_min_y": -0.2646622359752655,
+     "bbox_midpoint_z": 0.438405841588974,
+     "bbox_min_x": -0.18618959188461304
+    },
+    "name": "sm_cabinet_file_d02_01.usd",
+    "base_key": "https://huggingface.co/datasets/nvidia/simready-assets/blob/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_d02/simready_usd/sm_cabinet_file_d02_01.usd"
+   },
+   "inner_hits": {
+    "siglip2-embedding": {
+     "hits": {
+      "total": {
+       "value": 1,
+       "relation": "eq"
+      },
+      "max_score": 1.1267059,
+      "hits": [
+       {
+        "_index": "simready-assets-ver5.0",
+        "_id": "af451f2c2db78a13203d26ae1e37ceb2",
+        "_nested": {
+         "field": "siglip2-embedding",
+         "offset": 0
+        },
+        "_score": 1.1267059,
+        "_source": {
+         "image": "beb30802d121393df9f7feed16a0dcacd26090ba1d7324bd68cad194a4e09876",
+         "label": "{\"thumbnail_id\":\"0\",\"plugin_name\":\"thumbnail_to_embedding\"}",
+         "keyword": [
+          "model_hash:siglip2"
+         ]
+        }
+       }
+      ]
+     }
+    }
+   },
+   "ags_data": {},
+   "thumbnail_exists": true
+  },
+  {
+   "id": "4237d754253c4b3d3cb1a40f37ad2698",
+   "score": 1.125839,
+   "rrf_score": 0.016129032258064516,
+   "metadata": {},
+   "source": {
+    "ext": "usd",
+    "path": "hf://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a02/simready_usd/sm_cabinet_file_a02_01.usd",
+    "usd_properties": [
+     {
+      "value_type": "string",
+      "name_sayt": "semantic:wikidata_class:params:semanticData",
+      "name": "semantic:wikidata_class:params:semanticData",
+      "value": "cabinet",
+      "value_sayt": "cabinet"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "semantic:wikidata_class:params:semanticType",
+      "name": "semantic:wikidata_class:params:semanticType",
+      "value": "wikidata_class",
+      "value_sayt": "wikidata_class"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "semantic:wikidata_qcode:params:semanticData",
+      "name": "semantic:wikidata_qcode:params:semanticData",
+      "value": "Q640506",
+      "value_sayt": "Q640506"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "semantic:wikidata_qcode:params:semanticType",
+      "name": "semantic:wikidata_qcode:params:semanticType",
+      "value": "wikidata_qcode",
+      "value_sayt": "wikidata_qcode"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__MuJoCo__activateOption",
+      "name": "simready_metadata_Variants__Physics__MuJoCo__activateOption",
+      "value": "Enabled",
+      "value_sayt": "Enabled"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__MuJoCo__prim",
+      "name": "simready_metadata_Variants__Physics__MuJoCo__prim",
+      "value": "/RootNode",
+      "value_sayt": "/RootNode"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__MuJoCo__variantSetName",
+      "name": "simready_metadata_Variants__Physics__MuJoCo__variantSetName",
+      "value": "MuJoCo",
+      "value_sayt": "MuJoCo"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__Newton__activateOption",
+      "name": "simready_metadata_Variants__Physics__Newton__activateOption",
+      "value": "Enabled",
+      "value_sayt": "Enabled"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__Newton__prim",
+      "name": "simready_metadata_Variants__Physics__Newton__prim",
+      "value": "/RootNode",
+      "value_sayt": "/RootNode"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__Newton__variantSetName",
+      "name": "simready_metadata_Variants__Physics__Newton__variantSetName",
+      "value": "Newton",
+      "value_sayt": "Newton"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__PhysX__activateOption",
+      "name": "simready_metadata_Variants__Physics__PhysX__activateOption",
+      "value": "Enabled",
+      "value_sayt": "Enabled"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__PhysX__prim",
+      "name": "simready_metadata_Variants__Physics__PhysX__prim",
+      "value": "/RootNode",
+      "value_sayt": "/RootNode"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__PhysX__variantSetName",
+      "name": "simready_metadata_Variants__Physics__PhysX__variantSetName",
+      "value": "PhysX",
+      "value_sayt": "PhysX"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_extents",
+      "name": "simready_metadata_asset_extents",
+      "value": "(0.37474614, 0.8258924, 2.00027)",
+      "value_sayt": "(0.37474614, 0.8258924, 2.00027)"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_license",
+      "name": "simready_metadata_asset_license",
+      "value": "CC-BY 4.0",
+      "value_sayt": "CC-BY 4.0"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_location",
+      "name": "simready_metadata_asset_location",
+      "value": "simready_content\\common_assets\\props_hospital\\cabinet_file_a02\\simready_physx_usd\\sm_cabinet_file_a02_01.usd",
+      "value_sayt": "simready_content\\common_assets\\props_hospital\\cabinet_file_a02\\simready_physx_usd\\sm_cabinet_file_a02_01.usd"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_name",
+      "name": "simready_metadata_asset_name",
+      "value": "cabinet_file_a02",
+      "value_sayt": "cabinet_file_a02"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_type",
+      "name": "simready_metadata_asset_type",
+      "value": "prop",
+      "value_sayt": "prop"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_author",
+      "name": "simready_metadata_author",
+      "value": "NVIDIA",
+      "value_sayt": "NVIDIA"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_category",
+      "name": "simready_metadata_category",
+      "value": "prop",
+      "value_sayt": "prop"
+     },
+     {
+      "value_type": "float",
+      "name_sayt": "simready_metadata_mass",
+      "name": "simready_metadata_mass",
+      "value_numeric": 30.900517463684082,
+      "value": "30.900517463684082",
+      "value_sayt": "30.900517463684082"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_qcode",
+      "name": "simready_metadata_qcode",
+      "value": "Q640506",
+      "value_sayt": "Q640506"
+     },
+     {
+      "value_type": "int",
+      "name_sayt": "simready_metadata_rigid_body_count",
+      "name": "simready_metadata_rigid_body_count",
+      "value_numeric": 3,
+      "value": "3",
+      "value_sayt": "3"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_source_file",
+      "name": "simready_metadata_source_file",
+      "value": "../simready_physx_usd/sm_cabinet_file_a02_01.usd",
+      "value_sayt": "../simready_physx_usd/sm_cabinet_file_a02_01.usd"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_usd_date_generated",
+      "name": "simready_metadata_usd_date_generated",
+      "value": "2026-04-21 14:24:14",
+      "value_sayt": "2026-04-21 14:24:14"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_uuid",
+      "name": "simready_metadata_uuid",
+      "value": "271b8230-1044-400d-96e1-842bf7b6adb5",
+      "value_sayt": "271b8230-1044-400d-96e1-842bf7b6adb5"
+     },
+     {
+      "value_type": "int",
+      "name_sayt": "__polygon_count",
+      "name": "__polygon_count",
+      "value_numeric": 0,
+      "value": "0",
+      "value_sayt": "0"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "central:category",
+      "name": "central:category",
+      "value": "Q640506",
+      "value_sayt": "Q640506"
+     }
+    ],
+    "usd_dimensions": {
+     "bbox_max_y": 0.4129461944103241,
+     "scale_z": 1,
+     "translate_z": 0,
+     "bbox_max_z": 2.000269889831543,
+     "scale_y": 1,
+     "translate_y": 0,
+     "bbox_dimension_x": 0.37474615218124246,
+     "bbox_dimension_z": 2.000269889831543,
+     "scale_x": 1,
+     "bbox_dimension_y": 0.8258923888206482,
+     "scene_mpu": 1,
+     "scaled_bbox_dimension_y": 0.8258923888206482,
+     "scaled_bbox_dimension_x": 0.37474615218124246,
+     "translate_x": 0,
+     "bbox_max_x": 0.18737306537113047,
+     "bbox_midpoint_x": -1.0719490767252537e-08,
+     "scaled_bbox_dimension_z": 2.000269889831543,
+     "scene_up_axis": "Z",
+     "bbox_min_z": 0,
+     "bbox_midpoint_y": 0,
+     "bbox_min_y": -0.4129461944103241,
+     "bbox_midpoint_z": 1.0001349449157715,
+     "bbox_min_x": -0.187373086810112
+    },
+    "name": "sm_cabinet_file_a02_01.usd",
+    "base_key": "https://huggingface.co/datasets/nvidia/simready-assets/blob/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a02/simready_usd/sm_cabinet_file_a02_01.usd"
+   },
+   "inner_hits": {
+    "siglip2-embedding": {
+     "hits": {
+      "total": {
+       "value": 1,
+       "relation": "eq"
+      },
+      "max_score": 1.125839,
+      "hits": [
+       {
+        "_index": "simready-assets-ver5.0",
+        "_id": "4237d754253c4b3d3cb1a40f37ad2698",
+        "_nested": {
+         "field": "siglip2-embedding",
+         "offset": 0
+        },
+        "_score": 1.125839,
+        "_source": {
+         "image": "07e3bc45a1410a1eb186a3b73ae453b548c5c5b0d1f476eb2a81c8164ce4bdc5",
+         "label": "{\"thumbnail_id\":\"0\",\"plugin_name\":\"thumbnail_to_embedding\"}",
+         "keyword": [
+          "model_hash:siglip2"
+         ]
+        }
+       }
+      ]
+     }
+    }
+   },
+   "ags_data": {},
+   "thumbnail_exists": true
+  },
+  {
+   "id": "9c81840353923841ea3ac10c70cf5aa8",
+   "score": 1.1222446,
+   "rrf_score": 0.015873015873015872,
+   "metadata": {},
+   "source": {
+    "ext": "usd",
+    "path": "hf://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00451/simready_usd/D00451.usd",
+    "usd_properties": [
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_extents",
+      "name": "simready_metadata_asset_extents",
+      "value": "(0.13745900243520737, 0.17740099877119064, 0.20874199920081082)",
+      "value_sayt": "(0.13745900243520737, 0.17740099877119064, 0.20874199920081082)"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_license",
+      "name": "simready_metadata_asset_license",
+      "value": "CC-BY-4.0",
+      "value_sayt": "CC-BY-4.0"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_name",
+      "name": "simready_metadata_asset_name",
+      "value": "Kitchen Knife Holder",
+      "value_sayt": "Kitchen Knife Holder"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_type",
+      "name": "simready_metadata_asset_type",
+      "value": "rigid_body",
+      "value_sayt": "rigid_body"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_author",
+      "name": "simready_metadata_author",
+      "value": "Palatial Platforms",
+      "value_sayt": "Palatial Platforms"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_category",
+      "name": "simready_metadata_category",
+      "value": "kitchenware",
+      "value_sayt": "kitchenware"
+     },
+     {
+      "value_type": "float",
+      "name_sayt": "simready_metadata_mass",
+      "name": "simready_metadata_mass",
+      "value_numeric": 2,
+      "value": "2.0",
+      "value_sayt": "2.0"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_profile",
+      "name": "simready_metadata_profile",
+      "value": "Robotics-Prop",
+      "value_sayt": "Robotics-Prop"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_qcode",
+      "name": "simready_metadata_qcode",
+      "value": "Q1521410",
+      "value_sayt": "Q1521410"
+     },
+     {
+      "value_type": "int",
+      "name_sayt": "simready_metadata_rigid_body_count",
+      "name": "simready_metadata_rigid_body_count",
+      "value_numeric": 1,
+      "value": "1",
+      "value_sayt": "1"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_source_file",
+      "name": "simready_metadata_source_file",
+      "value": "textured_mesh_69f5d515431507ff7cf6e3c3.obj",
+      "value_sayt": "textured_mesh_69f5d515431507ff7cf6e3c3.obj"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_usd_date_generated",
+      "name": "simready_metadata_usd_date_generated",
+      "value": "2026-05-09",
+      "value_sayt": "2026-05-09"
+     },
+     {
+      "value_type": "int",
+      "name_sayt": "__polygon_count",
+      "name": "__polygon_count",
+      "value_numeric": 111569,
+      "value": "111569",
+      "value_sayt": "111569"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "central:category",
+      "name": "central:category",
+      "value": "oem:PalatialSim",
+      "value_sayt": "oem:PalatialSim"
+     }
+    ],
+    "usd_dimensions": {
+     "bbox_max_y": 0.08440099656581879,
+     "scale_z": 1,
+     "translate_z": 0,
+     "bbox_max_z": 0.20873799920082092,
+     "scale_y": 1,
+     "translate_y": 0,
+     "bbox_dimension_x": 0.13745900243520737,
+     "bbox_dimension_z": 0.20874199920081082,
+     "scale_x": 1,
+     "bbox_dimension_y": 0.17740099877119064,
+     "scene_mpu": 1,
+     "scaled_bbox_dimension_y": 0.17740099877119064,
+     "scaled_bbox_dimension_x": 0.13745900243520737,
+     "translate_x": 0,
+     "bbox_max_x": 0.06848800182342529,
+     "bbox_midpoint_x": -0.0002414993941783905,
+     "scaled_bbox_dimension_z": 0.20874199920081082,
+     "scene_up_axis": "Z",
+     "bbox_min_z": -3.999999989900971e-06,
+     "bbox_midpoint_y": -0.004299502819776535,
+     "bbox_min_y": -0.09300000220537186,
+     "bbox_midpoint_z": 0.10436699960041551,
+     "bbox_min_x": -0.06897100061178207
+    },
+    "name": "D00451.usd",
+    "base_key": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/blob/69a87329036cec0440403351c12230970c4e67d8/D00451/simready_usd/D00451.usd"
+   },
+   "inner_hits": {
+    "siglip2-embedding": {
+     "hits": {
+      "total": {
+       "value": 1,
+       "relation": "eq"
+      },
+      "max_score": 1.1222446,
+      "hits": [
+       {
+        "_index": "simready-assets-ver5.0",
+        "_id": "9c81840353923841ea3ac10c70cf5aa8",
+        "_nested": {
+         "field": "siglip2-embedding",
+         "offset": 0
+        },
+        "_score": 1.1222446,
+        "_source": {
+         "image": "b5826c559266efbc42cf77c0bb990aa1d2eaf23c594417ab461927322ba2c48d",
+         "label": "{\"thumbnail_id\":\"0\",\"plugin_name\":\"thumbnail_to_embedding\"}",
+         "keyword": [
+          "model_hash:siglip2"
+         ]
+        }
+       }
+      ]
+     }
+    }
+   },
+   "ags_data": {},
+   "thumbnail_exists": true
+  },
+  {
+   "id": "f8a7e8863714d8d0dd84e60266e8171b",
+   "score": 1.1217812,
+   "rrf_score": 0.015625,
+   "metadata": {},
+   "source": {
+    "ext": "usd",
+    "path": "hf://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_b04/simready_usd/sm_cabinet_file_b04_01.usd",
+    "usd_properties": [
+     {
+      "value_type": "string",
+      "name_sayt": "semantic:wikidata_class:params:semanticData",
+      "name": "semantic:wikidata_class:params:semanticData",
+      "value": "cabinet",
+      "value_sayt": "cabinet"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "semantic:wikidata_class:params:semanticType",
+      "name": "semantic:wikidata_class:params:semanticType",
+      "value": "wikidata_class",
+      "value_sayt": "wikidata_class"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "semantic:wikidata_qcode:params:semanticData",
+      "name": "semantic:wikidata_qcode:params:semanticData",
+      "value": "Q2741056",
+      "value_sayt": "Q2741056"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "semantic:wikidata_qcode:params:semanticType",
+      "name": "semantic:wikidata_qcode:params:semanticType",
+      "value": "wikidata_qcode",
+      "value_sayt": "wikidata_qcode"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__MuJoCo__activateOption",
+      "name": "simready_metadata_Variants__Physics__MuJoCo__activateOption",
+      "value": "Enabled",
+      "value_sayt": "Enabled"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__MuJoCo__prim",
+      "name": "simready_metadata_Variants__Physics__MuJoCo__prim",
+      "value": "/RootNode",
+      "value_sayt": "/RootNode"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__MuJoCo__variantSetName",
+      "name": "simready_metadata_Variants__Physics__MuJoCo__variantSetName",
+      "value": "MuJoCo",
+      "value_sayt": "MuJoCo"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__Newton__activateOption",
+      "name": "simready_metadata_Variants__Physics__Newton__activateOption",
+      "value": "Enabled",
+      "value_sayt": "Enabled"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__Newton__prim",
+      "name": "simready_metadata_Variants__Physics__Newton__prim",
+      "value": "/RootNode",
+      "value_sayt": "/RootNode"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__Newton__variantSetName",
+      "name": "simready_metadata_Variants__Physics__Newton__variantSetName",
+      "value": "Newton",
+      "value_sayt": "Newton"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__PhysX__activateOption",
+      "name": "simready_metadata_Variants__Physics__PhysX__activateOption",
+      "value": "Enabled",
+      "value_sayt": "Enabled"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__PhysX__prim",
+      "name": "simready_metadata_Variants__Physics__PhysX__prim",
+      "value": "/RootNode",
+      "value_sayt": "/RootNode"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_Variants__Physics__PhysX__variantSetName",
+      "name": "simready_metadata_Variants__Physics__PhysX__variantSetName",
+      "value": "PhysX",
+      "value_sayt": "PhysX"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_extents",
+      "name": "simready_metadata_asset_extents",
+      "value": "(0.37308508, 0.5284462, 2.0002697)",
+      "value_sayt": "(0.37308508, 0.5284462, 2.0002697)"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_license",
+      "name": "simready_metadata_asset_license",
+      "value": "CC-BY 4.0",
+      "value_sayt": "CC-BY 4.0"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_location",
+      "name": "simready_metadata_asset_location",
+      "value": "simready_content\\common_assets\\props_hospital\\cabinet_file_b04\\simready_physx_usd\\sm_cabinet_file_b04_01.usd",
+      "value_sayt": "simready_content\\common_assets\\props_hospital\\cabinet_file_b04\\simready_physx_usd\\sm_cabinet_file_b04_01.usd"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_name",
+      "name": "simready_metadata_asset_name",
+      "value": "cabinet_file_b04",
+      "value_sayt": "cabinet_file_b04"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_asset_type",
+      "name": "simready_metadata_asset_type",
+      "value": "prop",
+      "value_sayt": "prop"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_author",
+      "name": "simready_metadata_author",
+      "value": "NVIDIA",
+      "value_sayt": "NVIDIA"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_category",
+      "name": "simready_metadata_category",
+      "value": "prop",
+      "value_sayt": "prop"
+     },
+     {
+      "value_type": "float",
+      "name_sayt": "simready_metadata_mass",
+      "name": "simready_metadata_mass",
+      "value_numeric": 90,
+      "value": "90.0",
+      "value_sayt": "90.0"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_qcode",
+      "name": "simready_metadata_qcode",
+      "value": "Q2741056",
+      "value_sayt": "Q2741056"
+     },
+     {
+      "value_type": "int",
+      "name_sayt": "simready_metadata_rigid_body_count",
+      "name": "simready_metadata_rigid_body_count",
+      "value_numeric": 3,
+      "value": "3",
+      "value_sayt": "3"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_source_file",
+      "name": "simready_metadata_source_file",
+      "value": "../simready_physx_usd/sm_cabinet_file_b04_01.usd",
+      "value_sayt": "../simready_physx_usd/sm_cabinet_file_b04_01.usd"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_usd_date_generated",
+      "name": "simready_metadata_usd_date_generated",
+      "value": "2026-04-22 12:05:05",
+      "value_sayt": "2026-04-22 12:05:05"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "simready_metadata_uuid",
+      "name": "simready_metadata_uuid",
+      "value": "ec635b6e-4847-4549-8412-f39b52f961a2",
+      "value_sayt": "ec635b6e-4847-4549-8412-f39b52f961a2"
+     },
+     {
+      "value_type": "int",
+      "name_sayt": "__polygon_count",
+      "name": "__polygon_count",
+      "value_numeric": 0,
+      "value": "0",
+      "value_sayt": "0"
+     },
+     {
+      "value_type": "string",
+      "name_sayt": "central:category",
+      "name": "central:category",
+      "value": "Q2741056",
+      "value_sayt": "Q2741056"
+     }
+    ],
+    "usd_dimensions": {
+     "bbox_max_y": 0.2642230689525604,
+     "scale_z": 1,
+     "translate_z": 0,
+     "bbox_max_z": 2.000269651412964,
+     "scale_y": 1,
+     "translate_y": 0,
+     "bbox_dimension_x": 0.3730850731472457,
+     "bbox_dimension_z": 2.000269651412964,
+     "scale_x": 1,
+     "bbox_dimension_y": 0.5284461975097656,
+     "scene_mpu": 1,
+     "scaled_bbox_dimension_y": 0.5284461975097656,
+     "scaled_bbox_dimension_x": 0.3730850731472457,
+     "translate_x": 0,
+     "bbox_max_x": 0.18654266646904594,
+     "bbox_midpoint_x": 1.2989542308439184e-07,
+     "scaled_bbox_dimension_z": 2.000269651412964,
+     "scene_up_axis": "Z",
+     "bbox_min_z": 0,
+     "bbox_midpoint_y": -2.9802322387695312e-08,
+     "bbox_min_y": -0.2642231285572052,
+     "bbox_midpoint_z": 1.000134825706482,
+     "bbox_min_x": -0.18654240667819977
+    },
+    "name": "sm_cabinet_file_b04_01.usd",
+    "base_key": "https://huggingface.co/datasets/nvidia/simready-assets/blob/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_b04/simready_usd/sm_cabinet_file_b04_01.usd"
+   },
+   "inner_hits": {
+    "siglip2-embedding": {
+     "hits": {
+      "total": {
+       "value": 1,
+       "relation": "eq"
+      },
+      "max_score": 1.1217812,
+      "hits": [
+       {
+        "_index": "simready-assets-ver5.0",
+        "_id": "f8a7e8863714d8d0dd84e60266e8171b",
+        "_nested": {
+         "field": "siglip2-embedding",
+         "offset": 0
+        },
+        "_score": 1.1217812,
+        "_source": {
+         "image": "548583bee159991b38282f140bac44c2760e41e6d0105b3f77c529f374f3388f",
+         "label": "{\"thumbnail_id\":\"0\",\"plugin_name\":\"thumbnail_to_embedding\"}",
+         "keyword": [
+          "model_hash:siglip2"
+         ]
+        }
+       }
+      ]
+     }
+    }
+   },
+   "ags_data": {},
+   "thumbnail_exists": true
+  }
+ ]
+}

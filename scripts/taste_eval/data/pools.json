@@ -1,0 +1,1168 @@
+{
+ "study": {
+  "desk": [
+   {
+    "name": "sm_desk_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/desk_a01/simready_usd/.thumbs/256x256/sm_desk_a01_01.usd.png",
+    "caption": "White height-adjustable desk with gray metal T-legs",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_electrical_main_terminal_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/electrical_main_terminal_a01/simready_usd/.thumbs/256x256/sm_electrical_main_terminal_a01_01.usd.png",
+    "caption": "Black standing computer workstation with three monitors",
+    "weak": false,
+    "score": 1.575
+   },
+   {
+    "name": "sm_facilitySystem_beverageStation_breakArea_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/facilitySystem_beverageStation_breakArea_a01/simready_usd/.thumbs/256x256/sm_facilitySystem_beverageStation_breakArea_a01_01.usd.png",
+    "caption": "Light wood beverage station table with drawer and shelves",
+    "weak": false,
+    "score": 1.5
+   }
+  ],
+  "chair": [
+   {
+    "name": "sm_chair_office_fabric_manager_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_office_fabric_manager_a01/simready_usd/.thumbs/256x256/sm_chair_office_fabric_manager_a01_01.usd.png",
+    "caption": "Black upholstered high-back executive swivel office chair",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_chair_hospital_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_hospital_b01/simready_usd/.thumbs/256x256/sm_chair_hospital_b01_01.usd.png",
+    "caption": "Teal upholstered swivel task chair with caster base",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_warehouse_chair_office_amf_black_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/warehouse_chair_office_amf_black_a01/simready_usd/.thumbs/256x256/sm_warehouse_chair_office_amf_black_a01_01.usd.png",
+    "caption": "Black upholstered armless visitor chair with silver metal frame",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_chair_hospital_b03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_hospital_b03/simready_usd/.thumbs/256x256/sm_chair_hospital_b03_01.usd.png",
+    "caption": "Gray ergonomic swivel office chair with padded headrest",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_chair_office_amf_black_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_office_amf_black_a01/simready_usd/.thumbs/256x256/sm_chair_office_amf_black_a01_01.usd.png",
+    "caption": "Black upholstered armless visitor chair with metal legs",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_chair_surgical_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_surgical_a01/simready_usd/.thumbs/256x256/sm_chair_surgical_a01_01.usd.png",
+    "caption": "Black adjustable rolling surgical stool with padded backrest",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_chair_surgical_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_surgical_b01/simready_usd/.thumbs/256x256/sm_chair_surgical_b01_01.usd.png",
+    "caption": "White adjustable medical saddle stool with five casters",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_chair_hospital_b02_01.usd",
+    "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Hospital/Room_and_Furniture/Chairs/Chair_B02/.thumbs/256x256/sm_chair_hospital_b02_01.usd.png",
+    "caption": null,
+    "weak": false,
+    "score": 1.5
+   },
+   {
+    "name": "sm_chair_patient_mobile_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_patient_mobile_a01/simready_usd/.thumbs/256x256/sm_chair_patient_mobile_a01_01.usd.png",
+    "caption": "Blue upholstered mobile patient chair with headrest",
+    "weak": false,
+    "score": 1.0
+   }
+  ],
+  "bookshelf": [
+   {
+    "name": "sm_storage_shelf_basic_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/storage_shelf_basic_a01/simready_usd/.thumbs/256x256/sm_storage_shelf_basic_a01_01.usd.png",
+    "caption": "Black five-tier open metal storage shelving unit",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_storage_shelf_basic_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/storage_shelf_basic_b01/simready_usd/.thumbs/256x256/sm_storage_shelf_basic_b01_01.usd.png",
+    "caption": "Black five-tier open metal storage shelving unit",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_shelve_steel_heavyDuty_a06_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/shelve_steel_heavyDuty_a06/simready_usd/.thumbs/256x256/sm_shelve_steel_heavyDuty_a06_01.usd.png",
+    "caption": "Tall blue heavy-duty steel shelving with gray shelves",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "D00661.usd",
+    "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00661/simready_usd/.thumbs/256x256/D00661.usd.png",
+    "caption": "Four-tier metal storage rack with wooden shelves",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_rack_bulk_storage_a03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_bulk_storage_a03/simready_usd/.thumbs/256x256/sm_rack_bulk_storage_a03_01.usd.png",
+    "caption": "Black metal bulk storage rack with particleboard shelves",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_storage_shelf_basic_c01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/storage_shelf_basic_c01/simready_usd/.thumbs/256x256/sm_storage_shelf_basic_c01_01.usd.png",
+    "caption": "Yellow metal storage rack with three wire shelves",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_rack_composition_l05_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l05/simready_usd/.thumbs/256x256/sm_rack_composition_l05_01.usd.png",
+    "caption": "Blue and yellow storage rack with boxed inventory",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_rack_composition_l08_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l08/simready_usd/.thumbs/256x256/sm_rack_composition_l08_01.usd.png",
+    "caption": "Blue and yellow four-tier storage rack with cardboard boxes",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_rack_composition_l03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l03/simready_usd/.thumbs/256x256/sm_rack_composition_l03_01.usd.png",
+    "caption": "Blue and yellow four-tier rack with stocked cardboard bins",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_rack_composition_a06_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_a06/simready_usd/.thumbs/256x256/sm_rack_composition_a06_01.usd.png",
+    "caption": "Four-tier metal storage rack loaded with wooden shipping crates",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_cabinet_file_d02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_d02/simready_usd/.thumbs/256x256/sm_cabinet_file_d02_01.usd.png",
+    "caption": "White rounded open-front three-compartment file storage cabinet",
+    "weak": false,
+    "score": 1.35
+   },
+   {
+    "name": "sm_cabinet_file_a02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a02/simready_usd/.thumbs/256x256/sm_cabinet_file_a02_01.usd.png",
+    "caption": "Tall white storage cabinet with shelves and double doors",
+    "weak": false,
+    "score": 1.35
+   },
+   {
+    "name": "sm_cabinet_file_a03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a03/simready_usd/.thumbs/256x256/sm_cabinet_file_a03_01.usd.png",
+    "caption": "Tall white glass-door filing cabinet with adjustable shelves",
+    "weak": false,
+    "score": 1.35
+   },
+   {
+    "name": "sm_cabinet_file_b04_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_b04/simready_usd/.thumbs/256x256/sm_cabinet_file_b04_01.usd.png",
+    "caption": "Tall narrow white open-front metal shelving cabinet",
+    "weak": false,
+    "score": 1.35
+   }
+  ],
+  "lamp": [
+   {
+    "name": "desk_lamp.usda",
+    "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/0573053fa2c9174ca2a4678a462ec4dfd3035d59/desk_lamp/simready_usd/.thumbs/256x256/desk_lamp.usda.png",
+    "caption": "Black articulated desk lamp with round base",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_lamp_table_bedside_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_table_bedside_a01/simready_usd/.thumbs/256x256/sm_lamp_table_bedside_a01_01.usd.png",
+    "caption": "Glossy white bedside table lamp with angled shade",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_lighting_taskLight_adjustableArmBench_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lighting_taskLight_adjustableArmBench_a01/simready_usd/.thumbs/256x256/sm_lighting_taskLight_adjustableArmBench_a01_01.usd.png",
+    "caption": "Black clamp-mounted articulated arm bench task light",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "D00261.usd",
+    "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00261/simready_usd/.thumbs/256x256/D00261.usd.png",
+    "caption": "Decorative green stacked ceramic table lamp with cream shade",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_lamp_uvc_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_uvc_a01/simready_usd/.thumbs/256x256/sm_lamp_uvc_a01_01.usd.png",
+    "caption": "Black freestanding UVC disinfection lamp with circular base",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_ceiling_1m_rectangle_a02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_ceiling_1m_rectangle_a02/simready_usd/.thumbs/256x256/sm_lamp_ceiling_1m_rectangle_a02_01.usd.png",
+    "caption": "Rectangular metal ceiling light with four suspension rods",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_ceiling_50cm_square_a02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_ceiling_50cm_square_a02/simready_usd/.thumbs/256x256/sm_lamp_ceiling_50cm_square_a02_01.usd.png",
+    "caption": "Square silver ceiling light with four suspension rods",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_ceiling_1m_rectangle_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_ceiling_1m_rectangle_a01/simready_usd/.thumbs/256x256/sm_lamp_ceiling_1m_rectangle_a01_01.usd.png",
+    "caption": "Rectangular metal ceiling light with four suspension rods",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_uvc_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_uvc_b01/simready_usd/.thumbs/256x256/sm_lamp_uvc_b01_01.usd.png",
+    "caption": "White linear UV-C lamp with exposed blue tube",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_ceiling_50cm_square_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_ceiling_50cm_square_a01/simready_usd/.thumbs/256x256/sm_lamp_ceiling_50cm_square_a01_01.usd.png",
+    "caption": "Square metal ceiling light with four suspension rods",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_uvc_robot_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_uvc_robot_a01/simready_usd/.thumbs/256x256/sm_lamp_uvc_robot_a01_01.usd.png",
+    "caption": "White mobile UV-C disinfection robot with vertical lamp tower",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_ceiling_corner_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_ceiling_corner_a01/simready_usd/.thumbs/256x256/sm_lamp_ceiling_corner_a01_01.usd.png",
+    "caption": "Suspended curved corner ceiling light with metal housing",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_consumable_lightBulb_p21w_clear_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/consumable_lightBulb_p21w_clear_a01/simready_usd/.thumbs/256x256/sm_consumable_lightBulb_p21w_clear_a01_01.usd.png",
+    "caption": "Clear automotive incandescent bulb with metal bayonet base",
+    "weak": false,
+    "score": 1.5
+   },
+   {
+    "name": "sm_lighting_main_mount_a01_01.usd",
+    "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Hospital/Lamps/Lighting_Main_Mount_A01/.thumbs/256x256/sm_lighting_main_mount_a01_01.usd.png",
+    "caption": "Gray lighting mount with triangular brackets",
+    "weak": false,
+    "score": 1.5
+   }
+  ],
+  "cabinet": [
+   {
+    "name": "sm_cabinet_file_d04_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_d04/simready_usd/.thumbs/256x256/sm_cabinet_file_d04_01.usd.png",
+    "caption": "White two-drawer filing cabinet with recessed handles",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_cabinet_file_c04_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_c04/simready_usd/.thumbs/256x256/sm_cabinet_file_c04_01.usd.png",
+    "caption": "White six-drawer filing cabinet with recessed handles",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_cabinet_file_a02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a02/simready_usd/.thumbs/256x256/sm_cabinet_file_a02_01.usd.png",
+    "caption": "Tall white storage cabinet with shelves and double doors",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_cabinet_file_d01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_d01/simready_usd/.thumbs/256x256/sm_cabinet_file_d01_01.usd.png",
+    "caption": "White six-drawer filing cabinet with recessed pull handles",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_cabinet_file_c01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_c01/simready_usd/.thumbs/256x256/sm_cabinet_file_c01_01.usd.png",
+    "caption": "White double-door filing cabinet with recessed black handles",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_cabinet_file_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a01/simready_usd/.thumbs/256x256/sm_cabinet_file_a01_01.usd.png",
+    "caption": "Tall white glass-door filing cabinet with six drawers",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_cabinet_file_c03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_c03/simready_usd/.thumbs/256x256/sm_cabinet_file_c03_01.usd.png",
+    "caption": "White four-drawer storage cabinet with double lower doors",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_cabinet_file_b03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_b03/simready_usd/.thumbs/256x256/sm_cabinet_file_b03_01.usd.png",
+    "caption": "Tall white two-door metal filing storage cabinet",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_cabinet_file_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_b01/simready_usd/.thumbs/256x256/sm_cabinet_file_b01_01.usd.png",
+    "caption": "Tall white filing cabinet with glass door and six drawers",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_cabinet_file_b02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_b02/simready_usd/.thumbs/256x256/sm_cabinet_file_b02_01.usd.png",
+    "caption": "Tall narrow white filing cabinet with glazed upper door",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_cabinet_file_c02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_c02/simready_usd/.thumbs/256x256/sm_cabinet_file_c02_01.usd.png",
+    "caption": "White double glass door filing cabinet with shelf",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_cabinet_file_a03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a03/simready_usd/.thumbs/256x256/sm_cabinet_file_a03_01.usd.png",
+    "caption": "Tall white glass-door filing cabinet with adjustable shelves",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_cabinet_file_a04_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a04/simready_usd/.thumbs/256x256/sm_cabinet_file_a04_01.usd.png",
+    "caption": "Tall white double-door filing cabinet with interior shelves",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_cabinet_file_b04_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_b04/simready_usd/.thumbs/256x256/sm_cabinet_file_b04_01.usd.png",
+    "caption": "Tall narrow white open-front metal shelving cabinet",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_cabinet_file_d03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_d03/simready_usd/.thumbs/256x256/sm_cabinet_file_d03_01.usd.png",
+    "caption": "White rounded glass-door cabinet with three storage compartments",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_fixture_cabinet_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/fixture_cabinet_b01/simready_usd/.thumbs/256x256/sm_fixture_cabinet_b01_01.usd.png",
+    "caption": "White two-drawer base cabinet with wood countertop and open shelves",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_cabinet_for_drugs_a02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_for_drugs_a02/simready_usd/.thumbs/256x256/sm_cabinet_for_drugs_a02_01.usd.png",
+    "caption": "White double-column medical drawer cabinet with raised metal rim",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "chest_of_drawers.usda",
+    "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/0573053fa2c9174ca2a4678a462ec4dfd3035d59/chest_of_drawers/simready_usd/.thumbs/256x256/chest_of_drawers.usda.png",
+    "caption": "White four-drawer chest with paired round knobs",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_cabinet_for_drugs_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_for_drugs_a01/simready_usd/.thumbs/256x256/sm_cabinet_for_drugs_a01_01.usd.png",
+    "caption": "White medical drawer cabinet with raised top rim",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_equipment_robot_trolley_c01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/equipment_robot_trolley_c01/simready_usd/.thumbs/256x256/sm_equipment_robot_trolley_c01_01.usd.png",
+    "caption": "Black robotic storage trolley with multiple pull-out drawers",
+    "weak": false,
+    "score": 2.925
+   }
+  ],
+  "trash": [
+   {
+    "name": "pedal_trash_can.usda",
+    "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/0573053fa2c9174ca2a4678a462ec4dfd3035d59/pedal_trash_can/simready_usd/.thumbs/256x256/pedal_trash_can.usda.png",
+    "caption": "Cylindrical stainless steel pedal trash can",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_bin_waste_a04_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/bin_waste_a04/simready_usd/.thumbs/256x256/sm_bin_waste_a04_01.usd.png",
+    "caption": "White cylindrical pedal waste bin with hinged lid",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_trashCan_office_gray_a03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/trashCan_office_gray_a03/simready_usd/.thumbs/256x256/sm_trashCan_office_gray_a03_01.usd.png",
+    "caption": "Gray tapered rectangular plastic office trash can",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_bin_waste_a03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/bin_waste_a03/simready_usd/.thumbs/256x256/sm_bin_waste_a03_01.usd.png",
+    "caption": "White cylindrical pedal waste bin with hinged lid",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_wasteManagement_trashCan_roundPlastic_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/wasteManagement_trashCan_roundPlastic_a01/simready_usd/.thumbs/256x256/sm_wasteManagement_trashCan_roundPlastic_a01_01.usd.png",
+    "caption": "Round gray plastic trash can with fitted lid",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_bin_waste_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/bin_waste_a01/simready_usd/.thumbs/256x256/sm_bin_waste_a01_01.usd.png",
+    "caption": "White cylindrical pedal waste bin with hinged lid",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_trashCan_office_black_a03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/trashCan_office_black_a03/simready_usd/.thumbs/256x256/sm_trashCan_office_black_a03_01.usd.png",
+    "caption": "Black tapered rectangular plastic office trash can",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_wasteManagement_recyclingBin_multiStream_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/wasteManagement_recyclingBin_multiStream_a01/simready_usd/.thumbs/256x256/sm_wasteManagement_recyclingBin_multiStream_a01_01.usd.png",
+    "caption": "Black rectangular recycling bin with orange hinged lid",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_trashCan_office_beige_a03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/trashCan_office_beige_a03/simready_usd/.thumbs/256x256/sm_trashCan_office_beige_a03_01.usd.png",
+    "caption": "Beige tapered rectangular plastic office trash can",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_bin_waste_a02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/bin_waste_a02/simready_usd/.thumbs/256x256/sm_bin_waste_a02_01.usd.png",
+    "caption": "White cylindrical pedal waste bin with hinged lid",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_trashCan_domed_blue_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/trashCan_domed_blue_b01/simready_usd/.thumbs/256x256/sm_trashCan_domed_blue_b01_01.usd.png",
+    "caption": "Blue cylindrical trash can with domed swing lid",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_trashCan_wheeled_black_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/trashCan_wheeled_black_a01/simready_usd/.thumbs/256x256/sm_trashCan_wheeled_black_a01_01.usd.png",
+    "caption": "Black plastic wheeled trash bin with hinged lid",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_bin_waste_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/bin_waste_b01/simready_usd/.thumbs/256x256/sm_bin_waste_b01_01.usd.png",
+    "caption": "White rectangular waste bin with hinged lid",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_trashCan_thin_gray_a03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/trashCan_thin_gray_a03/simready_usd/.thumbs/256x256/sm_trashCan_thin_gray_a03_01.usd.png",
+    "caption": "Twin slim gray trash bins on wheeled metal dolly",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "wheelie_bin.usda",
+    "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/65920f9ea74b580e137ba9886964ca256256b421/wheelie_bin/simready_usd/.thumbs/256x256/wheelie_bin.usda.png",
+    "caption": "Green two-wheeled wheelie bin with hinged lid",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_trashCan_safety_black_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/trashCan_safety_black_a01/simready_usd/.thumbs/256x256/sm_trashCan_safety_black_a01_01.usd.png",
+    "caption": "Black rectangular waste bin with yellow ESD symbol",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_fixture_trashBin_wallMounted_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/fixture_trashBin_wallMounted_a01/simready_usd/.thumbs/256x256/sm_fixture_trashBin_wallMounted_a01_01.usd.png",
+    "caption": "Rectangular wall-mounted metal trash bin with rounded corners",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_trashCan_fireResistant_a03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/trashCan_fireResistant_a03/simready_usd/.thumbs/256x256/sm_trashCan_fireResistant_a03_01.usd.png",
+    "caption": "Beige rectangular wastebasket with tapered rounded sides",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_waste_recycling_container_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/waste_recycling_container_a01/simready_usd/.thumbs/256x256/sm_waste_recycling_container_a01_01.usd.png",
+    "caption": "Green two-wheeled recycling bin with domed lid",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_trash_a02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/trash_a02/simready_usd/.thumbs/256x256/sm_trash_a02_01.usd.png",
+    "caption": "Dark gray tapered rectangular plastic trash bin",
+    "weak": false,
+    "score": 3.25
+   }
+  ]
+ },
+ "living": {
+  "sofa": [
+   {
+    "name": "sm_sofa_soft_b02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/sofa_soft_b02/simready_usd/.thumbs/256x256/sm_sofa_soft_b02_01.usd.png",
+    "caption": "Gray upholstered two-seat sofa with slim metal legs",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_sofa_soft_b03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/sofa_soft_b03/simready_usd/.thumbs/256x256/sm_sofa_soft_b03_01.usd.png",
+    "caption": "Gray four-seat upholstered sofa with slender metal legs",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_sofa_soft_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/sofa_soft_b01/simready_usd/.thumbs/256x256/sm_sofa_soft_b01_01.usd.png",
+    "caption": "Light gray upholstered armchair with slim metal frame",
+    "weak": false,
+    "score": 2.25
+   }
+  ],
+  "coffee_table": [
+   {
+    "name": "sm_furniture_table_coffee_low_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/furniture_table_coffee_low_a01/simready_usd/.thumbs/256x256/sm_furniture_table_coffee_low_a01_01.usd.png",
+    "caption": "Rectangular wood and metal coffee table with lower shelf",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_facilitySystem_beverageStation_breakArea_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/facilitySystem_beverageStation_breakArea_a01/simready_usd/.thumbs/256x256/sm_facilitySystem_beverageStation_breakArea_a01_01.usd.png",
+    "caption": "Light wood beverage station table with drawer and shelves",
+    "weak": false,
+    "score": 2.75
+   },
+   {
+    "name": "sm_table_metal_stainless_a03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_metal_stainless_a03/simready_usd/.thumbs/256x256/sm_table_metal_stainless_a03_01.usd.png",
+    "caption": "Stainless steel prep table with lower storage shelf",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_table_packing_heavyduty_c01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_packing_heavyduty_c01/simready_usd/.thumbs/256x256/sm_table_packing_heavyduty_c01_01.usd.png",
+    "caption": "Heavy-duty packing workbench with lower storage shelf",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_table_packing_heavyduty_c02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_packing_heavyduty_c02/simready_usd/.thumbs/256x256/sm_table_packing_heavyduty_c02_01.usd.png",
+    "caption": "Heavy-duty packing workbench with lower shelf and chipboard top",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_table_deluxe_packing_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_deluxe_packing_a01/simready_usd/.thumbs/256x256/sm_table_deluxe_packing_a01_01.usd.png",
+    "caption": "Industrial packing table with overhead shelves and material rolls",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_Xray_machine_buckyTable_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/Xray_machine_buckyTable_a01/simready_usd/.thumbs/256x256/sm_Xray_machine_buckyTable_a01_01.usd.png",
+    "caption": "White pedestal X-ray table with sliding cassette tray",
+    "weak": false,
+    "score": 1.0
+   }
+  ],
+  "tv_stand": [
+   {
+    "name": "sm_cabinet_file_c02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_c02/simready_usd/.thumbs/256x256/sm_cabinet_file_c02_01.usd.png",
+    "caption": "White double glass door filing cabinet with shelf",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_c01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_c01/simready_usd/.thumbs/256x256/sm_cabinet_file_c01_01.usd.png",
+    "caption": "White double-door filing cabinet with recessed black handles",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a01/simready_usd/.thumbs/256x256/sm_cabinet_file_a01_01.usd.png",
+    "caption": "Tall white glass-door filing cabinet with six drawers",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_a03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a03/simready_usd/.thumbs/256x256/sm_cabinet_file_a03_01.usd.png",
+    "caption": "Tall white glass-door filing cabinet with adjustable shelves",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_d03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_d03/simready_usd/.thumbs/256x256/sm_cabinet_file_d03_01.usd.png",
+    "caption": "White rounded glass-door cabinet with three storage compartments",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_a02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a02/simready_usd/.thumbs/256x256/sm_cabinet_file_a02_01.usd.png",
+    "caption": "Tall white storage cabinet with shelves and double doors",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_b02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_b02/simready_usd/.thumbs/256x256/sm_cabinet_file_b02_01.usd.png",
+    "caption": "Tall narrow white filing cabinet with glazed upper door",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_fixture_cabinet_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/fixture_cabinet_b01/simready_usd/.thumbs/256x256/sm_fixture_cabinet_b01_01.usd.png",
+    "caption": "White two-drawer base cabinet with wood countertop and open shelves",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_b04_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_b04/simready_usd/.thumbs/256x256/sm_cabinet_file_b04_01.usd.png",
+    "caption": "Tall narrow white open-front metal shelving cabinet",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_c03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_c03/simready_usd/.thumbs/256x256/sm_cabinet_file_c03_01.usd.png",
+    "caption": "White four-drawer storage cabinet with double lower doors",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_b01/simready_usd/.thumbs/256x256/sm_cabinet_file_b01_01.usd.png",
+    "caption": "Tall white filing cabinet with glass door and six drawers",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_c04_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_c04/simready_usd/.thumbs/256x256/sm_cabinet_file_c04_01.usd.png",
+    "caption": "White six-drawer filing cabinet with recessed handles",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_fixture_cabinet_d01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/fixture_cabinet_d01/simready_usd/.thumbs/256x256/sm_fixture_cabinet_d01_01.usd.png",
+    "caption": "White three-door cabinet with glazed panels and shelves",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_d01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_d01/simready_usd/.thumbs/256x256/sm_cabinet_file_d01_01.usd.png",
+    "caption": "White six-drawer filing cabinet with recessed pull handles",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_a04_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a04/simready_usd/.thumbs/256x256/sm_cabinet_file_a04_01.usd.png",
+    "caption": "Tall white double-door filing cabinet with interior shelves",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_b03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_b03/simready_usd/.thumbs/256x256/sm_cabinet_file_b03_01.usd.png",
+    "caption": "Tall white two-door metal filing storage cabinet",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_fixture_cabinet_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/fixture_cabinet_a01/simready_usd/.thumbs/256x256/sm_fixture_cabinet_a01_01.usd.png",
+    "caption": "White two-door wall cabinet with lift-up panel doors",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_d02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_d02/simready_usd/.thumbs/256x256/sm_cabinet_file_d02_01.usd.png",
+    "caption": "White rounded open-front three-compartment file storage cabinet",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_cabinet_file_d04_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_d04/simready_usd/.thumbs/256x256/sm_cabinet_file_d04_01.usd.png",
+    "caption": "White two-drawer filing cabinet with recessed handles",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_vehicle_forklift_red_b01_01.usd",
+    "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Warehouse/Equipment/Vehicle_Forklift_Red_B01/.thumbs/256x256/sm_vehicle_forklift_red_b01_01.usd.png",
+    "caption": "Red stand-on order picker forklift with overhead guard",
+    "weak": false,
+    "score": 1.5
+   }
+  ],
+  "armchair": [
+   {
+    "name": "sm_sofa_soft_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/sofa_soft_b01/simready_usd/.thumbs/256x256/sm_sofa_soft_b01_01.usd.png",
+    "caption": "Light gray upholstered armchair with slim metal frame",
+    "weak": false,
+    "score": 2.925
+   },
+   {
+    "name": "sm_chair_hospital_b03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_hospital_b03/simready_usd/.thumbs/256x256/sm_chair_hospital_b03_01.usd.png",
+    "caption": "Gray ergonomic swivel office chair with padded headrest",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_chair_hospital_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_hospital_b01/simready_usd/.thumbs/256x256/sm_chair_hospital_b01_01.usd.png",
+    "caption": "Teal upholstered swivel task chair with caster base",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_chair_surgical_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_surgical_a01/simready_usd/.thumbs/256x256/sm_chair_surgical_a01_01.usd.png",
+    "caption": "Black adjustable rolling surgical stool with padded backrest",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_chair_surgical_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_surgical_b01/simready_usd/.thumbs/256x256/sm_chair_surgical_b01_01.usd.png",
+    "caption": "White adjustable medical saddle stool with five casters",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_chair_hospital_b02_01.usd",
+    "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Hospital/Room_and_Furniture/Chairs/Chair_B02/.thumbs/256x256/sm_chair_hospital_b02_01.usd.png",
+    "caption": null,
+    "weak": false,
+    "score": 1.35
+   }
+  ],
+  "side_table": [
+   {
+    "name": "sm_table_bedside_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_bedside_b01/simready_usd/.thumbs/256x256/sm_table_bedside_b01_01.usd.png",
+    "caption": "Wheeled hospital bedside cabinet with folding overbed table",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_table_metal_stainless_a03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_metal_stainless_a03/simready_usd/.thumbs/256x256/sm_table_metal_stainless_a03_01.usd.png",
+    "caption": "Stainless steel prep table with lower storage shelf",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_table_packing_heavyduty_c01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_packing_heavyduty_c01/simready_usd/.thumbs/256x256/sm_table_packing_heavyduty_c01_01.usd.png",
+    "caption": "Heavy-duty packing workbench with lower storage shelf",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_facilitySystem_beverageStation_breakArea_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/facilitySystem_beverageStation_breakArea_a01/simready_usd/.thumbs/256x256/sm_facilitySystem_beverageStation_breakArea_a01_01.usd.png",
+    "caption": "Light wood beverage station table with drawer and shelves",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_table_packing_heavyduty_c02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_packing_heavyduty_c02/simready_usd/.thumbs/256x256/sm_table_packing_heavyduty_c02_01.usd.png",
+    "caption": "Heavy-duty packing workbench with lower shelf and chipboard top",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_table_deluxe_packing_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_deluxe_packing_a01/simready_usd/.thumbs/256x256/sm_table_deluxe_packing_a01_01.usd.png",
+    "caption": "Industrial packing table with overhead shelves and material rolls",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_table_surgical_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_surgical_a01/simready_usd/.thumbs/256x256/sm_table_surgical_a01_01.usd.png",
+    "caption": "Adjustable surgical operating table with segmented black padding",
+    "weak": false,
+    "score": 1.15
+   },
+   {
+    "name": "sm_Xray_machine_buckyTable_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/Xray_machine_buckyTable_a01/simready_usd/.thumbs/256x256/sm_Xray_machine_buckyTable_a01_01.usd.png",
+    "caption": "White pedestal X-ray table with sliding cassette tray",
+    "weak": false,
+    "score": 1.0
+   }
+  ],
+  "floor_lamp": [
+   {
+    "name": "sm_lamp_uvc_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_uvc_a01/simready_usd/.thumbs/256x256/sm_lamp_uvc_a01_01.usd.png",
+    "caption": "Black freestanding UVC disinfection lamp with circular base",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_table_bedside_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_table_bedside_a01/simready_usd/.thumbs/256x256/sm_lamp_table_bedside_a01_01.usd.png",
+    "caption": "Glossy white bedside table lamp with angled shade",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_ceiling_1m_rectangle_a02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_ceiling_1m_rectangle_a02/simready_usd/.thumbs/256x256/sm_lamp_ceiling_1m_rectangle_a02_01.usd.png",
+    "caption": "Rectangular metal ceiling light with four suspension rods",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_ceiling_1m_rectangle_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_ceiling_1m_rectangle_a01/simready_usd/.thumbs/256x256/sm_lamp_ceiling_1m_rectangle_a01_01.usd.png",
+    "caption": "Rectangular metal ceiling light with four suspension rods",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_ceiling_50cm_square_a02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_ceiling_50cm_square_a02/simready_usd/.thumbs/256x256/sm_lamp_ceiling_50cm_square_a02_01.usd.png",
+    "caption": "Square silver ceiling light with four suspension rods",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_uvc_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_uvc_b01/simready_usd/.thumbs/256x256/sm_lamp_uvc_b01_01.usd.png",
+    "caption": "White linear UV-C lamp with exposed blue tube",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_uvc_robot_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_uvc_robot_a01/simready_usd/.thumbs/256x256/sm_lamp_uvc_robot_a01_01.usd.png",
+    "caption": "White mobile UV-C disinfection robot with vertical lamp tower",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_ceiling_50cm_square_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_ceiling_50cm_square_a01/simready_usd/.thumbs/256x256/sm_lamp_ceiling_50cm_square_a01_01.usd.png",
+    "caption": "Square metal ceiling light with four suspension rods",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_lamp_ceiling_corner_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_ceiling_corner_a01/simready_usd/.thumbs/256x256/sm_lamp_ceiling_corner_a01_01.usd.png",
+    "caption": "Suspended curved corner ceiling light with metal housing",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_consumable_lightBulb_p21w_clear_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/consumable_lightBulb_p21w_clear_a01/simready_usd/.thumbs/256x256/sm_consumable_lightBulb_p21w_clear_a01_01.usd.png",
+    "caption": "Clear automotive incandescent bulb with metal bayonet base",
+    "weak": false,
+    "score": 1.5
+   },
+   {
+    "name": "sm_lighting_main_mount_a01_01.usd",
+    "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Hospital/Lamps/Lighting_Main_Mount_A01/.thumbs/256x256/sm_lighting_main_mount_a01_01.usd.png",
+    "caption": "Gray lighting mount with triangular brackets",
+    "weak": false,
+    "score": 1.5
+   }
+  ],
+  "shelf": [
+   {
+    "name": "sm_shelve_steel_heavyDuty_a06_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/shelve_steel_heavyDuty_a06/simready_usd/.thumbs/256x256/sm_shelve_steel_heavyDuty_a06_01.usd.png",
+    "caption": "Tall blue heavy-duty steel shelving with gray shelves",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_composition_l03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l03/simready_usd/.thumbs/256x256/sm_rack_composition_l03_01.usd.png",
+    "caption": "Blue and yellow four-tier rack with stocked cardboard bins",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_large_empty_a02_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_large_empty_a02/simready_usd/.thumbs/256x256/sm_rack_large_empty_a02_01.usd.png",
+    "caption": "Empty three-tier industrial rack with blue uprights and orange beams",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_f04_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_f04/simready_usd/.thumbs/256x256/sm_rack_f04_01.usd.png",
+    "caption": "Blue double-bay three-tier cantilever storage shelving rack",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_large_empty_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_large_empty_a01/simready_usd/.thumbs/256x256/sm_rack_large_empty_a01_01.usd.png",
+    "caption": "Empty two-tier warehouse rack with blue uprights",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_composition_l07_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l07/simready_usd/.thumbs/256x256/sm_rack_composition_l07_01.usd.png",
+    "caption": "Blue and yellow four-tier shelving with stocked cardboard bins",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_composition_l05_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l05/simready_usd/.thumbs/256x256/sm_rack_composition_l05_01.usd.png",
+    "caption": "Blue and yellow storage rack with boxed inventory",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_composition_a08_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_a08/simready_usd/.thumbs/256x256/sm_rack_composition_a08_01.usd.png",
+    "caption": "Gray warehouse storage rack loaded with strapped cardboard cartons",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_f10_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_f10/simready_usd/.thumbs/256x256/sm_rack_f10_01.usd.png",
+    "caption": "Blue double-sided cantilever storage rack with metal shelves",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_l16_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_l16/simready_usd/.thumbs/256x256/sm_rack_l16_01.usd.png",
+    "caption": "Blue and yellow four-tier metal warehouse shelving rack",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_composition_a05_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_a05/simready_usd/.thumbs/256x256/sm_rack_composition_a05_01.usd.png",
+    "caption": "Four-tier metal warehouse rack with palletized cardboard boxes",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_composition_l04_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l04/simready_usd/.thumbs/256x256/sm_rack_composition_l04_01.usd.png",
+    "caption": "Blue and yellow warehouse shelving with cardboard picking bins",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_composition_a04_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_a04/simready_usd/.thumbs/256x256/sm_rack_composition_a04_01.usd.png",
+    "caption": "Four-tier metal storage rack loaded with palletized boxes",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_long_empty_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_long_empty_a01/simready_usd/.thumbs/256x256/sm_rack_long_empty_a01_01.usd.png",
+    "caption": "Empty two-tier warehouse rack with blue uprights and orange beams",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_composition_l10_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l10/simready_usd/.thumbs/256x256/sm_rack_composition_l10_01.usd.png",
+    "caption": "Blue and yellow warehouse shelving loaded with cardboard boxes",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_composition_a06_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_a06/simready_usd/.thumbs/256x256/sm_rack_composition_a06_01.usd.png",
+    "caption": "Four-tier metal storage rack loaded with wooden shipping crates",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_composition_l09_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l09/simready_usd/.thumbs/256x256/sm_rack_composition_l09_01.usd.png",
+    "caption": "Blue and yellow warehouse shelving loaded with cartons",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_composition_l08_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l08/simready_usd/.thumbs/256x256/sm_rack_composition_l08_01.usd.png",
+    "caption": "Blue and yellow four-tier storage rack with cardboard boxes",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_composition_a20_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_a20/simready_usd/.thumbs/256x256/sm_rack_composition_a20_01.usd.png",
+    "caption": "Loaded metal warehouse rack with wooden crates and cartons",
+    "weak": false,
+    "score": 2.25
+   },
+   {
+    "name": "sm_rack_composition_l06_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l06/simready_usd/.thumbs/256x256/sm_rack_composition_l06_01.usd.png",
+    "caption": "Blue and yellow four-tier shelving rack with boxed inventory",
+    "weak": false,
+    "score": 2.25
+   }
+  ],
+  "dining_chair": [
+   {
+    "name": "dining_chair.usda",
+    "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/0573053fa2c9174ca2a4678a462ec4dfd3035d59/dining_chair/simready_usd/.thumbs/256x256/dining_chair.usda.png",
+    "caption": "Natural wood spindle-back armless dining chair",
+    "weak": false,
+    "score": 3.25
+   },
+   {
+    "name": "sm_chair_hospital_b03_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_hospital_b03/simready_usd/.thumbs/256x256/sm_chair_hospital_b03_01.usd.png",
+    "caption": "Gray ergonomic swivel office chair with padded headrest",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_chair_surgical_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_surgical_a01/simready_usd/.thumbs/256x256/sm_chair_surgical_a01_01.usd.png",
+    "caption": "Black adjustable rolling surgical stool with padded backrest",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_chair_hospital_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_hospital_b01/simready_usd/.thumbs/256x256/sm_chair_hospital_b01_01.usd.png",
+    "caption": "Teal upholstered swivel task chair with caster base",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_chair_surgical_b01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_surgical_b01/simready_usd/.thumbs/256x256/sm_chair_surgical_b01_01.usd.png",
+    "caption": "White adjustable medical saddle stool with five casters",
+    "weak": false,
+    "score": 2.5
+   },
+   {
+    "name": "sm_chair_hospital_b02_01.usd",
+    "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Hospital/Room_and_Furniture/Chairs/Chair_B02/.thumbs/256x256/sm_chair_hospital_b02_01.usd.png",
+    "caption": null,
+    "weak": false,
+    "score": 1.5
+   },
+   {
+    "name": "sm_chair_patient_mobile_a01_01.usd",
+    "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_patient_mobile_a01/simready_usd/.thumbs/256x256/sm_chair_patient_mobile_a01_01.usd.png",
+    "caption": "Blue upholstered mobile patient chair with headrest",
+    "weak": false,
+    "score": 1.0
+   }
+  ]
+ }
+}

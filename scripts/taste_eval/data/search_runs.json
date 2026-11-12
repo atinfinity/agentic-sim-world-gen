@@ -1,0 +1,1680 @@
+{
+ "desk": [
+  {
+   "name": "sm_desk_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/desk_a01/simready_usd/.thumbs/256x256/sm_desk_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_electrical_main_terminal_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/electrical_main_terminal_a01/simready_usd/.thumbs/256x256/sm_electrical_main_terminal_a01_01.usd.png",
+   "score": 1.575,
+   "weak": false
+  },
+  {
+   "name": "sm_facilitySystem_beverageStation_breakArea_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/facilitySystem_beverageStation_breakArea_a01/simready_usd/.thumbs/256x256/sm_facilitySystem_beverageStation_breakArea_a01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  }
+ ],
+ "chair": [
+  {
+   "name": "sm_chair_office_fabric_manager_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_office_fabric_manager_a01/simready_usd/.thumbs/256x256/sm_chair_office_fabric_manager_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_chair_hospital_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_hospital_b01/simready_usd/.thumbs/256x256/sm_chair_hospital_b01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_warehouse_chair_office_amf_black_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/warehouse_chair_office_amf_black_a01/simready_usd/.thumbs/256x256/sm_warehouse_chair_office_amf_black_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_chair_hospital_b03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_hospital_b03/simready_usd/.thumbs/256x256/sm_chair_hospital_b03_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_chair_office_amf_black_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_office_amf_black_a01/simready_usd/.thumbs/256x256/sm_chair_office_amf_black_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_chair_surgical_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_surgical_a01/simready_usd/.thumbs/256x256/sm_chair_surgical_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_chair_surgical_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_surgical_b01/simready_usd/.thumbs/256x256/sm_chair_surgical_b01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_chair_hospital_b02_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Hospital/Room_and_Furniture/Chairs/Chair_B02/.thumbs/256x256/sm_chair_hospital_b02_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_chair_patient_mobile_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_patient_mobile_a01/simready_usd/.thumbs/256x256/sm_chair_patient_mobile_a01_01.usd.png",
+   "score": 1.0,
+   "weak": false
+  }
+ ],
+ "bookshelf": [
+  {
+   "name": "sm_storage_shelf_basic_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/storage_shelf_basic_a01/simready_usd/.thumbs/256x256/sm_storage_shelf_basic_a01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_storage_shelf_basic_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/storage_shelf_basic_b01/simready_usd/.thumbs/256x256/sm_storage_shelf_basic_b01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_shelve_steel_heavyDuty_a06_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/shelve_steel_heavyDuty_a06/simready_usd/.thumbs/256x256/sm_shelve_steel_heavyDuty_a06_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "D00661.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00661/simready_usd/.thumbs/256x256/D00661.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_bulk_storage_a03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_bulk_storage_a03/simready_usd/.thumbs/256x256/sm_rack_bulk_storage_a03_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_storage_shelf_basic_c01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/storage_shelf_basic_c01/simready_usd/.thumbs/256x256/sm_storage_shelf_basic_c01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_l05_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l05/simready_usd/.thumbs/256x256/sm_rack_composition_l05_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_l08_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l08/simready_usd/.thumbs/256x256/sm_rack_composition_l08_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_l03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l03/simready_usd/.thumbs/256x256/sm_rack_composition_l03_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_a06_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_a06/simready_usd/.thumbs/256x256/sm_rack_composition_a06_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  }
+ ],
+ "sofa": [
+  {
+   "name": "sm_sofa_soft_b02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/sofa_soft_b02/simready_usd/.thumbs/256x256/sm_sofa_soft_b02_01.usd.png",
+   "score": 2.25,
+   "weak": false
+  },
+  {
+   "name": "sm_sofa_soft_b03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/sofa_soft_b03/simready_usd/.thumbs/256x256/sm_sofa_soft_b03_01.usd.png",
+   "score": 2.25,
+   "weak": false
+  },
+  {
+   "name": "sm_sofa_soft_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/sofa_soft_b01/simready_usd/.thumbs/256x256/sm_sofa_soft_b01_01.usd.png",
+   "score": 2.25,
+   "weak": false
+  }
+ ],
+ "bed": [
+  {
+   "name": "sm_bed_hospital_standard_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/bed_hospital_standard_a01/simready_usd/.thumbs/256x256/sm_bed_hospital_standard_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_conveyor_belt_a05_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/conveyor_belt_a05/simready_usd/.thumbs/256x256/sm_conveyor_belt_a05_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  }
+ ],
+ "dining_table": [
+  {
+   "name": "sm_table_metal_stainless_a03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_metal_stainless_a03/simready_usd/.thumbs/256x256/sm_table_metal_stainless_a03_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_table_packing_heavyduty_c01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_packing_heavyduty_c01/simready_usd/.thumbs/256x256/sm_table_packing_heavyduty_c01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_table_packing_heavyduty_c02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_packing_heavyduty_c02/simready_usd/.thumbs/256x256/sm_table_packing_heavyduty_c02_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_facilitySystem_beverageStation_breakArea_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/facilitySystem_beverageStation_breakArea_a01/simready_usd/.thumbs/256x256/sm_facilitySystem_beverageStation_breakArea_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_table_deluxe_packing_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_deluxe_packing_a01/simready_usd/.thumbs/256x256/sm_table_deluxe_packing_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_table_deluxe_packing_a01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Warehouse/Equipment/Deluxe_Packing_Table_A01/.thumbs/256x256/sm_table_deluxe_packing_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_Xray_machine_buckyTable_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/Xray_machine_buckyTable_a01/simready_usd/.thumbs/256x256/sm_Xray_machine_buckyTable_a01_01.usd.png",
+   "score": 1.0,
+   "weak": false
+  }
+ ],
+ "tv": [
+  {
+   "name": "tv_100mrgb95bu.usd",
+   "thumb": "https://huggingface.co/datasets/LGElectronics/simready-assets/resolve/69631ae2ce268627059fb0b399632e618166f786/tv_100mrgb95bu/simready_usd/.thumbs/256x256/tv_100mrgb95bu.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "tv_oled77g6wua.usd",
+   "thumb": "https://huggingface.co/datasets/LGElectronics/simready-assets/resolve/528532c52b7adc2fef1cf7626bad7953791153a1/tv_oled77g6wua/simready_usd/.thumbs/256x256/tv_oled77g6wua.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_TV_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/TV_a01/simready_usd/.thumbs/256x256/sm_TV_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_digitalSystem_displayPanel_wall_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/digitalSystem_displayPanel_wall_a01/simready_usd/.thumbs/256x256/sm_digitalSystem_displayPanel_wall_a01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  }
+ ],
+ "fridge": [
+  {
+   "name": "refrigerator.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/0573053fa2c9174ca2a4678a462ec4dfd3035d59/refrigerator/simready_usd/.thumbs/256x256/refrigerator.usda.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_facilityEquipment_beverageFridge_display_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/facilityEquipment_beverageFridge_display_a01/simready_usd/.thumbs/256x256/sm_facilityEquipment_beverageFridge_display_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_refrigerator_e01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/refrigerator_e01/simready_usd/.thumbs/256x256/sm_refrigerator_e01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_refrigerator_d01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/refrigerator_d01/simready_usd/.thumbs/256x256/sm_refrigerator_d01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_refrigerator_c01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/refrigerator_c01/simready_usd/.thumbs/256x256/sm_refrigerator_c01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_appliance_refrigerator_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/appliance_refrigerator_a01/simready_usd/.thumbs/256x256/sm_appliance_refrigerator_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "refrigerator_lf31s6360s.usd",
+   "thumb": "https://huggingface.co/datasets/LGElectronics/simready-assets/resolve/862606e7ed3a98543ed5512d88de920dd4ec2faa/refrigerator_lf31s6360s/simready_usd/.thumbs/256x256/refrigerator_lf31s6360s.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_refrigerator_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/refrigerator_a01/simready_usd/.thumbs/256x256/sm_refrigerator_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "refrigerator_lrfs28xbs.usd",
+   "thumb": "https://huggingface.co/datasets/LGElectronics/simready-assets/resolve/c071e517c96ef837b3bdd1c2399bfa32d9bdbd18/refrigerator_lrfs28xbs/simready_usd/.thumbs/256x256/refrigerator_lrfs28xbs.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_refrigerator_f01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/refrigerator_f01/simready_usd/.thumbs/256x256/sm_refrigerator_f01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  }
+ ],
+ "plant": [
+  {
+   "name": "D00456.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00456/simready_usd/.thumbs/256x256/D00456.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "D00655.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00655/simready_usd/.thumbs/256x256/D00655.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "D00647.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00647/simready_usd/.thumbs/256x256/D00647.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "D00621.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00621/simready_usd/.thumbs/256x256/D00621.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "D00832.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00832/simready_usd/.thumbs/256x256/D00832.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "D00262.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00262/simready_usd/.thumbs/256x256/D00262.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "D00305.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00305/simready_usd/.thumbs/256x256/D00305.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "D00378.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00378/simready_usd/.thumbs/256x256/D00378.usd.png",
+   "score": 1.35,
+   "weak": false
+  },
+  {
+   "name": "D00622.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00622/simready_usd/.thumbs/256x256/D00622.usd.png",
+   "score": 1.35,
+   "weak": false
+  },
+  {
+   "name": "D00377.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00377/simready_usd/.thumbs/256x256/D00377.usd.png",
+   "score": 1.25,
+   "weak": false
+  }
+ ],
+ "trash": [
+  {
+   "name": "pedal_trash_can.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/0573053fa2c9174ca2a4678a462ec4dfd3035d59/pedal_trash_can/simready_usd/.thumbs/256x256/pedal_trash_can.usda.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_bin_waste_a04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/bin_waste_a04/simready_usd/.thumbs/256x256/sm_bin_waste_a04_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_trashCan_office_gray_a03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/trashCan_office_gray_a03/simready_usd/.thumbs/256x256/sm_trashCan_office_gray_a03_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_bin_waste_a03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/bin_waste_a03/simready_usd/.thumbs/256x256/sm_bin_waste_a03_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_wasteManagement_trashCan_roundPlastic_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/wasteManagement_trashCan_roundPlastic_a01/simready_usd/.thumbs/256x256/sm_wasteManagement_trashCan_roundPlastic_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_bin_waste_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/bin_waste_a01/simready_usd/.thumbs/256x256/sm_bin_waste_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "wheelie_bin.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/65920f9ea74b580e137ba9886964ca256256b421/wheelie_bin/simready_usd/.thumbs/256x256/wheelie_bin.usda.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_trashCan_office_black_a03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/trashCan_office_black_a03/simready_usd/.thumbs/256x256/sm_trashCan_office_black_a03_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_wasteManagement_recyclingBin_multiStream_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/wasteManagement_recyclingBin_multiStream_a01/simready_usd/.thumbs/256x256/sm_wasteManagement_recyclingBin_multiStream_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_trashCan_office_beige_a03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/trashCan_office_beige_a03/simready_usd/.thumbs/256x256/sm_trashCan_office_beige_a03_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  }
+ ],
+ "lamp": [
+  {
+   "name": "desk_lamp.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/0573053fa2c9174ca2a4678a462ec4dfd3035d59/desk_lamp/simready_usd/.thumbs/256x256/desk_lamp.usda.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_lamp_table_bedside_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_table_bedside_a01/simready_usd/.thumbs/256x256/sm_lamp_table_bedside_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_lighting_taskLight_adjustableArmBench_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lighting_taskLight_adjustableArmBench_a01/simready_usd/.thumbs/256x256/sm_lighting_taskLight_adjustableArmBench_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "D00261.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00261/simready_usd/.thumbs/256x256/D00261.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_lamp_uvc_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_uvc_a01/simready_usd/.thumbs/256x256/sm_lamp_uvc_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_lamp_ceiling_1m_rectangle_a02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_ceiling_1m_rectangle_a02/simready_usd/.thumbs/256x256/sm_lamp_ceiling_1m_rectangle_a02_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_lamp_uvc_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_uvc_b01/simready_usd/.thumbs/256x256/sm_lamp_uvc_b01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_lamp_ceiling_50cm_square_a02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_ceiling_50cm_square_a02/simready_usd/.thumbs/256x256/sm_lamp_ceiling_50cm_square_a02_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_lamp_ceiling_1m_rectangle_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_ceiling_1m_rectangle_a01/simready_usd/.thumbs/256x256/sm_lamp_ceiling_1m_rectangle_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_lamp_ceiling_50cm_square_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/lamp_ceiling_50cm_square_a01/simready_usd/.thumbs/256x256/sm_lamp_ceiling_50cm_square_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  }
+ ],
+ "whiteboard": [
+  {
+   "name": "D00038.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00038/simready_usd/.thumbs/256x256/D00038.usd.png",
+   "score": 1.35,
+   "weak": false
+  }
+ ],
+ "conf_table": [
+  {
+   "name": "sm_table_packing_heavyduty_c01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_packing_heavyduty_c01/simready_usd/.thumbs/256x256/sm_table_packing_heavyduty_c01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_table_metal_stainless_a03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_metal_stainless_a03/simready_usd/.thumbs/256x256/sm_table_metal_stainless_a03_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_table_packing_heavyduty_c02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_packing_heavyduty_c02/simready_usd/.thumbs/256x256/sm_table_packing_heavyduty_c02_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_facilitySystem_beverageStation_breakArea_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/facilitySystem_beverageStation_breakArea_a01/simready_usd/.thumbs/256x256/sm_facilitySystem_beverageStation_breakArea_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_table_deluxe_packing_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_deluxe_packing_a01/simready_usd/.thumbs/256x256/sm_table_deluxe_packing_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_Xray_machine_buckyTable_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/Xray_machine_buckyTable_a01/simready_usd/.thumbs/256x256/sm_Xray_machine_buckyTable_a01_01.usd.png",
+   "score": 1.0,
+   "weak": false
+  }
+ ],
+ "locker": [
+  {
+   "name": "sm_facilityFurniture_lockerUnit_multiDoor_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/facilityFurniture_lockerUnit_multiDoor_a01/simready_usd/.thumbs/256x256/sm_facilityFurniture_lockerUnit_multiDoor_a01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_storage_locker_double_bench_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/storage_locker_double_bench_b01/simready_usd/.thumbs/256x256/sm_storage_locker_double_bench_b01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_storage_locker_double_bench_b03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/storage_locker_double_bench_b03/simready_usd/.thumbs/256x256/sm_storage_locker_double_bench_b03_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_table_bedside_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_bedside_b01/simready_usd/.thumbs/256x256/sm_table_bedside_b01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_table_bedside_b01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Hospital/Room_and_Furniture/Table_Bedside_B01/.thumbs/256x256/sm_table_bedside_b01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  }
+ ],
+ "filing": [
+  {
+   "name": "sm_cabinet_file_d04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_d04/simready_usd/.thumbs/256x256/sm_cabinet_file_d04_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_cabinet_file_d01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_d01/simready_usd/.thumbs/256x256/sm_cabinet_file_d01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_cabinet_file_c04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_c04/simready_usd/.thumbs/256x256/sm_cabinet_file_c04_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_cabinet_file_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a01/simready_usd/.thumbs/256x256/sm_cabinet_file_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_cabinet_file_a02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a02/simready_usd/.thumbs/256x256/sm_cabinet_file_a02_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_cabinet_file_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_b01/simready_usd/.thumbs/256x256/sm_cabinet_file_b01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_cabinet_file_c03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_c03/simready_usd/.thumbs/256x256/sm_cabinet_file_c03_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_cabinet_file_b02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_b02/simready_usd/.thumbs/256x256/sm_cabinet_file_b02_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_cabinet_file_c01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_c01/simready_usd/.thumbs/256x256/sm_cabinet_file_c01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_cabinet_file_a03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cabinet_file_a03/simready_usd/.thumbs/256x256/sm_cabinet_file_a03_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  }
+ ],
+ "monitor": [
+  {
+   "name": "sm_computer_monitor_office_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/computer_monitor_office_a01/simready_usd/.thumbs/256x256/sm_computer_monitor_office_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_monitor_c02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/monitor_c02/simready_usd/.thumbs/256x256/sm_monitor_c02_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "monitor_27gx790a.usd",
+   "thumb": "https://huggingface.co/datasets/LGElectronics/simready-assets/resolve/e965976d90f025237ad9ea8881f5f82755f26d9d/monitor_27gx790a/simready_usd/.thumbs/256x256/monitor_27gx790a.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_panel_control_surgery_room_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/panel_control_surgery_room_a01/simready_usd/.thumbs/256x256/sm_panel_control_surgery_room_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_monitor_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/monitor_b01/simready_usd/.thumbs/256x256/sm_monitor_b01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_monitor_c03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/monitor_c03/simready_usd/.thumbs/256x256/sm_monitor_c03_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_monitor_c01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/monitor_c01/simready_usd/.thumbs/256x256/sm_monitor_c01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_monitor_a03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/monitor_a03/simready_usd/.thumbs/256x256/sm_monitor_a03_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_monitor_a02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/monitor_a02/simready_usd/.thumbs/256x256/sm_monitor_a02_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_monitor_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/monitor_a01/simready_usd/.thumbs/256x256/sm_monitor_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  }
+ ],
+ "laptop": [
+  {
+   "name": "laptop_16z90tl.usd",
+   "thumb": "https://huggingface.co/datasets/LGElectronics/simready-assets/resolve/8dc3f53f26e87fc1813e71c783511df8805b8b93/laptop_16z90tl/simready_usd/.thumbs/256x256/laptop_16z90tl.usd.png",
+   "score": 2.5,
+   "weak": false
+  }
+ ],
+ "mug": [
+  {
+   "name": "mug.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/0573053fa2c9174ca2a4678a462ec4dfd3035d59/mug/simready_usd/.thumbs/256x256/mug.usda.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_food_beverage_coffeeCup_a03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/food_beverage_coffeeCup_a03/simready_usd/.thumbs/256x256/sm_food_beverage_coffeeCup_a03_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_kitchenware_mug_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/kitchenware_mug_b01/simready_usd/.thumbs/256x256/sm_kitchenware_mug_b01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_food_beverage_coffeeCup_f01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/food_beverage_coffeeCup_f01/simready_usd/.thumbs/256x256/sm_food_beverage_coffeeCup_f01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_kitchenware_mug_h01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/kitchenware_mug_h01/simready_usd/.thumbs/256x256/sm_kitchenware_mug_h01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_food_beverage_coffeeCup_e01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/food_beverage_coffeeCup_e01/simready_usd/.thumbs/256x256/sm_food_beverage_coffeeCup_e01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_kitchenware_mug_e01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/kitchenware_mug_e01/simready_usd/.thumbs/256x256/sm_kitchenware_mug_e01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_food_beverage_coffeeCup_d01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/food_beverage_coffeeCup_d01/simready_usd/.thumbs/256x256/sm_food_beverage_coffeeCup_d01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "D00223.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00223/simready_usd/.thumbs/256x256/D00223.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "D00938.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00938/simready_usd/.thumbs/256x256/D00938.usd.png",
+   "score": 2.925,
+   "weak": false
+  }
+ ],
+ "pallet": [
+  {
+   "name": "pallet.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/0573053fa2c9174ca2a4678a462ec4dfd3035d59/pallet/simready_usd/.thumbs/256x256/pallet.usda.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_pallet_collar_wood_a06_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/pallet_collar_wood_a06/simready_usd/.thumbs/256x256/sm_pallet_collar_wood_a06_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_pallet_block_a07_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/pallet_block_a07/simready_usd/.thumbs/256x256/sm_pallet_block_a07_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_pallet_block_b02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/pallet_block_b02/simready_usd/.thumbs/256x256/sm_pallet_block_b02_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_pallet_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/pallet_b01/simready_usd/.thumbs/256x256/sm_pallet_b01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_pallet_wood_recycled_a05_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/pallet_wood_recycled_a05/simready_usd/.thumbs/256x256/sm_pallet_wood_recycled_a05_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_pallet_b03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/pallet_b03/simready_usd/.thumbs/256x256/sm_pallet_b03_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_pallet_block_a09_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/pallet_block_a09/simready_usd/.thumbs/256x256/sm_pallet_block_a09_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_pallet_block_a04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/pallet_block_a04/simready_usd/.thumbs/256x256/sm_pallet_block_a04_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_pallet_block_b03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/pallet_block_b03/simready_usd/.thumbs/256x256/sm_pallet_block_b03_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  }
+ ],
+ "cardboard": [
+  {
+   "name": "sm_box_cardboard_b02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/box_cardboard_b02/simready_usd/.thumbs/256x256/sm_box_cardboard_b02_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "shipping_box.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/0573053fa2c9174ca2a4678a462ec4dfd3035d59/shipping_box/simready_usd/.thumbs/256x256/shipping_box.usda.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_box_cardboard_large_b02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/box_cardboard_large_b02/simready_usd/.thumbs/256x256/sm_box_cardboard_large_b02_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_box_flat_a06_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/box_flat_a06/simready_usd/.thumbs/256x256/sm_box_flat_a06_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_box_cardboard_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/box_cardboard_b01/simready_usd/.thumbs/256x256/sm_box_cardboard_b01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_box_printer_a10_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/box_printer_a10/simready_usd/.thumbs/256x256/sm_box_printer_a10_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_box_cardboard_large_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/box_cardboard_large_b01/simready_usd/.thumbs/256x256/sm_box_cardboard_large_b01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_box_cardboard_d02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/box_cardboard_d02/simready_usd/.thumbs/256x256/sm_box_cardboard_d02_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_box_cardboard_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/box_cardboard_a01/simready_usd/.thumbs/256x256/sm_box_cardboard_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "D00927.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00927/simready_usd/.thumbs/256x256/D00927.usd.png",
+   "score": 3.25,
+   "weak": false
+  }
+ ],
+ "rack": [
+  {
+   "name": "sm_rack_f04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_f04/simready_usd/.thumbs/256x256/sm_rack_f04_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_l04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l04/simready_usd/.thumbs/256x256/sm_rack_composition_l04_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_storage_shelf_basic_c01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/storage_shelf_basic_c01/simready_usd/.thumbs/256x256/sm_storage_shelf_basic_c01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_l06_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l06/simready_usd/.thumbs/256x256/sm_rack_composition_l06_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_l04_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Warehouse/Racks/Compositions/L04_Rack_Composition/.thumbs/256x256/sm_rack_composition_l04_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_f04_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Warehouse/Racks/F04_Rack/.thumbs/256x256/sm_rack_f04_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_storage_shelf_basic_c01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Warehouse/Racks/Storage_Shelf_Basic_C01/.thumbs/256x256/sm_storage_shelf_basic_c01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_large_empty_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_large_empty_a01/simready_usd/.thumbs/256x256/sm_rack_large_empty_a01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_a05_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_a05/simready_usd/.thumbs/256x256/sm_rack_composition_a05_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_storage_tire_rack_d01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/storage_tire_rack_d01/simready_usd/.thumbs/256x256/sm_storage_tire_rack_d01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  }
+ ],
+ "hand_truck": [
+  {
+   "name": "sm_handTruck_convertible_steel_orange_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/handTruck_convertible_steel_orange_a01/simready_usd/.thumbs/256x256/sm_handTruck_convertible_steel_orange_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_handTruck_convertible_steel_red_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/handTruck_convertible_steel_red_a01/simready_usd/.thumbs/256x256/sm_handTruck_convertible_steel_red_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_handTruck_convertible_aluminum_a02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/handTruck_convertible_aluminum_a02/simready_usd/.thumbs/256x256/sm_handTruck_convertible_aluminum_a02_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_handTruck_convertible_aluminum_a04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/handTruck_convertible_aluminum_a04/simready_usd/.thumbs/256x256/sm_handTruck_convertible_aluminum_a04_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_vehicleSupport_hydraulic_rolling_platform_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/vehicleSupport_hydraulic_rolling_platform_b01/simready_usd/.thumbs/256x256/sm_vehicleSupport_hydraulic_rolling_platform_b01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_handTruck_convertible_aluminum_a02_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Warehouse/Equipment/Hand_Truck_Convertible_Aluminum_A02/.thumbs/256x256/sm_handTruck_convertible_aluminum_a02_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_handTruck_convertible_aluminum_a04_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Warehouse/Equipment/Hand_Truck_Convertible_Aluminum_A04/.thumbs/256x256/sm_handTruck_convertible_aluminum_a04_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_cart_computer_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cart_computer_a01/simready_usd/.thumbs/256x256/sm_cart_computer_a01_01.usd.png",
+   "score": 2.25,
+   "weak": false
+  },
+  {
+   "name": "sm_trolley_instrument_b03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/trolley_instrument_b03/simready_usd/.thumbs/256x256/sm_trolley_instrument_b03_01.usd.png",
+   "score": 2.25,
+   "weak": false
+  },
+  {
+   "name": "sm_vehicleSupport_rolling_dolly_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/vehicleSupport_rolling_dolly_b01/simready_usd/.thumbs/256x256/sm_vehicleSupport_rolling_dolly_b01_01.usd.png",
+   "score": 2.25,
+   "weak": false
+  }
+ ],
+ "forklift": [
+  {
+   "name": "sm_vehicle_forklift_red_c01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/vehicle_forklift_red_c01/simready_usd/.thumbs/256x256/sm_vehicle_forklift_red_c01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_vehicleSupport_hydraulic_rolling_platform_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/vehicleSupport_hydraulic_rolling_platform_b01/simready_usd/.thumbs/256x256/sm_vehicleSupport_hydraulic_rolling_platform_b01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_vehicle_forklift_blue_c01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/vehicle_forklift_blue_c01/simready_usd/.thumbs/256x256/sm_vehicle_forklift_blue_c01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_vehicle_forklift_orange_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/vehicle_forklift_orange_a01/simready_usd/.thumbs/256x256/sm_vehicle_forklift_orange_a01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_vehicle_forklift_red_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/vehicle_forklift_red_b01/simready_usd/.thumbs/256x256/sm_vehicle_forklift_red_b01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_vehicle_forklift_blue_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/vehicle_forklift_blue_a01/simready_usd/.thumbs/256x256/sm_vehicle_forklift_blue_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_pallet_rough_black_a03_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Warehouse/Pallets/Rough_Black_Pallet_A03_01/.thumbs/256x256/sm_pallet_rough_black_a03_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "S_ForkliftFork.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Props/Forklift/.thumbs/256x256/S_ForkliftFork.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "forklift.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/Props/Forklift/.thumbs/256x256/forklift.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_consumable_antifreeze_diesel_engine_a01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Machines/Automotive/Consumables/Antifreeze_Diesel_Engine_A01/.thumbs/256x256/sm_consumable_antifreeze_diesel_engine_a01_01.usd.png",
+   "score": 1.35,
+   "weak": false
+  }
+ ],
+ "cone": [
+  {
+   "name": "traffic_cones_barriers.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/11da4ca51b2bd4b44d2ba7a5f46bb37342615e42/traffic_cones_barriers/simready_usd/.thumbs/256x256/traffic_cones_barriers.usda.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_sign_wetFloor_a02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/sign_wetFloor_a02/simready_usd/.thumbs/256x256/sm_sign_wetFloor_a02_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_sign_floor_movable_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/sign_floor_movable_a01/simready_usd/.thumbs/256x256/sm_sign_floor_movable_a01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  }
+ ],
+ "bin": [
+  {
+   "name": "D00731.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00731/simready_usd/.thumbs/256x256/D00731.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "attached_lid_tote.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/2bf134c5b19e0f3d31b82350be9af96c4f5a4e49/attached_lid_tote/simready_usd/.thumbs/256x256/attached_lid_tote.usda.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_equipment_multi_tier_bin_cart_c01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/equipment_multi_tier_bin_cart_c01/simready_usd/.thumbs/256x256/sm_equipment_multi_tier_bin_cart_c01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_misc_basket_plastic_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/misc_basket_plastic_a01/simready_usd/.thumbs/256x256/sm_misc_basket_plastic_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "small_load_carrier.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/0573053fa2c9174ca2a4678a462ec4dfd3035d59/small_load_carrier/simready_usd/.thumbs/256x256/small_load_carrier.usda.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "D00817.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00817/simready_usd/.thumbs/256x256/D00817.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "D00814.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00814/simready_usd/.thumbs/256x256/D00814.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_crate_white_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/crate_white_a01/simready_usd/.thumbs/256x256/sm_crate_white_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_container_white_c04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/container_white_c04/simready_usd/.thumbs/256x256/sm_container_white_c04_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_container_black_c04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/container_black_c04/simready_usd/.thumbs/256x256/sm_container_black_c04_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  }
+ ],
+ "barrel": [
+  {
+   "name": "sm_waste_recycling_container_c01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/waste_recycling_container_c01/simready_usd/.thumbs/256x256/sm_waste_recycling_container_c01_01.usd.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_drum_plastic_natural_a05_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/drum_plastic_natural_a05/simready_usd/.thumbs/256x256/sm_drum_plastic_natural_a05_01.usd.png",
+   "score": 1.75,
+   "weak": false
+  },
+  {
+   "name": "sm_drum_plastic_black_a05_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/drum_plastic_black_a05/simready_usd/.thumbs/256x256/sm_drum_plastic_black_a05_01.usd.png",
+   "score": 1.75,
+   "weak": false
+  },
+  {
+   "name": "sm_drum_plastic_natural_a04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/drum_plastic_natural_a04/simready_usd/.thumbs/256x256/sm_drum_plastic_natural_a04_01.usd.png",
+   "score": 1.75,
+   "weak": false
+  },
+  {
+   "name": "sm_drum_plastic_blue_a04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/drum_plastic_blue_a04/simready_usd/.thumbs/256x256/sm_drum_plastic_blue_a04_01.usd.png",
+   "score": 1.75,
+   "weak": false
+  },
+  {
+   "name": "sm_drum_fiber_a04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/drum_fiber_a04/simready_usd/.thumbs/256x256/sm_drum_fiber_a04_01.usd.png",
+   "score": 1.75,
+   "weak": false
+  },
+  {
+   "name": "sm_drum_plastic_blue_a02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/drum_plastic_blue_a02/simready_usd/.thumbs/256x256/sm_drum_plastic_blue_a02_01.usd.png",
+   "score": 1.75,
+   "weak": false
+  },
+  {
+   "name": "sm_drum_plastic_nesting_a02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/drum_plastic_nesting_a02/simready_usd/.thumbs/256x256/sm_drum_plastic_nesting_a02_01.usd.png",
+   "score": 1.75,
+   "weak": false
+  },
+  {
+   "name": "sm_drum_plastic_blue_a03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/drum_plastic_blue_a03/simready_usd/.thumbs/256x256/sm_drum_plastic_blue_a03_01.usd.png",
+   "score": 1.75,
+   "weak": false
+  },
+  {
+   "name": "sm_drum_plastic_blue_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/drum_plastic_blue_a01/simready_usd/.thumbs/256x256/sm_drum_plastic_blue_a01_01.usd.png",
+   "score": 1.75,
+   "weak": false
+  }
+ ],
+ "fire_ext": [
+  {
+   "name": "sm_fireProtection_extinguisher_portable_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/fireProtection_extinguisher_portable_a01/simready_usd/.thumbs/256x256/sm_fireProtection_extinguisher_portable_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_fireProtection_extinguisher_portable_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/fireProtection_extinguisher_portable_b01/simready_usd/.thumbs/256x256/sm_fireProtection_extinguisher_portable_b01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_tools_fireExtinguisher_powder_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/tools_fireExtinguisher_powder_a01/simready_usd/.thumbs/256x256/sm_tools_fireExtinguisher_powder_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_tools_fireExtinguisher_CO2_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/tools_fireExtinguisher_CO2_a01/simready_usd/.thumbs/256x256/sm_tools_fireExtinguisher_CO2_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_fireExtinguisher_abc_a03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/fireExtinguisher_abc_a03/simready_usd/.thumbs/256x256/sm_fireExtinguisher_abc_a03_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_fireExtinguisher_stand_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/fireExtinguisher_stand_a01/simready_usd/.thumbs/256x256/sm_fireExtinguisher_stand_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_fireProtection_suppressionCylinder_fixed_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/fireProtection_suppressionCylinder_fixed_a01/simready_usd/.thumbs/256x256/sm_fireProtection_suppressionCylinder_fixed_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_fireProtection_suppressionCylinder_fixed_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/fireProtection_suppressionCylinder_fixed_b01/simready_usd/.thumbs/256x256/sm_fireProtection_suppressionCylinder_fixed_b01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  }
+ ],
+ "hosp_bed": [
+  {
+   "name": "sm_bed_hospital_standard_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/bed_hospital_standard_a01/simready_usd/.thumbs/256x256/sm_bed_hospital_standard_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  }
+ ],
+ "wheelchair": [
+  {
+   "name": "sm_sign_hospital_sidewall_a02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/sign_hospital_sidewall_a02/simready_usd/.thumbs/256x256/sm_sign_hospital_sidewall_a02_01.usd.png",
+   "score": 0.0,
+   "weak": true
+  },
+  {
+   "name": "sm_chair_patient_mobile_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_patient_mobile_a01/simready_usd/.thumbs/256x256/sm_chair_patient_mobile_a01_01.usd.png",
+   "score": 0.0,
+   "weak": true
+  },
+  {
+   "name": "sm_chair_surgical_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_surgical_b01/simready_usd/.thumbs/256x256/sm_chair_surgical_b01_01.usd.png",
+   "score": 0.0,
+   "weak": true
+  },
+  {
+   "name": "shower_seat.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/1180ceda3b2dd1321bfe3930ba5ea86aed0068a2/shower_seat/simready_usd/.thumbs/256x256/shower_seat.usda.png",
+   "score": 0.0,
+   "weak": true
+  },
+  {
+   "name": "sm_serviceTool_oil_pan_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/serviceTool_oil_pan_a01/simready_usd/.thumbs/256x256/sm_serviceTool_oil_pan_a01_01.usd.png",
+   "score": 0.0,
+   "weak": true
+  },
+  {
+   "name": "D00503.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00503/simready_usd/.thumbs/256x256/D00503.usd.png",
+   "score": 0.0,
+   "weak": true
+  },
+  {
+   "name": "sm_trolley_instrument_b03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/trolley_instrument_b03/simready_usd/.thumbs/256x256/sm_trolley_instrument_b03_01.usd.png",
+   "score": 0.0,
+   "weak": true
+  },
+  {
+   "name": "sm_cart_mobile_c01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/cart_mobile_c01/simready_usd/.thumbs/256x256/sm_cart_mobile_c01_01.usd.png",
+   "score": 0.0,
+   "weak": true
+  },
+  {
+   "name": "sm_chair_surgical_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/chair_surgical_a01/simready_usd/.thumbs/256x256/sm_chair_surgical_a01_01.usd.png",
+   "score": 0.0,
+   "weak": true
+  },
+  {
+   "name": "sm_stool_mobile_padded_vinyl_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/stool_mobile_padded_vinyl_a01/simready_usd/.thumbs/256x256/sm_stool_mobile_padded_vinyl_a01_01.usd.png",
+   "score": 0.0,
+   "weak": true
+  }
+ ],
+ "shelf_retail": [
+  {
+   "name": "gondola_shelf.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/13cffa7f9de2ce597e110b97d07c49e7e31e3cc0/gondola_shelf/simready_usd/.thumbs/256x256/gondola_shelf.usda.png",
+   "score": 2.925,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_f04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_f04/simready_usd/.thumbs/256x256/sm_rack_f04_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_l07_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l07/simready_usd/.thumbs/256x256/sm_rack_composition_l07_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_l06_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l06/simready_usd/.thumbs/256x256/sm_rack_composition_l06_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_l16_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_l16/simready_usd/.thumbs/256x256/sm_rack_l16_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_l04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l04/simready_usd/.thumbs/256x256/sm_rack_composition_l04_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_shelve_steel_heavyDuty_a06_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/shelve_steel_heavyDuty_a06/simready_usd/.thumbs/256x256/sm_shelve_steel_heavyDuty_a06_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_l10_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l10/simready_usd/.thumbs/256x256/sm_rack_composition_l10_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_l03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_l03/simready_usd/.thumbs/256x256/sm_rack_composition_l03_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_f10_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_f10/simready_usd/.thumbs/256x256/sm_rack_f10_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  }
+ ],
+ "bench": [
+  {
+   "name": "articulation_test_bench.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/72ba38c2422acaba6875bd9206ddd4976dd7c16b/articulation_test_bench/simready_usd/.thumbs/256x256/articulation_test_bench.usda.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_testingTool_brake_test_benches_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/testingTool_brake_test_benches_a01/simready_usd/.thumbs/256x256/sm_testingTool_brake_test_benches_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "gate_seating.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/0573053fa2c9174ca2a4678a462ec4dfd3035d59/gate_seating/simready_usd/.thumbs/256x256/gate_seating.usda.png",
+   "score": 1.575,
+   "weak": false
+  },
+  {
+   "name": "sm_storage_locker_double_bench_b01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/storage_locker_double_bench_b01/simready_usd/.thumbs/256x256/sm_storage_locker_double_bench_b01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "shower_seat.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/1180ceda3b2dd1321bfe3930ba5ea86aed0068a2/shower_seat/simready_usd/.thumbs/256x256/shower_seat.usda.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_storage_locker_double_bench_b03_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/storage_locker_double_bench_b03/simready_usd/.thumbs/256x256/sm_storage_locker_double_bench_b03_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_furniture_workbench_standard_e01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/furniture_workbench_standard_e01/simready_usd/.thumbs/256x256/sm_furniture_workbench_standard_e01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_furniture_workbench_standard_d01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/furniture_workbench_standard_d01/simready_usd/.thumbs/256x256/sm_furniture_workbench_standard_d01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "security_divest_station.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/3d9428427efcc586e6004c6a4d6f6f0bc990620e/security_divest_station/simready_usd/.thumbs/256x256/security_divest_station.usda.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_table_packing_heavyduty_c02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/table_packing_heavyduty_c02/simready_usd/.thumbs/256x256/sm_table_packing_heavyduty_c02_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  }
+ ],
+ "car": [
+  {
+   "name": "sm_bodyPart_bumper_rear_c01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/bodyPart_bumper_rear_c01/simready_usd/.thumbs/256x256/sm_bodyPart_bumper_rear_c01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_bodyPart_car_side_mirror_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/bodyPart_car_side_mirror_a01/simready_usd/.thumbs/256x256/sm_bodyPart_car_side_mirror_a01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_bodyPart_boot_lid_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/bodyPart_boot_lid_a01/simready_usd/.thumbs/256x256/sm_bodyPart_boot_lid_a01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_steeringSystem_steering_wheel_d01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/steeringSystem_steering_wheel_d01/simready_usd/.thumbs/256x256/sm_steeringSystem_steering_wheel_d01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_bodyPart_hood_d01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Machines/Automotive/Body_Parts/Body_Part_Hood_D01/.thumbs/256x256/sm_bodyPart_hood_d01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_bodyPart_bumper_front_c01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Machines/Automotive/Body_Parts/Front_Bumper_C01/.thumbs/256x256/sm_bodyPart_bumper_front_c01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_bodyPart_spoiler_a01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Machines/Automotive/Body_Parts/Spoiler_A01/.thumbs/256x256/sm_bodyPart_spoiler_a01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_bodyPart_tailLight_a01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Machines/Automotive/Body_Parts/Tail_Light_A01/.thumbs/256x256/sm_bodyPart_tailLight_a01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_steeringSystem_steering_wheel_e01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Machines/Automotive/Steering/Steering_Wheel_E01/.thumbs/256x256/sm_steeringSystem_steering_wheel_e01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_steeringSystem_steering_wheel_f01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Machines/Automotive/Steering/Steering_Wheel_F01/.thumbs/256x256/sm_steeringSystem_steering_wheel_f01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  }
+ ],
+ "server_rack": [
+  {
+   "name": "VR3307_main.usd",
+   "thumb": "https://huggingface.co/datasets/Vertiv/simready-assets/resolve/a124f9c9bc84c8203b52ae7026c2b18b5f92a2b3/VR3307/simready_usd/.thumbs/256x256/VR3307_main.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "_16OCP_ORV3_racks_Computer_racks_main.usd",
+   "thumb": "https://huggingface.co/datasets/Vertiv/simready-assets/resolve/c0d2888a8bb107b80ff708a7744741e69f9ab2c3/16OCP_ORV3_racks_Computer_racks/simready_usd/.thumbs/256x256/_16OCP_ORV3_racks_Computer_racks_main.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "VR3357_main.usd",
+   "thumb": "https://huggingface.co/datasets/Vertiv/simready-assets/resolve/38c9c1a3de37b6b00944fd57384819842b3ff0aa/VR3357/simready_usd/.thumbs/256x256/VR3357_main.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "gb300.usda",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-dsx/resolve/0a9e9ddd94d1bb6936588d2a4f7ee49b92ada794/GB300/simready_usd/.thumbs/256x256/gb300.usda.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_a05_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_a05/simready_usd/.thumbs/256x256/sm_rack_composition_a05_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_a04_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_a04/simready_usd/.thumbs/256x256/sm_rack_composition_a04_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_large_empty_a02_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_large_empty_a02/simready_usd/.thumbs/256x256/sm_rack_large_empty_a02_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_f10_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_f10/simready_usd/.thumbs/256x256/sm_rack_f10_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_composition_a08_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_composition_a08/simready_usd/.thumbs/256x256/sm_rack_composition_a08_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_rack_long_empty_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/rack_long_empty_a01/simready_usd/.thumbs/256x256/sm_rack_long_empty_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  }
+ ],
+ "vending": [
+  {
+   "name": "sm_machine_vending_snacksDrinks_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/machine_vending_snacksDrinks_a01/simready_usd/.thumbs/256x256/sm_machine_vending_snacksDrinks_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_machine_coffee_vending_a01_01.usd",
+   "thumb": "https://huggingface.co/datasets/nvidia/simready-assets/resolve/653d91e182011f357cf1644013cc94ddf194d349/machine_coffee_vending_a01/simready_usd/.thumbs/256x256/sm_machine_coffee_vending_a01_01.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "sm_safety_mobileShutoff_a01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Warehouse/Barriers/Mobile_Shutoff_Safety_A01/.thumbs/256x256/sm_safety_mobileShutoff_a01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_safety_mobileShutoff_a02_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Warehouse/Barriers/Mobile_Shutoff_Safety_A02/.thumbs/256x256/sm_safety_mobileShutoff_a02_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_safety_mobileShutoff_a03_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Warehouse/Barriers/Mobile_Shutoff_Safety_A03/.thumbs/256x256/sm_safety_mobileShutoff_a03_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_computer_terminal_pos_c01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Warehouse/Equipment/Computer_Terminal_Pos_C01_01/.thumbs/256x256/sm_computer_terminal_pos_c01_01.usd.png",
+   "score": 2.5,
+   "weak": false
+  },
+  {
+   "name": "sm_consumable_air_filter_cylindrical_a01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Machines/Automotive/Air_Filter_Cylindrical_A01/.thumbs/256x256/sm_consumable_air_filter_cylindrical_a01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_consumable_antifreeze_coolant_a01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Machines/Automotive/Antifreeze_Coolant_A01/.thumbs/256x256/sm_consumable_antifreeze_coolant_a01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_bodyPart_boot_lid_b01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Machines/Automotive/Body_Parts/Body_Part_Boot_Lid_B01/.thumbs/256x256/sm_bodyPart_boot_lid_b01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  },
+  {
+   "name": "sm_bodyPart_boot_lid_c01_01.usd",
+   "thumb": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/6.1/Isaac/SimReady/Industrial/Machines/Automotive/Body_Parts/Body_Part_Boot_Lid_C01/.thumbs/256x256/sm_bodyPart_boot_lid_c01_01.usd.png",
+   "score": 1.5,
+   "weak": false
+  }
+ ],
+ "microwave": [
+  {
+   "name": "microwave_oven.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/0573053fa2c9174ca2a4678a462ec4dfd3035d59/microwave_oven/simready_usd/.thumbs/256x256/microwave_oven.usda.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "cooking_mser1130b.usd",
+   "thumb": "https://huggingface.co/datasets/LGElectronics/simready-assets/resolve/088bbc929fd9987d055904e7c92cc07108d2d872/cooking_mser1130b/simready_usd/.thumbs/256x256/cooking_mser1130b.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "D00516.usd",
+   "thumb": "https://huggingface.co/datasets/PalatialSim/palatial-nv-asset-library/resolve/69a87329036cec0440403351c12230970c4e67d8/D00516/simready_usd/.thumbs/256x256/D00516.usd.png",
+   "score": 3.25,
+   "weak": false
+  },
+  {
+   "name": "cooking_wcep6423f.usd",
+   "thumb": "https://huggingface.co/datasets/LGElectronics/simready-assets/resolve/8f9a62de4922ff922bdb0f8467cd0c765677c3a6/cooking_wcep6423f/simready_usd/.thumbs/256x256/cooking_wcep6423f.usd.png",
+   "score": 1.35,
+   "weak": false
+  },
+  {
+   "name": "range_oven.usda",
+   "thumb": "https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/0573053fa2c9174ca2a4678a462ec4dfd3035d59/range_oven/simready_usd/.thumbs/256x256/range_oven.usda.png",
+   "score": 1.0,
+   "weak": false
+  }
+ ]
+}

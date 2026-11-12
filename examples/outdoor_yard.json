@@ -1,0 +1,35 @@
+{
+  "name": "outdoor_yard",
+  "room": {
+    "name": "logistics yard", "outdoor": true, "width": 40.0, "depth": 30.0,
+    "floor": "grass", "lighting": "sun",
+    "areas": [
+      {"id": "road", "kind": "road", "name": "道路", "rect": [0, 0, 40, 7]},
+      {"id": "walk", "kind": "sidewalk", "name": "歩道", "rect": [0, 7, 40, 10]},
+      {"id": "drive", "kind": "road", "name": "構内通路", "rect": [16, 10, 22, 18]},
+      {"id": "apron", "kind": "plaza", "name": "荷捌き場", "rect": [4, 18, 36, 21], "surface": "concrete"},
+      {"id": "lawn", "kind": "grass", "name": "植栽", "polygon": [[0, 10], [14, 10], [14, 14], [4, 18], [0, 18]]}
+    ],
+    "buildings": [
+      {"id": "warehouse", "name": "倉庫", "rect": [4, 21, 36, 30], "height": 9.0, "surface": "metal_panel"}
+    ]
+  },
+  "objects": [
+    {"id": "pallets", "label": "木箱", "query": "plywood shipping crate", "alt_queries": ["crate"],
+     "min_size": [0.9, 0.9, 0.9], "max_size": [1.1, 1.1, 1.2], "zone": "apron",
+     "layout": {"against_wall": "warehouse:south", "along": 0.15}, "array": {"count": 6, "rows": 2, "spacing": 0.2}},
+    {"id": "forklift", "label": "フォークリフト", "query": "forklift", "min_size": [1.8, 0.9, 1.8], "max_size": [3.5, 1.6, 3.0],
+     "zone": "apron", "layout": {"against_wall": "warehouse:south", "along": 0.75, "gap": 0.8}},
+    {"id": "vending", "label": "自販機", "query": "vending machine", "min_size": [0.6, 0.5, 1.5],
+     "zone": "apron", "layout": {"against_wall": "warehouse:south", "along": 0.95}},
+    {"id": "bins", "label": "ゴミ箱", "query": "recycle waste container", "alt_queries": ["trash can"],
+     "min_size": [0.5, 0.4, 0.6], "max_size": [1.0, 1.0, 1.3], "zone": "walk",
+     "layout": {"against_wall": "north", "along": 0.2}, "array": {"count": 3, "spacing": 0.2}},
+    {"id": "bench", "label": "ベンチ", "query": "seating bench", "min_size": [1.2, 0.5, 0.4], "max_size": [2.5, 1.0, 1.0],
+     "zone": "walk", "layout": {"against_wall": "north", "along": 0.75}},
+    {"id": "barricade", "label": "工事バリケード", "query": "barricade", "alt_queries": ["traffic barrier"],
+     "zone": "road", "layout": {"against_wall": "north", "along": 0.5, "gap": 0.3}, "array": {"count": 3, "spacing": 0.1}},
+    {"id": "fence", "label": "フェンス", "query": "fence", "min_size": [1.5, 0.05, 1.5],
+     "layout": {"against_wall": "east", "along": 1.0}, "array": {"count": 3, "spacing": 0.0}}
+  ]
+}

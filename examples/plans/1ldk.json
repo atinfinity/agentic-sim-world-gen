@@ -1,0 +1,24 @@
+{
+  "units": "m",
+  "height": 2.4,
+  "walls": [
+    {"id": "s",   "start": [0, 0],   "end": [7.2, 0]},
+    {"id": "e",   "start": [7.2, 0], "end": [7.2, 6.0]},
+    {"id": "n",   "start": [7.2, 6.0], "end": [0, 6.0]},
+    {"id": "w",   "start": [0, 6.0], "end": [0, 0]},
+    {"id": "mid", "start": [4.2, 0], "end": [4.2, 6.0]},
+    {"id": "bath", "start": [4.2, 3.6], "end": [7.2, 3.6]}
+  ],
+  "openings": [
+    {"kind": "window", "wall": "s", "offset": 2.1, "width": 2.4, "sill": 0.1, "height": 2.0},
+    {"kind": "window", "wall": "e", "offset": 1.8, "width": 1.2},
+    {"kind": "door", "wall": "mid", "offset": 1.8, "width": 0.8},
+    {"kind": "door", "wall": "bath", "offset": 1.0, "width": 0.7},
+    {"kind": "door", "wall": "n", "offset": 6.4, "width": 0.9}
+  ],
+  "zones": [
+    {"id": "ldk", "name": "LDK", "polygon": [[0.06, 0.06], [4.14, 0.06], [4.14, 5.94], [0.06, 5.94]]},
+    {"id": "wa",  "name": "和室", "polygon": [[4.26, 0.06], [7.14, 0.06], [7.14, 3.54], [4.26, 3.54]], "floor": "tatami"},
+    {"id": "wet", "name": "洗面", "polygon": [[4.26, 3.66], [7.14, 3.66], [7.14, 5.94], [4.26, 5.94]]}
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "agentic-sim-world-gen": {
+      "command": ".venv/bin/agentic-sim-world-gen-mcp",
+      "args": [],
+      "env": {}
+    }
+  }
+}

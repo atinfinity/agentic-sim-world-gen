@@ -1,0 +1,947 @@
+{
+ "name": "office_interior",
+ "room": {
+  "name": "office",
+  "place": "office",
+  "width": 12.0,
+  "depth": 8.0,
+  "height": 2.7,
+  "floor": "carpet_gray",
+  "walls": "paint_white",
+  "lighting": "office",
+  "ceiling": true,
+  "baseboard": true,
+  "openings": [
+   {
+    "id": "entrance",
+    "kind": "door",
+    "wall": "south",
+    "offset": 1.5,
+    "width": 0.9
+   }
+  ]
+ },
+ "objects": [
+  {
+   "id": "desk1s0",
+   "query": "desk",
+   "label": "机 1s0",
+   "position": [
+    1.45,
+    2.55
+   ],
+   "facing_deg": 270,
+   "min_size": [
+    1.0,
+    0.5,
+    0.65
+   ],
+   "max_size": [
+    1.9,
+    1.0,
+    0.85
+   ],
+   "alt_queries": [
+    "office desk",
+    "computer desk"
+   ]
+  },
+  {
+   "id": "chair1s0",
+   "query": "black office chair",
+   "label": "椅子 1s0",
+   "layout": {
+    "in_front_of": "desk1s0",
+    "gap": 0.15
+   }
+  },
+  {
+   "id": "desk1n0",
+   "query": "desk",
+   "label": "机 1n0",
+   "position": [
+    1.45,
+    3.85
+   ],
+   "facing_deg": 90,
+   "min_size": [
+    1.0,
+    0.5,
+    0.65
+   ],
+   "max_size": [
+    1.9,
+    1.0,
+    0.85
+   ],
+   "alt_queries": [
+    "office desk",
+    "computer desk"
+   ]
+  },
+  {
+   "id": "chair1n0",
+   "query": "black office chair",
+   "label": "椅子 1n0",
+   "layout": {
+    "in_front_of": "desk1n0",
+    "gap": 0.15
+   }
+  },
+  {
+   "id": "panel10",
+   "query": "office partition panel",
+   "label": "デスクの間仕切り 1-0",
+   "position": [
+    1.45,
+    3.2
+   ],
+   "facing_deg": 270
+  },
+  {
+   "id": "desk1s1",
+   "query": "desk",
+   "label": "机 1s1",
+   "position": [
+    3.35,
+    2.55
+   ],
+   "facing_deg": 270,
+   "min_size": [
+    1.0,
+    0.5,
+    0.65
+   ],
+   "max_size": [
+    1.9,
+    1.0,
+    0.85
+   ],
+   "alt_queries": [
+    "office desk",
+    "computer desk"
+   ]
+  },
+  {
+   "id": "chair1s1",
+   "query": "black office chair",
+   "label": "椅子 1s1",
+   "layout": {
+    "in_front_of": "desk1s1",
+    "gap": 0.15
+   }
+  },
+  {
+   "id": "desk1n1",
+   "query": "desk",
+   "label": "机 1n1",
+   "position": [
+    3.35,
+    3.85
+   ],
+   "facing_deg": 90,
+   "min_size": [
+    1.0,
+    0.5,
+    0.65
+   ],
+   "max_size": [
+    1.9,
+    1.0,
+    0.85
+   ],
+   "alt_queries": [
+    "office desk",
+    "computer desk"
+   ]
+  },
+  {
+   "id": "chair1n1",
+   "query": "black office chair",
+   "label": "椅子 1n1",
+   "layout": {
+    "in_front_of": "desk1n1",
+    "gap": 0.15
+   }
+  },
+  {
+   "id": "panel11",
+   "query": "office partition panel",
+   "label": "デスクの間仕切り 1-1",
+   "position": [
+    3.35,
+    3.2
+   ],
+   "facing_deg": 270
+  },
+  {
+   "id": "desk2s0",
+   "query": "desk",
+   "label": "机 2s0",
+   "position": [
+    5.45,
+    2.55
+   ],
+   "facing_deg": 270,
+   "min_size": [
+    1.0,
+    0.5,
+    0.65
+   ],
+   "max_size": [
+    1.9,
+    1.0,
+    0.85
+   ],
+   "alt_queries": [
+    "office desk",
+    "computer desk"
+   ]
+  },
+  {
+   "id": "chair2s0",
+   "query": "black office chair",
+   "label": "椅子 2s0",
+   "layout": {
+    "in_front_of": "desk2s0",
+    "gap": 0.15
+   }
+  },
+  {
+   "id": "desk2n0",
+   "query": "desk",
+   "label": "机 2n0",
+   "position": [
+    5.45,
+    3.85
+   ],
+   "facing_deg": 90,
+   "min_size": [
+    1.0,
+    0.5,
+    0.65
+   ],
+   "max_size": [
+    1.9,
+    1.0,
+    0.85
+   ],
+   "alt_queries": [
+    "office desk",
+    "computer desk"
+   ]
+  },
+  {
+   "id": "chair2n0",
+   "query": "black office chair",
+   "label": "椅子 2n0",
+   "layout": {
+    "in_front_of": "desk2n0",
+    "gap": 0.15
+   }
+  },
+  {
+   "id": "panel20",
+   "query": "office partition panel",
+   "label": "デスクの間仕切り 2-0",
+   "position": [
+    5.45,
+    3.2
+   ],
+   "facing_deg": 270
+  },
+  {
+   "id": "desk2s1",
+   "query": "desk",
+   "label": "机 2s1",
+   "position": [
+    7.35,
+    2.55
+   ],
+   "facing_deg": 270,
+   "min_size": [
+    1.0,
+    0.5,
+    0.65
+   ],
+   "max_size": [
+    1.9,
+    1.0,
+    0.85
+   ],
+   "alt_queries": [
+    "office desk",
+    "computer desk"
+   ]
+  },
+  {
+   "id": "chair2s1",
+   "query": "black office chair",
+   "label": "椅子 2s1",
+   "layout": {
+    "in_front_of": "desk2s1",
+    "gap": 0.15
+   }
+  },
+  {
+   "id": "desk2n1",
+   "query": "desk",
+   "label": "机 2n1",
+   "position": [
+    7.35,
+    3.85
+   ],
+   "facing_deg": 90,
+   "min_size": [
+    1.0,
+    0.5,
+    0.65
+   ],
+   "max_size": [
+    1.9,
+    1.0,
+    0.85
+   ],
+   "alt_queries": [
+    "office desk",
+    "computer desk"
+   ]
+  },
+  {
+   "id": "chair2n1",
+   "query": "black office chair",
+   "label": "椅子 2n1",
+   "layout": {
+    "in_front_of": "desk2n1",
+    "gap": 0.15
+   }
+  },
+  {
+   "id": "panel21",
+   "query": "office partition panel",
+   "label": "デスクの間仕切り 2-1",
+   "position": [
+    7.35,
+    3.2
+   ],
+   "facing_deg": 270
+  },
+  {
+   "id": "glass_s1",
+   "query": "glass partition",
+   "label": "会議室のガラス間仕切り（南 1）",
+   "position": [
+    9.26,
+    4.35
+   ],
+   "facing_deg": 270
+  },
+  {
+   "id": "glass_door",
+   "query": "glass partition door",
+   "label": "会議室のガラス扉",
+   "position": [
+    10.31,
+    4.35
+   ],
+   "facing_deg": 270
+  },
+  {
+   "id": "glass_s2",
+   "query": "glass partition",
+   "label": "会議室のガラス間仕切り（南 2）",
+   "position": [
+    11.36,
+    4.35
+   ],
+   "facing_deg": 270
+  },
+  {
+   "id": "glass_w1",
+   "query": "glass partition",
+   "label": "会議室のガラス間仕切り（西 1）",
+   "position": [
+    8.7,
+    4.99
+   ],
+   "facing_deg": 180
+  },
+  {
+   "id": "glass_w2",
+   "query": "glass partition",
+   "label": "会議室のガラス間仕切り（西 2）",
+   "position": [
+    8.7,
+    6.19
+   ],
+   "facing_deg": 180
+  },
+  {
+   "id": "glass_w3",
+   "query": "glass partition",
+   "label": "会議室のガラス間仕切り（西 3）",
+   "position": [
+    8.7,
+    7.39
+   ],
+   "facing_deg": 180
+  },
+  {
+   "id": "meeting_table",
+   "query": "table",
+   "label": "会議テーブル",
+   "position": [
+    10.4,
+    6.19
+   ],
+   "facing_deg": 90,
+   "alt_queries": [
+    "conference table",
+    "meeting table"
+   ],
+   "min_size": [
+    1.4,
+    0.7,
+    0.68
+   ],
+   "max_size": [
+    2.0,
+    1.1,
+    0.8
+   ]
+  },
+  {
+   "id": "mchair0",
+   "query": "black office chair",
+   "label": "会議室の椅子 0",
+   "position": [
+    10.0,
+    7.095
+   ],
+   "facing_deg": 270
+  },
+  {
+   "id": "mchair1",
+   "query": "black office chair",
+   "label": "会議室の椅子 1",
+   "position": [
+    10.8,
+    7.095
+   ],
+   "facing_deg": 270
+  },
+  {
+   "id": "mchair2",
+   "query": "black office chair",
+   "label": "会議室の椅子 2",
+   "position": [
+    10.0,
+    5.285
+   ],
+   "facing_deg": 90
+  },
+  {
+   "id": "mchair3",
+   "query": "black office chair",
+   "label": "会議室の椅子 3",
+   "position": [
+    10.8,
+    5.285
+   ],
+   "facing_deg": 90
+  },
+  {
+   "id": "slat0",
+   "query": "wood slat wall panel",
+   "label": "木のルーバー壁 0",
+   "position": [
+    0.9,
+    8.0
+   ],
+   "layout": {
+    "against_wall": "north",
+    "gap": 0.0
+   }
+  },
+  {
+   "id": "slat1",
+   "query": "wood slat wall panel",
+   "label": "木のルーバー壁 1",
+   "position": [
+    2.1,
+    8.0
+   ],
+   "layout": {
+    "against_wall": "north",
+    "gap": 0.0
+   }
+  },
+  {
+   "id": "slat2",
+   "query": "wood slat wall panel",
+   "label": "木のルーバー壁 2",
+   "position": [
+    3.3,
+    8.0
+   ],
+   "layout": {
+    "against_wall": "north",
+    "gap": 0.0
+   }
+  },
+  {
+   "id": "carpet0",
+   "query": "carpet tile",
+   "label": "タイルカーペット 0",
+   "position": [
+    1.4,
+    7.0
+   ]
+  },
+  {
+   "id": "carpet1",
+   "query": "carpet tile",
+   "label": "タイルカーペット 1",
+   "position": [
+    2.4,
+    7.0
+   ]
+  },
+  {
+   "id": "carpet2",
+   "query": "carpet tile",
+   "label": "タイルカーペット 2",
+   "position": [
+    3.4,
+    7.0
+   ]
+  },
+  {
+   "id": "carpet3",
+   "query": "carpet tile",
+   "label": "タイルカーペット 3",
+   "position": [
+    1.4,
+    6.0
+   ]
+  },
+  {
+   "id": "carpet4",
+   "query": "carpet tile",
+   "label": "タイルカーペット 4",
+   "position": [
+    2.4,
+    6.0
+   ]
+  },
+  {
+   "id": "carpet5",
+   "query": "carpet tile",
+   "label": "タイルカーペット 5",
+   "position": [
+    3.4,
+    6.0
+   ]
+  },
+  {
+   "id": "sofa",
+   "query": "sofa",
+   "label": "待合のソファ",
+   "layout": {
+    "on": "carpet1",
+    "offset": [
+     0,
+     0.15
+    ],
+    "facing": "south"
+   },
+   "min_size": [
+    1.4,
+    0.7,
+    0.6
+   ],
+   "max_size": [
+    2.4,
+    1.1,
+    1.0
+   ]
+  },
+  {
+   "id": "pegboard",
+   "query": "pegboard wall panel",
+   "label": "有孔ボード",
+   "position": [
+    12.0,
+    3.2
+   ],
+   "layout": {
+    "against_wall": "east",
+    "gap": 0.0
+   }
+  },
+  {
+   "id": "cabinet",
+   "query": "storage cabinet",
+   "label": "収納棚",
+   "position": [
+    12.0,
+    1.9
+   ],
+   "layout": {
+    "against_wall": "east"
+   },
+   "max_size": [
+    1.2,
+    0.6,
+    1.2
+   ]
+  },
+  {
+   "id": "raised0",
+   "query": "raised floor panel",
+   "label": "OA フロア 0",
+   "position": [
+    8.4,
+    0.95
+   ]
+  },
+  {
+   "id": "raised1",
+   "query": "raised floor panel",
+   "label": "OA フロア 1",
+   "position": [
+    9.6,
+    0.95
+   ]
+  },
+  {
+   "id": "rack",
+   "query": "server rack",
+   "label": "サーバーラック",
+   "layout": {
+    "on": "raised0",
+    "facing": "north"
+   }
+  },
+  {
+   "id": "hatch",
+   "query": "floor access hatch",
+   "label": "床下点検口",
+   "position": [
+    9.6,
+    2.1
+   ]
+  },
+  {
+   "id": "ac0",
+   "query": "ceiling cassette air conditioner",
+   "label": "天井カセットエアコン 0",
+   "position": [
+    2.4,
+    3.2
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "ac1",
+   "query": "ceiling cassette air conditioner",
+   "label": "天井カセットエアコン 1",
+   "position": [
+    7.2,
+    3.2
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "ac2",
+   "query": "ceiling cassette air conditioner",
+   "label": "天井カセットエアコン 2",
+   "position": [
+    9.6,
+    6.8
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "diffuser0",
+   "query": "ceiling air diffuser",
+   "label": "天井の吹出し口 0",
+   "position": [
+    4.8,
+    2.0
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "diffuser1",
+   "query": "ceiling air diffuser",
+   "label": "天井の吹出し口 1",
+   "position": [
+    4.8,
+    6.0
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "diffuser2",
+   "query": "ceiling air diffuser",
+   "label": "天井の吹出し口 2",
+   "position": [
+    9.6,
+    2.0
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "sprinkler1",
+   "query": "sprinkler head",
+   "label": "スプリンクラー 1",
+   "position": [
+    2.4,
+    1.0
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "sprinkler2",
+   "query": "sprinkler head",
+   "label": "スプリンクラー 2",
+   "position": [
+    2.4,
+    4.6
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "sprinkler3",
+   "query": "sprinkler head",
+   "label": "スプリンクラー 3",
+   "position": [
+    2.4,
+    7.4
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "sprinkler4",
+   "query": "sprinkler head",
+   "label": "スプリンクラー 4",
+   "position": [
+    4.8,
+    1.0
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "sprinkler5",
+   "query": "sprinkler head",
+   "label": "スプリンクラー 5",
+   "position": [
+    4.8,
+    4.6
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "sprinkler6",
+   "query": "sprinkler head",
+   "label": "スプリンクラー 6",
+   "position": [
+    4.8,
+    7.4
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "sprinkler7",
+   "query": "sprinkler head",
+   "label": "スプリンクラー 7",
+   "position": [
+    7.2,
+    1.0
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "sprinkler8",
+   "query": "sprinkler head",
+   "label": "スプリンクラー 8",
+   "position": [
+    7.2,
+    4.6
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "sprinkler9",
+   "query": "sprinkler head",
+   "label": "スプリンクラー 9",
+   "position": [
+    7.2,
+    7.4
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "sprinkler10",
+   "query": "sprinkler head",
+   "label": "スプリンクラー 10",
+   "position": [
+    9.6,
+    1.0
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "sprinkler11",
+   "query": "sprinkler head",
+   "label": "スプリンクラー 11",
+   "position": [
+    9.6,
+    4.6
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "sprinkler12",
+   "query": "sprinkler head",
+   "label": "スプリンクラー 12",
+   "position": [
+    9.6,
+    6.0
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "smoke0",
+   "query": "smoke detector",
+   "label": "煙感知器 0",
+   "position": [
+    2.4,
+    5.8
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "smoke1",
+   "query": "smoke detector",
+   "label": "煙感知器 1",
+   "position": [
+    7.2,
+    5.2
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "smoke2",
+   "query": "smoke detector",
+   "label": "煙感知器 2",
+   "position": [
+    10.3,
+    7.6
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "elight0",
+   "query": "emergency light",
+   "label": "非常用照明 0",
+   "position": [
+    4.8,
+    4.0
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "elight1",
+   "query": "emergency light",
+   "label": "非常用照明 1",
+   "position": [
+    7.2,
+    1.4
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "elight2",
+   "query": "emergency light",
+   "label": "非常用照明 2",
+   "position": [
+    2.4,
+    0.6
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "ceiling_hatch",
+   "query": "ceiling access hatch",
+   "label": "天井点検口",
+   "position": [
+    7.2,
+    6.6
+   ],
+   "layout": {
+    "ceiling": true
+   }
+  },
+  {
+   "id": "exit_sign",
+   "query": "emergency exit sign",
+   "label": "避難口誘導灯",
+   "position": [
+    1.5,
+    0.022
+   ],
+   "facing_deg": 90,
+   "z": 2.2
+  }
+ ]
+}

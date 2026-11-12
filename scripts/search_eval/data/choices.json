@@ -1,0 +1,20 @@
+[
+ {
+  "query": "warehouse rack",
+  "alt_queries": [
+   "pallet rack",
+   "storage rack",
+   "shelving"
+  ],
+  "place": "warehouse",
+  "min_size": null,
+  "max_size": null,
+  "uri": null,
+  "name": "sm_rack_h3m_s02_01.usd",
+  "rank_then": null,
+  "count": 1,
+  "sources": [
+   "seed:warehouse example, grade 2 in grades.json"
+  ]
+ }
+]

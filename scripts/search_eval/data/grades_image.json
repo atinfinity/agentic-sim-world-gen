@@ -1,0 +1,22 @@
+{
+ "desk": {"metal_office_desk": 2, "WoodenTable_01": 0, "desk_lamp_arm_01": 0},
+ "bookshelf": {"Shelf_01": 2, "steel_frame_shelves_01": 1},
+ "sofa": {"Sofa_01": 2, "chinese_sofa": 2, "painted_wooden_sofa": 2, "sofa_02": 2, "sofa_03": 2},
+ "bed": {"GothicBed_01": 2, "vintage_day_bed": 1, "old_bed_frame": 1},
+ "dining_table": {"dining_table": 2, "gallinera_table": 1, "painted_wooden_table": 2, "round_wooden_table_01": 1, "round_wooden_table_02": 1},
+ "tv": {"Television_01": 2, "television_02": 2},
+ "lamp": {"desk_lamp_arm_01": 2, "industrial_pipe_lamp": 1},
+ "whiteboard": {"power_box_01": 0, "standing_chalkboard_01": 1, "clipboard": 0, "sm_safetyBoard_hseInformation_a01_01.usd": 1, "sm_box_corrugated_white_a11_01.usd": 0},
+ "conf_table": {"ClassicConsole_01": 0, "coffee_table_round_01": 0, "metal_office_desk": 1},
+ "laptop": {"circuit_board": 0, "classic_laptop": 2},
+ "barrel": {"Barrel_01": 2, "Barrel_02": 2, "barrel_03": 2},
+ "hosp_bed": {"old_bed_frame": 1},
+ "wheelchair": {"wheelchair_01": 2},
+ "bench": {"painted_wooden_bench": 2},
+ "car": {"covered_car": 2, "sm_bodyPart_spoiler_a01_01.usd": 0, "old_tyre": 0},
+ "microwave": {"vintage_microwave": 2, "electric_stove": 0},
+ "mug": {"sm_food_beverage_coffeeCup_d01_01.usd": 1},
+ "cardboard": {"sm_box_cardboard_d02_01.usd": 2},
+ "bin": {"sm_crate_white_a01_01.usd": 1},
+ "shelf_retail": {"sm_rack_composition_a08_01.usd": 1}
+}

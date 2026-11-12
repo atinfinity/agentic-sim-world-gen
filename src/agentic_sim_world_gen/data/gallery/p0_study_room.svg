@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="546" height="466" viewBox="0 0 546 466" font-family="sans-serif" font-size="12" class="wg-plan" data-x0="-0.1200" data-y1="2.8500" data-ppm="120.0000" data-margin="40">
+<rect width="546" height="466" fill="#fafafa"/>
+<defs><marker id="front" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3b82b6"/></marker></defs>
+<text x="40.0" y="26.0" fill="#444">床 wood_light / 壁 paint_white / 照明 home</text>
+<polygon points="54.4,382.0 491.2,382.0 491.2,54.4 54.4,54.4" fill="#e4d7cb"/>
+<line x1="100.0" y1="396.4" x2="100.0" y2="40.0" stroke="#000" stroke-opacity="0.06"/>
+<line x1="160.0" y1="396.4" x2="160.0" y2="40.0" stroke="#000" stroke-opacity="0.06"/>
+<line x1="220.0" y1="396.4" x2="220.0" y2="40.0" stroke="#000" stroke-opacity="0.06"/>
+<line x1="280.0" y1="396.4" x2="280.0" y2="40.0" stroke="#000" stroke-opacity="0.06"/>
+<line x1="340.0" y1="396.4" x2="340.0" y2="40.0" stroke="#000" stroke-opacity="0.06"/>
+<line x1="400.0" y1="396.4" x2="400.0" y2="40.0" stroke="#000" stroke-opacity="0.06"/>
+<line x1="460.0" y1="396.4" x2="460.0" y2="40.0" stroke="#000" stroke-opacity="0.06"/>
+<line x1="40.0" y1="336.4" x2="505.6" y2="336.4" stroke="#000" stroke-opacity="0.06"/>
+<line x1="40.0" y1="276.4" x2="505.6" y2="276.4" stroke="#000" stroke-opacity="0.06"/>
+<line x1="40.0" y1="216.4" x2="505.6" y2="216.4" stroke="#000" stroke-opacity="0.06"/>
+<line x1="40.0" y1="156.4" x2="505.6" y2="156.4" stroke="#000" stroke-opacity="0.06"/>
+<line x1="40.0" y1="96.4" x2="505.6" y2="96.4" stroke="#000" stroke-opacity="0.06"/>
+<polygon points="40.0,396.4 505.6,396.4 505.6,382.0 40.0,382.0" fill="#aeaeac"/>
+<polygon points="40.0,54.4 505.6,54.4 505.6,40.0 40.0,40.0" fill="#aeaeac"/>
+<polygon points="54.4,382.0 54.4,54.4 40.0,54.4 40.0,382.0" fill="#aeaeac"/>
+<polygon points="505.6,382.0 505.6,54.4 491.2,54.4 491.2,382.0" fill="#aeaeac"/>
+<circle cx="163.6" cy="300.1" r="4" fill="#ffd54f" stroke="#b08900"/>
+<circle cx="382.0" cy="300.1" r="4" fill="#ffd54f" stroke="#b08900"/>
+<circle cx="163.6" cy="136.3" r="4" fill="#ffd54f" stroke="#b08900"/>
+<circle cx="382.0" cy="136.3" r="4" fill="#ffd54f" stroke="#b08900"/>
+<g class="wg-obj edit" data-id="desk" data-label="机" data-x="1.8200" data-y="2.3090" data-yaw="-90.000" data-front="0.000" data-r="0.986" data-layout="1">
+<polygon points="164.7,56.8 164.7,153.0 380.9,153.0 380.9,56.8" fill="#4e79a7" fill-opacity="0.35" stroke="#333" stroke-width="1.5"/>
+<line x1="272.8" y1="104.9" x2="272.8" y2="153.0" stroke="#333" stroke-width="1" marker-end="url(#front)"/>
+<text x="272.8" y="102.9" text-anchor="middle" font-weight="bold">机</text>
+<text x="272.8" y="116.9" text-anchor="middle" fill="#444" font-size="10">0.80×1.80×0.76m</text>
+</g>
+<g class="wg-obj edit" data-id="chair" data-label="オフィスチェア" data-x="1.8200" data-y="1.4550" data-yaw="180.000" data-front="270.000" data-r="0.470" data-layout="1">
+<polygon points="310.1,165.0 235.5,165.0 235.5,249.8 310.1,249.8" fill="#f28e2b" fill-opacity="0.35" stroke="#333" stroke-width="1.5"/>
+<line x1="272.8" y1="207.4" x2="272.8" y2="165.0" stroke="#333" stroke-width="1" marker-end="url(#front)"/>
+<text x="272.8" y="205.4" text-anchor="middle" font-weight="bold">オフィスチェア</text>
+<text x="272.8" y="219.4" text-anchor="middle" fill="#444" font-size="10">0.62×0.71×1.09m</text>
+</g>
+<g class="wg-obj edit" data-id="bookshelf" data-label="本棚" data-x="3.4915" data-y="1.3650" data-yaw="-90.000" data-front="270.000" data-r="0.518" data-layout="1">
+<polygon points="458.0,158.0 458.0,278.4 488.8,278.4 488.8,158.0" fill="#59a14f" fill-opacity="0.35" stroke="#333" stroke-width="1.5"/>
+<line x1="473.4" y1="218.2" x2="458.0" y2="218.2" stroke="#333" stroke-width="1" marker-end="url(#front)"/>
+<text x="473.4" y="216.2" text-anchor="middle" font-weight="bold">本棚</text>
+<text x="473.4" y="230.2" text-anchor="middle" fill="#444" font-size="10">1.00×0.26×2.08m</text>
+</g>
+<g class="wg-widths" opacity="0.6" data-need="0.9">
+<rect x="408.4" y="184.0" width="6.0" height="6.0" fill="#f57c00"/>
+<rect x="408.4" y="178.0" width="6.0" height="6.0" fill="#f57c00"/>
+<rect x="408.4" y="172.0" width="6.0" height="6.0" fill="#f57c00"/>
+<rect x="414.4" y="166.0" width="6.0" height="6.0" fill="#f57c00"/>
+<rect x="414.4" y="160.0" width="6.0" height="6.0" fill="#f57c00"/>
+<rect x="414.4" y="154.0" width="6.0" height="6.0" fill="#f57c00"/>
+<rect x="414.4" y="148.0" width="6.0" height="6.0" fill="#f57c00"/>
+<rect x="414.4" y="142.0" width="6.0" height="6.0" fill="#f57c00"/>
+<rect x="420.4" y="136.0" width="6.0" height="6.0" fill="#f57c00"/>
+<rect x="420.4" y="130.0" width="6.0" height="6.0" fill="#f57c00"/>
+<rect x="420.4" y="124.0" width="6.0" height="6.0" fill="#f57c00"/>
+<rect x="432.4" y="328.0" width="12.0" height="6.0" fill="#43a047"/>
+<rect x="414.4" y="322.0" width="18.0" height="6.0" fill="#43a047"/>
+<rect x="402.4" y="316.0" width="12.0" height="6.0" fill="#43a047"/>
+<rect x="396.4" y="310.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="384.4" y="304.0" width="12.0" height="6.0" fill="#43a047"/>
+<rect x="378.4" y="298.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="372.4" y="292.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="366.4" y="286.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="360.4" y="280.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="162.4" y="268.0" width="186.0" height="6.0" fill="#43a047"/>
+<rect x="156.4" y="250.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="150.4" y="244.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="144.4" y="238.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="138.4" y="232.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="132.4" y="226.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="126.4" y="220.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="378.4" y="220.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="126.4" y="214.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="384.4" y="214.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="120.4" y="208.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="390.4" y="208.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="120.4" y="202.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="396.4" y="202.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="114.4" y="196.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="402.4" y="196.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="114.4" y="190.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="402.4" y="190.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="108.4" y="184.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="108.4" y="178.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="108.4" y="172.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="108.4" y="166.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="108.4" y="160.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="108.4" y="154.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="102.4" y="148.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="102.4" y="142.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="102.4" y="136.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="102.4" y="130.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="102.4" y="124.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="102.4" y="118.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="426.4" y="118.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="102.4" y="112.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="426.4" y="112.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="102.4" y="106.0" width="6.0" height="6.0" fill="#43a047"/>
+<rect x="432.4" y="106.0" width="12.0" height="6.0" fill="#43a047"/>
+<rect x="102.4" y="100.0" width="6.0" height="6.0" fill="#43a047"/>
+</g>
+<g class="wg-narrowest" data-width="1.85"><title>bookshelf への道で一番狭い所：約 1.85 m（必要 0.9 m）</title><circle cx="346.0" cy="264.4" r="9" fill="none" stroke="#2e7d32" stroke-width="2.5"/><text x="358.0" y="268.4" fill="#2e7d32" font-size="11" font-weight="bold" stroke="#fff" stroke-width="3" paint-order="stroke">1.85 m</text></g>
+<g class="wg-widths-legend" font-size="10" fill="#444">
+<rect x="54.4" y="400.0" width="14" height="5" fill="#f57c00" opacity="0.6"/><text x="72.4" y="408.0">狭い</text>
+<rect x="100.4" y="400.0" width="14" height="5" fill="#43a047" opacity="0.6"/><text x="118.4" y="408.0">通路</text>
+</g>
+<line x1="40.0" y1="448.40000000000003" x2="160.0" y2="448.40000000000003" stroke="#000" stroke-width="2"/>
+<text x="166.0" y="452.40000000000003">1 m</text>
+<text x="505.6" y="452.40000000000003" text-anchor="end">p0_study_room — 3.64×2.73 m</text>
+</svg>

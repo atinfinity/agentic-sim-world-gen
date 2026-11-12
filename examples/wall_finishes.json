@@ -1,0 +1,23 @@
+{
+  "name": "wall_finishes",
+  "description": "6畳の洋室：北の壁だけ紺色（アクセントウォール）、東と北に腰壁、全周に木の巾木。北にドア、東に窓、北の壁に本棚",
+  "room": {
+    "width": 3.64,
+    "depth": 2.73,
+    "height": 2.4,
+    "floor": "wood_light",
+    "walls": {"*": "paint_white", "N": {"color": [0.06, 0.12, 0.26], "roughness": 0.8}},
+    "wainscot": {"height": 0.9, "surface": "wood_dark", "walls": ["E", "N"]},
+    "baseboard": {"height": 0.08, "thickness": 0.012, "surface": "trim_wood"},
+    "lighting": "home",
+    "ceiling": true,
+    "openings": [
+      {"kind": "door", "wall": "north", "offset": 2.9, "width": 0.8},
+      {"kind": "window", "wall": "east", "offset": 1.36, "width": 1.2, "sill": 0.8, "height": 1.1}
+    ]
+  },
+  "objects": [
+    {"id": "shelf", "query": "bookshelf", "alt_queries": ["bookcase"], "min_size": [0.6, 0.25, 0.8],
+     "max_size": [1.2, 0.5, 2.0], "layout": {"against_wall": "north", "along": 0.15}}
+  ]
+}

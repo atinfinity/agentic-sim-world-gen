@@ -1,0 +1,26 @@
+agentic-sim-world-gen
+Copyright 2026 atinfinity
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This is not an official NVIDIA product and is not sponsored or endorsed by NVIDIA. Isaac Sim, Omniverse,
+SimReady and Replicator are trademarks of NVIDIA Corporation.
+
+No 3D asset, material or texture of a third party is included. A generated world refers to assets by URL
+or path (SimReady Central, Isaac Sim bundled assets, Poly Haven, ambientCG, the user's own folders); they keep
+their own licenses, which differ per asset (some are non-commercial). Each generated scene lists them in its
+LICENSES.md.
+
+Files in this repository under other terms or from other sources:
+
+- src/agentic_sim_world_gen/data/isaac_6.1.jsonl.gz, mdl_6.1.jsonl.gz: tables of names, sizes and URLs made from NVIDIA's
+  public listing of the Isaac Sim 6.1 assets and materials (scripts/build_isaac_index.py,
+  scripts/build_mdl_index.py). They contain no asset.
+- src/agentic_sim_world_gen/data/pbr_cc0.jsonl.gz, polyhaven_models.jsonl.gz: tables of CC0 materials and models from
+  ambientCG (https://ambientcg.com) and Poly Haven (https://polyhaven.com), made with scripts/build_pbr_index.py
+  and scripts/build_polyhaven_models_index.py. They contain no asset.
+- src/agentic_sim_world_gen/data/kinds.json.gz, asset_cards.jsonl.gz: tables derived from the indexes above and from
+  SimReady Central search results (scripts/build_kind_table.py, scripts/build_asset_cards.py).
+- examples/photos/: photos from Wikimedia Commons, released under CC0 (sources in examples/photos/SOURCES.md).
+- Rendered images and videos (docs/images, docs/videos, src/agentic_sim_world_gen/data/moods, src/agentic_sim_world_gen/data/gallery)
+  show third-party assets; those assets keep their own licenses.

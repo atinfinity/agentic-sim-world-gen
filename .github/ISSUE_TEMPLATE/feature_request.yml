@@ -1,0 +1,16 @@
+name: Feature request
+description: Suggest an idea (機能の提案)
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What do you want to make or do? / 何をしたいか
+      description: The scene or use case, and what is missing today.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Idea / 案
+      description: How it could work. Alternatives you considered.

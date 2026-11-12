@@ -1,0 +1,33 @@
+{
+  "name": "split_level_room",
+  "room": {
+    "name": "奥が一段高い部屋（段差・階段・手すり）",
+    "place": "cafe",
+    "width": 6.0,
+    "depth": 8.0,
+    "height": 3.0,
+    "floor": "wood_light",
+    "walls": "paint_white",
+    "lighting": "home",
+    "openings": [{"id": "door", "kind": "door", "wall": "south", "offset": 3.0, "width": 0.9}],
+    "levels": [{"id": "back", "name": "奥の床", "rect": [0, 5, 6, 8], "height": 0.45, "floor": "wood_dark", "rail": ["south"]}],
+    "stairs": [
+      {"id": "up", "level": "back", "edge": "south", "offset": 4.8, "width": 1.2, "rail": "left"},
+      {"id": "to_2f", "at": [0.45, 0.1], "up": "north", "rise": 3.0, "width": 0.9, "color": "#f2f2f2", "rail": "right"}
+    ]
+  },
+  "objects": [
+    {"id": "back_table", "label": "奥のテーブル", "query": "dining table", "alt_queries": ["kitchen table"],
+     "min_size": [0.7, 0.6, 0.65], "max_size": [1.6, 1.0, 0.85], "position": [2.6, 6.6]},
+    {"id": "back_chair", "label": "奥の椅子", "query": "dining chair", "alt_queries": ["wooden chair"],
+     "min_size": [0.35, 0.35, 0.7], "max_size": [0.7, 0.7, 1.1], "layout": {"in_front_of": "back_table", "gap": 0.15}},
+    {"id": "back_shelf", "label": "奥の棚", "query": "bookshelf", "alt_queries": ["bookcase"],
+     "min_size": [0.6, 0.25, 1.0], "max_size": [1.4, 0.5, 2.0], "layout": {"against_wall": "north"}},
+    {"id": "front_table", "label": "手前のテーブル", "query": "dining table", "alt_queries": ["kitchen table"],
+     "min_size": [0.7, 0.6, 0.65], "max_size": [1.6, 1.0, 0.85], "position": [3.9, 2.6]},
+    {"id": "front_chair", "label": "手前の椅子", "query": "dining chair", "alt_queries": ["wooden chair"],
+     "min_size": [0.35, 0.35, 0.7], "max_size": [0.7, 0.7, 1.1], "layout": {"in_front_of": "front_table", "gap": 0.15}},
+    {"id": "plant", "label": "観葉植物", "query": "potted plant", "alt_queries": ["house plant"],
+     "min_size": [0.25, 0.25, 0.5], "max_size": [0.8, 0.8, 1.6], "layout": {"against_wall": "east"}}
+  ]
+}

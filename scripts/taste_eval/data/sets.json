@@ -1,0 +1,37 @@
+{
+  "_doc": "Coherent templates and planted outliers. Each role: [room, object in pools.json]; ok / off are candidate indices in that pool, judged from the thumbnails.",
+  "templates": {
+    "study_white": {
+      "desk": {"pool": ["study", "desk"], "ok": [0], "off": [1, 2]},
+      "chair": {"pool": ["study", "chair"], "ok": [3, 6], "off": [0, 1, 4, 7, 8]},
+      "bookshelf": {"pool": ["study", "bookshelf"], "ok": [10, 11, 12, 13], "off": [1, 2, 5, 6, 7, 8, 9]},
+      "lamp": {"pool": ["study", "lamp"], "ok": [1], "off": [2, 4]},
+      "cabinet": {"pool": ["study", "cabinet"], "ok": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18], "off": [19]},
+      "trash": {"pool": ["study", "trash"], "ok": [0, 1, 3, 5, 9, 12], "off": [6, 7, 10, 14, 18]}
+    },
+    "study_dark": {
+      "desk": {"pool": ["study", "desk"], "ok": [1], "off": [0]},
+      "chair": {"pool": ["study", "chair"], "ok": [0, 4, 5], "off": [1, 3, 6, 7]},
+      "bookshelf": {"pool": ["study", "bookshelf"], "ok": [1], "off": [2, 5, 10, 11]},
+      "lamp": {"pool": ["study", "lamp"], "ok": [2, 4], "off": [1]},
+      "cabinet": {"pool": ["study", "cabinet"], "ok": [19], "off": [0, 1, 3]},
+      "trash": {"pool": ["study", "trash"], "ok": [6, 11, 15, 16], "off": [1, 3, 8, 10, 14, 18]}
+    },
+    "study_wood": {
+      "desk": {"pool": ["study", "desk"], "ok": [2], "off": [0]},
+      "chair": {"pool": ["living", "dining_chair"], "ok": [0], "off": [1, 3, 5]},
+      "bookshelf": {"pool": ["study", "bookshelf"], "ok": [3, 4], "off": [2, 5, 10]},
+      "lamp": {"pool": ["study", "lamp"], "ok": [3], "off": [4]},
+      "cabinet": {"pool": ["study", "cabinet"], "ok": [15], "off": [0, 19]},
+      "trash": {"pool": ["study", "trash"], "ok": [8, 17], "off": [10, 14, 18]}
+    },
+    "living_light": {
+      "sofa": {"pool": ["living", "sofa"], "ok": [0, 1, 2], "off": []},
+      "armchair": {"pool": ["living", "armchair"], "ok": [0, 1, 4], "off": [2, 3, 5]},
+      "tv_stand": {"pool": ["living", "tv_stand"], "ok": [0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18], "off": []},
+      "side_table": {"pool": ["living", "side_table"], "ok": [0], "off": [1, 3, 6]},
+      "floor_lamp": {"pool": ["living", "floor_lamp"], "ok": [1], "off": [0]},
+      "shelf": {"pool": ["study", "bookshelf"], "ok": [10, 11], "off": [2, 5, 6]}
+    }
+  }
+}
