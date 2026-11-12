@@ -46,3 +46,18 @@ READMEs and `docs/`. When you change a guide, change both languages. To look at 
 uv pip install zensical==0.1.1
 python scripts/build_site.py --serve   # http://127.0.0.1:8000/agentic-sim-world-gen/
 ```
+
+## GitHub Actions
+
+The actions used by `.github/workflows/` are pinned to commits in `.github/workflows/actions.lock`
+([workflow lockfile](https://gh.io/actions-lockfile)), made by the GitHub CLI extension
+[gh-actions-lock](https://github.com/github/gh-actions-lock). Do not edit it by hand: after you add or change a
+`uses:` (or add a workflow), run
+
+```bash
+gh extension install github/gh-actions-lock   # once
+gh actions-lock            # pins full version tags (@v7 -> @v7.0.1) and updates actions.lock
+gh actions-lock --verify   # check
+```
+
+and commit the workflows together with `actions.lock`.
