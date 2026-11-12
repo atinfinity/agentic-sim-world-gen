@@ -82,7 +82,7 @@ Install usd-core only in this venv, never in Isaac Sim's Python. Point to Isaac 
 
 With Claude Code: `.mcp.json` registers the `agentic-sim-world-gen` MCP server and `.claude/skills/world-gen`
 is the skill. To only make worlds, create a workspace outside the repository with
-`agentic-sim-world-gen workspace <dir>`, start `claude` there and ask, e.g. "Make a 6-tatami study with a desk,
+`agentic-sim-world-gen workspace <dir>`, start `claude` there and ask, e.g. "Make a 10 m² study with a desk,
 a chair and a bookshelf".
 
 ## Guides

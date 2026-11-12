@@ -406,7 +406,7 @@ sequenceDiagram
     participant P as Preview
     participant I as Isaac Sim
 
-    U->>C: 6畳の書斎を作って (make a 6-tatami study)
+    U->>C: 6畳の書斎を作って (make a 10 m² study)
     C->>W: plan_questions
     W-->>C: High-impact items and defaults (ask_now only if the place is unknown)
     C->>W: get_preferences
@@ -433,7 +433,7 @@ sequenceDiagram
 The skill (SKILL.md) sets this procedure for Claude.
 
 1. **Draft from defaults**: `plan_questions` returns, from a per-place question table, the items the instruction does not cover yet, with defaults. It does not ask first. It builds with the defaults and records them as guesses. It asks first only when the place is unknown (`ask_now`), when the user said "ask me first" (`ask_first`), and for two items that are costly to change later: when the purpose is a robot (amr / manipulation) and the robot size is not given, and when the request is for a real place ("our store") with no drawing or photo attached. For places with no question table (hospital, school, station, etc.; `plan_questions` returns `gallery`), `show_gallery` shows a page (`gallery.html`) with examples (`examples/`) and top views of past scenes, and `start_from_example` makes the chosen one's SceneSpec the draft. Inherited dimensions, place, finishes and fixtures are recorded as guesses "from example '…'" (`gallery.py`).
-2. **Create**: `get_preferences` reads earlier preferences, then `create_scene`. Next come `set_purpose` (sets defaults such as density and aisle width from the purpose, `scene/purpose.py`) and `fill_windows`. If assumptions conflict (an 8-seat table in a 6-tatami room (about 10 m²), an aisle narrower than the robot, etc., `scene/conflicts.py`), it returns `conflicts` without capturing the draft, and asks one question about which to prioritize (if the user leaves it to Claude, it goes with the larger one and reports).
+2. **Create**: `get_preferences` reads earlier preferences, then `create_scene`. Next come `set_purpose` (sets defaults such as density and aisle width from the purpose, `scene/purpose.py`) and `fill_windows`. If assumptions conflict (an 8-seat table in a 10 m² room, an aisle narrower than the robot, etc., `scene/conflicts.py`), it returns `conflicts` without capturing the draft, and asks one question about which to prioritize (if the user leaves it to Claude, it goes with the larger one and reports).
 3. **Check candidates**: `create_scene` opens the preview. For dubious candidates (substitutes, weak matches, objects with wrong size or place), `view_candidates` returns one sheet image; Claude looks and swaps.
 4. **Layout**: fix until there are 0 issues, then review the usability warnings. If the arrangement itself is a choice, `propose_layouts` gives 2–3 options.
 5. **Show the draft**: the server records the room's 5 items and per-object assumptions from the layout (`_auto_assumptions`), so `set_assumptions` gets only guesses the layout does not show. `create_scene` has already captured the 3D (after fixes, `finish(draft=true)`). Claude shows the guessed parts first and stops (it does not stop if the user said "leave it to you").

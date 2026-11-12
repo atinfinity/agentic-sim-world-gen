@@ -99,7 +99,7 @@ For options (`--env`, `--allow-tools`, etc.), see [Getting Started "4."](getting
 
 1. Ask Claude:
 
-   > Make a 6-tatami study. A desk and a chair, and a bookshelf against the wall.
+   > Make a 10 m² study. A desk and a chair, and a bookshelf against the wall.
 
    Japanese works too, e.g. 「6畳の書斎を作って。机と椅子、壁際に本棚」 (the same request).
 
