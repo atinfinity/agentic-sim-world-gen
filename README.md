@@ -69,7 +69,7 @@ search, preview and write USD.
 ```bash
 git clone https://github.com/atinfinity/agentic-sim-world-gen.git
 cd agentic-sim-world-gen
-uv venv --python 3.11 .venv && uv pip install -e ".[usd,hf,mcp,dev]"
+uv sync --extra usd --extra hf --extra mcp --extra dev
 source .venv/bin/activate
 
 agentic-sim-world-gen resolve examples/p0_study_room.json -o out/study   # search -> candidates.html, layout.svg

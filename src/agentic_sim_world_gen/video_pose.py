@@ -60,7 +60,7 @@ def _cv():
         import cv2
         import numpy as np
     except ImportError as e:
-        raise CvMissing("OpenCV is not installed: pip install opencv-python-headless (or uv sync --extra video)") from e
+        raise CvMissing("OpenCV is not installed: uv sync again with --extra video added (or pip install opencv-python-headless)") from e
     return cv2, np
 
 

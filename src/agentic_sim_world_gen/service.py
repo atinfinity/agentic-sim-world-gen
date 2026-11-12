@@ -3649,7 +3649,7 @@ def video_poses(scene_dir: str | Path, hfov_deg: float = 65.0, video: str | None
 
     d = Path(scene_dir).expanduser()
     if not vp.available():
-        return {"ok": False, "error": "OpenCV is not installed: uv sync --extra video "
+        return {"ok": False, "error": "OpenCV is not installed: uv sync again with --extra video added "
                 "(or pip install opencv-python-headless). Without it fit the frames from landmarks only"}
     groups: dict[str, list[dict[str, Any]]] = {}
     # a scene's recorded frames only: frames extracted again at other times leave the old files in inputs/

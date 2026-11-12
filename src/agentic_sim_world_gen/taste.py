@@ -207,7 +207,7 @@ def unavailable() -> str | None:
         return "turned off (AGENTIC_SIM_WORLD_GEN_TASTE=0)"
     missing = [p for p in ("torch", "transformers") if importlib.util.find_spec(p) is None]
     if missing:
-        return f"{' and '.join(missing)} not installed (optional: pip install -e '.[taste]')"
+        return f"{' and '.join(missing)} not installed (optional: uv sync again with --extra taste added)"
     if not Path(m).is_dir() and not _hf_cached(m) and os.environ.get("AGENTIC_SIM_WORLD_GEN_TASTE_DOWNLOAD") != "1":
         return (f"model {m} is not in the Hugging Face cache (download it once, or set AGENTIC_SIM_WORLD_GEN_TASTE_DOWNLOAD=1 "
                 "to let check_taste fetch it)")

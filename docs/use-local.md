@@ -60,8 +60,7 @@ flowchart LR
    ```bash
    git clone https://github.com/atinfinity/agentic-sim-world-gen.git
    cd agentic-sim-world-gen
-   uv venv --python 3.11 .venv
-   uv pip install -e ".[usd,hf,mcp,dev]"
+   uv sync --extra usd --extra hf --extra mcp --extra dev
    ```
 
    **Isaac Sim の Python には何も pip install しない**（Isaac Sim は自前の pxr を持っていて、usd-core が混ざると壊れる）。

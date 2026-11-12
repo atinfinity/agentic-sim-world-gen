@@ -29,11 +29,13 @@ On a Mac or PC without a GPU you can still search, preview and write USD. Only t
 ```bash
 git clone https://github.com/atinfinity/agentic-sim-world-gen.git
 cd agentic-sim-world-gen
-uv venv --python 3.11 .venv
-uv pip install -e ".[usd,hf,mcp,dev]"     # for floor plans too: ".[usd,hf,mcp,dev,dxf,ifc]"
+uv sync --extra usd --extra hf --extra mcp --extra dev   # for floor plans add --extra dxf --extra ifc
 source .venv/bin/activate
 pytest -q                                  # offline tests (about 2 minutes)
 ```
+
+`uv sync` creates `.venv` with the versions in `uv.lock` and installs this repository in editable mode (uv picks a Python that fits `requires-python`, 3.10 or later).
+To add an extra later, run `uv sync` again with every `--extra` you use (extras you leave out are removed from `.venv`).
 
 **Install usd-core only into `.venv`.** Do not pip install anything into Isaac Sim's Python (`python.sh` or the pip version's venv).
 Isaac Sim ships its own pxr, and mixing the two breaks it.
