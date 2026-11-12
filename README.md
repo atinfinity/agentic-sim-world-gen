@@ -1,6 +1,6 @@
 # agentic-sim-world-gen
 
-English | [日本語](README.ja.md)
+English | [日本語](README.ja.md) | [Project page](https://atinfinity.github.io/agentic-sim-world-gen/)
 
 An agent (Claude Code) builds an Isaac Sim world (USD) from a description in Japanese or English, a floor plan
 or photos: it searches for assets, picks them, lays them out, checks the result with physics in Isaac Sim and

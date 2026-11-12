@@ -1,0 +1,74 @@
+# Project page (GitHub Pages): https://atinfinity.github.io/agentic-sim-world-gen/
+# docs/index.md and docs/ja/index.md are written from the READMEs: python scripts/build_site.py && zensical serve
+[project]
+site_name = "agentic-sim-world-gen"
+site_description = "An agent builds Isaac Sim worlds (USD) from a description, a floor plan or photos"
+site_url = "https://atinfinity.github.io/agentic-sim-world-gen/"
+repo_url = "https://github.com/atinfinity/agentic-sim-world-gen"
+repo_name = "atinfinity/agentic-sim-world-gen"
+edit_uri = "edit/main/docs/"
+copyright = "Code under the Apache License 2.0. Not an official NVIDIA product."
+nav = [
+  { "Home" = "index.md" },
+  { "日本語" = [
+    { "トップ" = "ja/index.md" },
+    { "はじめに" = "getting-started.md" },
+    { "手元の 1 台で使う" = "use-local.md" },
+    { "ssh 先の GPU 機で使う" = "use-ssh.md" },
+    { "仕組み" = "architecture.md" },
+  ] },
+]
+not_in_nav = "images/*.md"
+
+[project.extra]
+alternate = [
+  { name = "English", link = "/agentic-sim-world-gen/", lang = "en" },
+  { name = "日本語", link = "/agentic-sim-world-gen/ja/", lang = "ja" },
+]
+
+[project.theme]
+language = "en"
+features = [
+  "content.code.copy",
+  "content.tabs.link",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.instant",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+]
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+
+[project.markdown_extensions]
+admonition = {}
+attr_list = {}
+md_in_html = {}
+tables = {}
+toc.permalink = true
+toc.slugify = { object = "pymdownx.slugs.slugify", kwds = { case = "lower" } }  # keep Japanese headings in anchors, as GitHub does
+pymdownx.details = {}
+pymdownx.highlight.anchor_linenums = true
+pymdownx.inlinehilite = {}
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+pymdownx.tabbed.alternate_style = true

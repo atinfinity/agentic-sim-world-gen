@@ -33,3 +33,14 @@ If you change an MCP tool's signature or docstring, regenerate the reference:
 Use the issue templates. Please include the request text, the asset sources (`AGENTIC_SIM_WORLD_GEN_SOURCES`),
 the version and the OS. Do not attach photos or videos that show people, or screenshots of assets you may not
 share. Security problems: see SECURITY.md.
+
+## Project page
+
+The project page (<https://atinfinity.github.io/agentic-sim-world-gen/>) is built with [Zensical](https://zensical.org/)
+from `docs/` and published by `.github/workflows/pages.yml` on every push to `main`. Its top pages are written from
+`README.md` and `README.ja.md`, so edit those. To preview it:
+
+```bash
+uv pip install zensical==0.1.1
+python scripts/build_site.py && zensical serve
+```

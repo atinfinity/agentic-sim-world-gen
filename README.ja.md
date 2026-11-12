@@ -1,6 +1,6 @@
 # agentic-sim-world-gen
 
-[English](README.md) | 日本語
+[English](README.md) | 日本語 | [プロジェクトページ](https://atinfinity.github.io/agentic-sim-world-gen/ja/)
 
 日本語（英語も可）の指示・間取り図・写真から、エージェント（Claude Code）がアセットを選んで配置し、Isaac Sim 用のワールド（USD）を生成するツール。
 アセットは [SimReady Central](https://huggingface.co/spaces/nvidia/simready-central)・Isaac Sim 同梱アセット・[Poly Haven](https://polyhaven.com/models) の CC0 モデル・手持ちの USD フォルダから選ぶ。

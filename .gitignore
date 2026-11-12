@@ -6,3 +6,8 @@ __pycache__/
 *.egg-info/
 dist/
 .cache/
+
+# project page (scripts/build_site.py, zensical build)
+/site/
+/docs/index.md
+/docs/ja/
