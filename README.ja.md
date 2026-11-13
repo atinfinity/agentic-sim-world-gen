@@ -20,12 +20,20 @@ flowchart TB
   SRC -- "検索" --> WG
   WG -- "USD" --> ISAAC
   ISAAC -- "結果：手直しして再検証" --> CC
-  style WG stroke:#536dfe,stroke-width:3px
-  classDef outside stroke-dasharray:5 5
-  class IN,CC,SRC,ISAAC outside
+  style WG fill:#536dfe14,stroke:#536dfe,stroke-width:3px
+  classDef repo fill:#536dfe2e,stroke:#536dfe
+  classDef input fill:#9e9e9e26,stroke:#9e9e9e,stroke-dasharray:5 5
+  classDef claude fill:#d977572e,stroke:#d97757,stroke-dasharray:5 5
+  classDef assets fill:#e3a0082e,stroke:#e3a008,stroke-dasharray:5 5
+  classDef isaac fill:#76b9002e,stroke:#76b900,stroke-dasharray:5 5
+  class S,L,V,U repo
+  class IN input
+  class CC claude
+  class SRC assets
+  class ISAAC isaac
 ```
 
-太い枠がこのリポジトリ、点線の箱はその外のもの。
+青の太い枠がこのリポジトリ。点線はその外のもの（橙：Claude Code、黄：アセットの出どころ、緑：Isaac Sim、灰：入力）。
 
 > [!IMPORTANT]
 > NVIDIA の公式の製品ではなく、NVIDIA の後援・承認も受けていない個人のプロジェクトです。Isaac Sim・Omniverse・SimReady・Replicator は NVIDIA Corporation の商標です。

@@ -22,12 +22,20 @@ flowchart TB
   SRC -- "searched" --> WG
   WG -- "USD" --> ISAAC
   ISAAC -- "report: fix and check again" --> CC
-  style WG stroke:#536dfe,stroke-width:3px
-  classDef outside stroke-dasharray:5 5
-  class IN,CC,SRC,ISAAC outside
+  style WG fill:#536dfe14,stroke:#536dfe,stroke-width:3px
+  classDef repo fill:#536dfe2e,stroke:#536dfe
+  classDef input fill:#9e9e9e26,stroke:#9e9e9e,stroke-dasharray:5 5
+  classDef claude fill:#d977572e,stroke:#d97757,stroke-dasharray:5 5
+  classDef assets fill:#e3a0082e,stroke:#e3a008,stroke-dasharray:5 5
+  classDef isaac fill:#76b9002e,stroke:#76b900,stroke-dasharray:5 5
+  class S,L,V,U repo
+  class IN input
+  class CC claude
+  class SRC assets
+  class ISAAC isaac
 ```
 
-The thick frame is this repository; the dashed boxes are outside it.
+Blue with a thick frame: this repository. Dashed: outside it (orange: Claude Code, yellow: asset sources, green: Isaac Sim, gray: your input).
 
 > [!IMPORTANT]
 > This is a personal project. It is not an official NVIDIA product and is not sponsored or endorsed by NVIDIA.
