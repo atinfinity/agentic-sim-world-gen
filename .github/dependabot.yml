@@ -16,3 +16,6 @@ updates:
     groups:
       python:
         patterns: ["*"]
+    ignore:  # opencv 5 breaks the photo line detection; lift this when it works (#13)
+      - dependency-name: opencv-python-headless
+        update-types: ["version-update:semver-major"]
