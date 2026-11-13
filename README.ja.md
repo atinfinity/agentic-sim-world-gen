@@ -176,20 +176,23 @@ Isaac Sim 同梱の HDRI を空に使う（自分で用意した HDR は `sky` �
 ライブモード：Isaac Sim を `--enable isaacsim.code_editor.python_server` 付きで起動しておくと、`agentic-sim-world-gen check out/study --live`（MCP は `live=true`）がその画面でシーンを開いて物理を回し、問題の物を選択状態にする（2 回目以降約 8 秒。headless は毎回約 34 秒）。起動していなければ headless で実行する。接続先は `AGENTIC_SIM_WORLD_GEN_ISAAC_LIVE`（既定 `127.0.0.1:8226`）。
 python_server は任意のコードを実行するので、127.0.0.1 以外で待ち受けない。
 
-## テスト
-
-`uv run pytest -q`（オフライン、約 2 分）、`uv run pytest -q -m network`（SimReady Central・Poly Haven の実 API）。
-
 ## ドキュメント
+
+使う：
 
 | ファイル | 内容 |
 |---|---|
 | [docs/getting-started.md](docs/getting-started.md) | はじめての方向け：インストールから最初のワールドまで |
-| [docs/architecture.md](docs/architecture.md) | 仕組みの説明（全体の流れ・データの形・検索・レイアウト・検証・USD・Isaac Sim・対話・写真から推定を図で） |
 | [docs/use-local.md](docs/use-local.md) | 全部手元：画面のある Ubuntu＋RTX の 1 台で使う（ライブモードも） |
 | [docs/use-ssh.md](docs/use-ssh.md) | ssh 先：GPU 機は LAN の Ubuntu、手元の Mac などから ssh とブラウザで使う |
+
+コードを変える：
+
+| ファイル | 内容 |
+|---|---|
+| [docs/architecture.md](docs/architecture.md) | 仕組みの説明（全体の流れ・データの形・検索・レイアウト・検証・USD・Isaac Sim・対話・写真から推定を図で） |
+| [docs/contributing.md](docs/contributing.md) | 開発に参加する：セットアップ・テスト・どこに何があるか・プルリクエスト・プロジェクトページ・GitHub Actions |
 | [CLAUDE.md](CLAUDE.md) | このリポジトリで開発するエージェント向けの前提・規約・環境変数 |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | 開発への参加 |
 
 手引きの英語版は [docs/en/](docs/en/getting-started.md) にある。
 

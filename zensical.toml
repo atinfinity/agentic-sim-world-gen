@@ -13,10 +13,15 @@ copyright = "コードは Apache License 2.0。NVIDIA の公式の製品では�
 extra_javascript = ["javascripts/lang.js"]  # the language switch keeps the page
 nav = [
   { "トップ" = "index.md" },
-  { "はじめに" = "getting-started.md" },
-  { "手元の 1 台で使う" = "use-local.md" },
-  { "ssh 先の GPU 機で使う" = "use-ssh.md" },
-  { "仕組み" = "architecture.md" },
+  { "使う" = [
+    { "はじめに" = "getting-started.md" },
+    { "手元の 1 台で使う" = "use-local.md" },
+    { "ssh 先の GPU 機で使う" = "use-ssh.md" },
+  ] },
+  { "開発する" = [
+    { "仕組み" = "architecture.md" },
+    { "開発に参加する" = "contributing.md" },
+  ] },
 ]
 not_in_nav = "images/*.md"
 

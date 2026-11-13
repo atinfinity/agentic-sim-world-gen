@@ -13,10 +13,15 @@ copyright = "Code under the Apache License 2.0. Not an official NVIDIA product."
 extra_javascript = ["javascripts/lang.js"]  # the language switch keeps the page
 nav = [
   { "Home" = "index.md" },
-  { "Getting started" = "getting-started.md" },
-  { "Everything on one machine" = "use-local.md" },
-  { "Over ssh" = "use-ssh.md" },
-  { "How it works" = "architecture.md" },
+  { "Use" = [
+    { "Getting started" = "getting-started.md" },
+    { "Everything on one machine" = "use-local.md" },
+    { "Over ssh" = "use-ssh.md" },
+  ] },
+  { "Develop" = [
+    { "How it works" = "architecture.md" },
+    { "Contributing" = "contributing.md" },
+  ] },
 ]
 not_in_nav = "images/*.md"
 edit_uri = "edit/main/docs/en/"

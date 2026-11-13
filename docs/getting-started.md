@@ -39,7 +39,6 @@ git clone https://github.com/atinfinity/agentic-sim-world-gen.git
 cd agentic-sim-world-gen
 uv sync --extra usd --extra hf --extra mcp --extra dev   # 間取り図も使うなら --extra dxf --extra ifc も
 source .venv/bin/activate
-pytest -q                                  # オフラインのテスト（約 2 分）
 ```
 
 `uv sync` は `uv.lock` の版で `.venv` を作り、このリポジトリを編集可能な形で入れる（Python は `requires-python` の 3.10 以上から uv が選ぶ）。
@@ -188,30 +187,24 @@ agentic-sim-world-gen check out/study                                  # Isaac S
 agentic-sim-world-gen licenses out/study                               # -> out/study/LICENSES.md
 ```
 
-`agentic-sim-world-gen check` は Isaac Sim の python で `scripts/isaac/check_scene.py` を動かしている。直接呼ぶなら：
-
-```bash
-~/isaacsim/python.sh scripts/isaac/check_scene.py out/study/scene.usda \
-    --screenshot out/study/check.png --report out/study/check.json [--gif out/study/check.gif]
-```
-
-SceneSpec の形式は `src/agentic_sim_world_gen/scene/spec.py`、例は `examples/`。
+シーンのファイルの例は `examples/`。その形式と、Isaac Sim のチェックのスクリプトを直接呼ぶ方法は
+[開発に参加する](contributing.md#2-どこに何があるか)。
 
 ## 6. 他の入力
 
 | 入力 | 例 | 詳しく |
 |---|---|---|
-| 間取り図（JSON / DXF / IFC） | `agentic-sim-world-gen plan examples/plans/1ldk.json -o out/1ldk_plan` → plan.json を `room.plan_file` に。Claude には「examples/plans/1ldk.json の間取りで、LDK にソファ、和室に座卓」（和室は畳、洗面はタイルの床になる） | `src/agentic_sim_world_gen/scene/plan.py` |
+| 間取り図（JSON / DXF / IFC） | `agentic-sim-world-gen plan examples/plans/1ldk.json -o out/1ldk_plan` → plan.json を `room.plan_file` に。Claude には「examples/plans/1ldk.json の間取りで、LDK にソファ、和室に座卓」（和室は畳、洗面はタイルの床になる） | [データの形](architecture.md#2-データの形) |
 | 間取り図（画像 / PDF） | Claude に画像を渡すと、なぞって JSON にする（単位 px＋下敷き画像） | スキルの plans.md |
 | 写真 | 「examples/photos/living_room.jpg の部屋を作って」。出典は隣の `<stem>.source.json`。`agentic-sim-world-gen photo <scene>` で同じ視点の描画と並べる | スキルの photos.md |
 | 写真・動画の深度 | 下の「単眼の深度」の venv を作り、`agentic-sim-world-gen fit-photos req.json --depth`（写真に `image`）。部屋の寸法が決まりやすくなる | 下の「単眼の深度」 |
 | 動画 | 「walk.mp4 の部屋を作って」（部屋を歩いて撮った動画、人が写っていないもの）。出典は隣の `walk.source.json`。`agentic-sim-world-gen frames walk.mp4 -o <scene>` でコマを選んで入力写真にする（ffmpeg が必要） | スキルの videos.md |
 | 繰り返し配置 | `agentic-sim-world-gen resolve examples/warehouse_racks.json -o out/racks`（ラック列＋通路） | README の set_array |
-| 屋外 | `agentic-sim-world-gen resolve examples/outdoor_yard.json -o out/yard`（道路・歩道・建物・空） | `src/agentic_sim_world_gen/scene/site.py` |
-| 足りなかったアセットを多い順に見る | `agentic-sim-world-gen missing`（この機械で作った全シーンの代用・候補なし・見送った小物） | `src/agentic_sim_world_gen/missing.py` |
+| 屋外 | `agentic-sim-world-gen resolve examples/outdoor_yard.json -o out/yard`（道路・歩道・建物・空） | [データの形](architecture.md#2-データの形) |
+| 足りなかったアセットを多い順に見る | `agentic-sim-world-gen missing`（この機械で作った全シーンの代用・候補なし・見送った小物） | [アセット検索](architecture.md#3-アセット検索) |
 | 手持ちの USD フォルダ | `AGENTIC_SIM_WORLD_GEN_SOURCES=+local:/data/usd`、中身の確認は `agentic-sim-world-gen index /data/usd --list` | README |
-| 床・壁・照明 | `room.floor: "wood_light"`、`room.lighting: "office"` など（「床はフローリング、照明は夜」でも可） | `src/agentic_sim_world_gen/scene/looks.py` |
-| 合成データ | `agentic-sim-world-gen sdg out/study --frames 24 --coco` → RGB・bbox・セグメンテーション・深度 | `src/agentic_sim_world_gen/sdg.py` |
+| 床・壁・照明 | `room.floor: "wood_light"`、`room.lighting: "office"` など（「床はフローリング、照明は夜」でも可） | [USD の合成](architecture.md#6-usd-の合成) |
+| 合成データ | `agentic-sim-world-gen sdg out/study --frames 24 --coco` → RGB・bbox・セグメンテーション・深度 | [Isaac Sim 側](architecture.md#7-isaac-sim-側) |
 
 ### 単眼の深度（任意）
 
@@ -289,8 +282,14 @@ USD の customData `agentic_sim_world_gen:origin`）。
 
 ## 次に読むもの
 
-- [tools.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/tools.md)：全 MCP ツールと引数
+使う：
+
 - [use-local.md](use-local.md)・[use-ssh.md](use-ssh.md)：全部手元／ssh 先での手順
-- [architecture.md](architecture.md)：仕組みを図で
+- [tools.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/tools.md)：全 MCP ツールと引数
 - [.claude/skills/world-gen/SKILL.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/SKILL.md)：Claude の対話手順・家具の標準サイズ・和英クエリ例
+
+コードを変える：
+
+- [architecture.md](architecture.md)：仕組みを図で
+- [contributing.md](contributing.md)：セットアップ・テスト・どこに何があるか・プルリクエスト
 - [CLAUDE.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/CLAUDE.md)：規約（座標系、USD の構造）
