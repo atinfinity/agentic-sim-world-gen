@@ -7,20 +7,20 @@ GPU機が別の場所にあり、手元（Mac等）からはsshで入る場合�
 
 ```mermaid
 flowchart LR
-  subgraph pc["手元の Ubuntu（RTX GPU、画面あり）"]
+  subgraph pc["手元のUbuntu（RTX GPU、画面あり）"]
     term["ターミナル<br/>claude（Claude Code）"]
-    subgraph mcp["agentic-sim-world-gen-mcp（claude の子プロセス）"]
-      svc["検索・配置・USD 出力・<br/>ライセンス"]
-      preview["プレビューの HTTP サーバー<br/>127.0.0.1:8765"]
+    subgraph mcp["agentic-sim-world-gen-mcp（claudeの子プロセス）"]
+      svc["検索・配置・USD出力・<br/>ライセンス"]
+      preview["プレビューのHTTPサーバー<br/>127.0.0.1:8765"]
     end
     browser["ブラウザ<br/>（プレビュー）"]
-    isaac["Isaac Sim<br/>headless：check のたびに起動<br/>GUI：python_server 127.0.0.1:8226"]
+    isaac["Isaac Sim<br/>headless：checkのたびに起動<br/>GUI：python_server 127.0.0.1:8226"]
     files[("シーンのフォルダ<br/>&lt;作業フォルダ&gt;/scenes/&lt;名前&gt;")]
   end
   subgraph net["インターネット"]
     anthropic["Anthropic API"]
-    hf["SimReady Central<br/>（検索 API・USD・サムネイル）"]
-    s3["Isaac Sim アセット<br/>（公開 S3）"]
+    hf["SimReady Central<br/>（検索API・USD・サムネイル）"]
+    s3["Isaac Simアセット<br/>（公開S3）"]
   end
   term -- "MCP（stdio）" --> svc
   term -- "HTTPS" --> anthropic

@@ -8,10 +8,10 @@ Isaac Sim・Claude Code・agentic-sim-world-genは、どちらの形でもGPU機
 
 ```mermaid
 flowchart LR
-  q1{"Ubuntu＋RTX の<br/>GPU 機がある？"} -- "ない" --> nogpu["検索・プレビュー・USD まで<br/>（チェックは無し）"]
+  q1{"Ubuntu＋RTXの<br/>GPU機がある？"} -- "ない" --> nogpu["検索・プレビュー・USDまで<br/>（チェックは無し）"]
   q1 -- "ある" --> q2{"どこから<br/>操作する？"}
-  q2 -- "GPU 機の画面と<br/>キーボードで" --> local["1. 全部手元<br/>ライブ確認もできる"]
-  q2 -- "別の PC から<br/>ssh で" --> ssh["2. ssh 先<br/>手元は ssh とブラウザ"]
+  q2 -- "GPU機の画面と<br/>キーボードで" --> local["1. 全部手元<br/>ライブ確認もできる"]
+  q2 -- "別のPCから<br/>sshで" --> ssh["2. ssh先<br/>手元はsshとブラウザ"]
 ```
 
 | 形 | GPU機 | 手元で見るもの | ライブモード | 手順 |
@@ -113,7 +113,7 @@ flowchart TD
   look -- "これでいい" --> fin
   subgraph fin["finish（5〜7）"]
     direction LR
-    f1["USD を出力"] --> f2["Isaac Sim で物理チェック<br/>（倒れた物は直して再チェック）"] --> f3["指示との突き合わせ<br/>ライセンス"]
+    f1["USDを出力"] --> f2["Isaac Simで物理チェック<br/>（倒れた物は直して再チェック）"] --> f3["指示との突き合わせ<br/>ライセンス"]
   end
   fin --> done(["scene.usda・LICENSES.md"])
 ```
@@ -171,7 +171,7 @@ flowchart LR
   r -- "compose" --> u["scene.usda"]
   u -- "check" --> c["check.json・check.png<br/>check_orbit/"]
   r -- "licenses" --> l["LICENSES.md"]
-  r -. "編集して preview" .-> r
+  r -. "編集してpreview" .-> r
 ```
 
 ```bash

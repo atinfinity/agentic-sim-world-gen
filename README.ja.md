@@ -9,11 +9,11 @@
 flowchart TB
   IN["<b>入力</b><br/>文章（日本語・英語）<br/>間取り図：JSON / DXF / IFC / 画像<br/>写真・動画"]
   CC["<b>Claude Code</b><br/>指示を読み、どのツールを呼ぶか決める"]
-  subgraph WG["agentic-sim-world-gen（このリポジトリ）：MCP サーバー＋スキル、同じ操作を CLI からも"]
+  subgraph WG["agentic-sim-world-gen（このリポジトリ）：MCPサーバー＋スキル、同じ操作をCLIからも"]
     direction LR
-    S["アセットを検索して選ぶ"] --> L["配置<br/>関係・繰り返し・棚への陳列"] --> V["ブラウザで確認<br/>候補の一覧・上面図"] --> U["USD のワールドと<br/>LICENSES.md を書き出す"]
+    S["アセットを検索して選ぶ"] --> L["配置<br/>関係・繰り返し・棚への陳列"] --> V["ブラウザで確認<br/>候補の一覧・上面図"] --> U["USDのワールドと<br/>LICENSES.mdを書き出す"]
   end
-  SRC["<b>アセットの出どころ</b><br/>SimReady Central<br/>Isaac Sim 同梱アセット<br/>Poly Haven CC0<br/>手持ちの USD フォルダ"]
+  SRC["<b>アセットの出どころ</b><br/>SimReady Central<br/>Isaac Sim同梱アセット<br/>Poly Haven CC0<br/>手持ちのUSDフォルダ"]
   ISAAC["<b>Isaac Sim 6.1</b><br/>検証のスクリプトを動かす：<br/>物理・スクリーンショット"]
   IN --> CC
   CC -- "ツールを呼ぶ" --> WG

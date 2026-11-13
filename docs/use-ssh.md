@@ -7,20 +7,20 @@ GPU機の前に座って使うなら[全部手元で使う](use-local.md)。
 
 ```mermaid
 flowchart LR
-  subgraph local["手元の PC（Mac など）"]
-    term["ターミナル<br/>（ssh クライアント）"]
+  subgraph local["手元のPC（Macなど）"]
+    term["ターミナル<br/>（sshクライアント）"]
     browser["ブラウザ"]
   end
-  subgraph gpu["ssh 先の GPU 機（Ubuntu＋RTX）"]
+  subgraph gpu["ssh先のGPU機（Ubuntu＋RTX）"]
     sshd["sshd :22"]
     subgraph tmux["tmux"]
       claude["claude（Claude Code）"]
     end
-    subgraph mcp["agentic-sim-world-gen-mcp（claude の子プロセス）"]
-      svc["検索・配置・USD 出力"]
-      preview["プレビューの HTTP サーバー<br/>127.0.0.1:8765"]
+    subgraph mcp["agentic-sim-world-gen-mcp（claudeの子プロセス）"]
+      svc["検索・配置・USD出力"]
+      preview["プレビューのHTTPサーバー<br/>127.0.0.1:8765"]
     end
-    isaac["Isaac Sim（headless）<br/>check のたびに起動して終了"]
+    isaac["Isaac Sim（headless）<br/>checkのたびに起動して終了"]
     files[("&lt;作業フォルダ&gt;/scenes/&lt;名前&gt;")]
   end
   subgraph net["インターネット"]
@@ -29,7 +29,7 @@ flowchart LR
   end
   term -- "ssh :22" --> sshd
   sshd --> claude
-  browser -- "http://127.0.0.1:8765<br/>（ssh -L で sshd 経由）" --> preview
+  browser -- "http://127.0.0.1:8765<br/>（ssh -Lでsshd経由）" --> preview
   browser -- "サムネイル（HTTPS）" --> hf
   claude -- "HTTPS" --> anthropic
   claude -- "MCP（stdio）" --> svc

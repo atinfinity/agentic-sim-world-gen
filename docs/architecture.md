@@ -26,28 +26,28 @@ flowchart TD
     subgraph inputs["入力"]
         nl["言葉の指示"]
         photo["写真・動画"]
-        plan["間取り図 JSON / DXF / IFC"]
+        plan["間取り図JSON / DXF / IFC"]
         ref["参考画像"]
     end
 
-    nl -->|"plan_questions の既定＋Claude が英訳して書く"| spec["SceneSpec"]
+    nl -->|"plan_questionsの既定＋Claudeが英訳して書く"| spec["SceneSpec"]
     photo -->|"extract_frames / video_poses / fit_photos"| spec
     plan -->|"import_floor_plan → room.plan_file"| spec
-    ref -->|"InputRef kind=reference の taste"| spec
+    ref -->|"InputRef kind=referenceのtaste"| spec
 
     spec -->|"create_scene"| search["候補検索 _find_candidates"]
     search --> resolved["ResolvedScene<br/>scene.resolved.json"]
     resolved -->|"density"| decor["小物・店の陳列<br/>_apply_density"]
     decor --> resolved
-    resolved -->|"保存のたびに"| solve["レイアウト solve"]
+    resolved -->|"保存のたびに"| solve["レイアウトsolve"]
     solve --> autofix["直し方が決まっている問題を直す<br/>_auto_fix"]
     autofix --> checks["静的チェック・使い勝手"]
     checks --> preview["プレビュー<br/>candidates.html / layout.svg / preview.html"]
-    preview -->|"合意したら finish（compose_scene）"| usd["scene.usda"]
-    usd -->|"finish（check_in_isaac）"| isaac["Isaac Sim で物理 settle＋撮影<br/>check.json / check.png"]
+    preview -->|"合意したらfinish（compose_scene）"| usd["scene.usda"]
+    usd -->|"finish（check_in_isaac）"| isaac["Isaac Simで物理settle＋撮影<br/>check.json / check.png"]
     isaac --> fix{"問題あり？"}
-    fix -->|"はい：set_layout / select_asset / set_collider など"| resolved
-    fix -->|"いいえ"| report["finish の結果（指示との突き合わせ・ライセンス）→ 報告"]
+    fix -->|"はい：set_layout / select_asset / set_colliderなど"| resolved
+    fix -->|"いいえ"| report["finishの結果（指示との突き合わせ・ライセンス）→ 報告"]
 ```
 
 どの入力も、いったん**SceneSpec**（部屋と物の指定を書いたJSON）に集まります。
@@ -193,24 +193,24 @@ classDiagram
 
 ```mermaid
 flowchart TD
-    obj["ObjectSpec の query＋alt_queries"] --> prov["get_provider<br/>CompositeProvider"]
-    prov --> src1["SimReadyCentralProvider<br/>HF の検索 API"]
+    obj["ObjectSpecのquery＋alt_queries"] --> prov["get_provider<br/>CompositeProvider"]
+    prov --> src1["SimReadyCentralProvider<br/>HFの検索API"]
     prov --> src2["IsaacIndexProvider<br/>isaac_6.1.jsonl.gz"]
-    prov --> src3["LocalFolderProvider<br/>local:dir の索引"]
+    prov --> src3["LocalFolderProvider<br/>local:dirの索引"]
     prov --> src4["PolyHavenProvider<br/>polyhaven_models.jsonl.gz"]
     src1 --> merge["クエリごとの結果をまとめる<br/>同名ファイルは先のソースが勝つ"]
     src2 --> merge
     src3 --> merge
     src4 --> merge
-    merge --> size["サイズの絞り込み fits<br/>min_size / max_size"]
-    size --> rr["rerank：名詞の一致でスコア<br/>weak＝たぶん別物<br/>（カードの kind があればラベルより優先、assets/cards.py）"]
+    merge --> size["サイズの絞り込みfits<br/>min_size / max_size"]
+    size --> rr["rerank：名詞の一致でスコア<br/>weak＝たぶん別物<br/>（カードのkindがあればラベルより優先、assets/cards.py）"]
     rr --> drop{"強い一致がある？"}
-    drop -->|"ある"| keep["weak を外す"]
-    drop -->|"無い"| sub["全部 weak のまま残す<br/>substitute＝代用"]
+    drop -->|"ある"| keep["weakを外す"]
+    drop -->|"無い"| sub["全部weakのまま残す<br/>substitute＝代用"]
     keep --> order["合わない物を後ろへ<br/>too_tall・off_size・off_place・_wrong_picture・heavy"]
     sub --> order
     order --> cands["Placement.candidates"]
-    cands -->|"view_candidates"| img["Claude がサムネイルで判断"]
+    cands -->|"view_candidates"| img["Claudeがサムネイルで判断"]
     img -->|"select_asset / research_object"| cands
 ```
 
@@ -240,12 +240,12 @@ flowchart TD
     objs["ObjectSpec.layout"] --> order["_order<br/>相手を先に解く"]
     order --> rel{"関係の種類"}
     geom --> rel
-    rel -->|"against_wall"| wall["壁面 faces_for に背を付ける<br/>along で位置"]
+    rel -->|"against_wall"| wall["壁面faces_forに背を付ける<br/>alongで位置"]
     rel -->|"in_front_of"| front["相手の正面に立ち、相手を向く"]
     rel -->|"next_to＋side"| side["相手の横に同じ向きで"]
-    rel -->|"on"| on["相手の上面に載せる<br/>z が決まる"]
+    rel -->|"on"| on["相手の上面に載せる<br/>zが決まる"]
     rel -->|"facing・center"| face["向き・部屋の中心"]
-    frame["frame.py<br/>正面は +X、例外は KNOWN_FRONTS"] --> front
+    frame["frame.py<br/>正面は +X、例外はKNOWN_FRONTS"] --> front
     frame --> face
     wall --> pose["position / yaw_deg / z"]
     front --> pose
@@ -288,11 +288,11 @@ flowchart LR
     scene --> v2["usability.usability<br/>使い勝手の注意"]
     scene --> v3["request.evaluate<br/>指示との突き合わせ"]
     scene --> v4["taste.report<br/>テイストの外れ"]
-    v1 --> i1["out_of_room・overlap 3D・hits_wall<br/>blocks_door・too_tall など"]
-    v2 --> i2["歩ける範囲の格子から<br/>narrow_aisle・unreachable・no_front_space<br/>chair_facing・tv_distance<br/>empty_shelves・register_hidden など"]
+    v1 --> i1["out_of_room・overlap 3D・hits_wall<br/>blocks_door・too_tallなど"]
+    v2 --> i2["歩ける範囲の格子から<br/>narrow_aisle・unreachable・no_front_space<br/>chair_facing・tv_distance<br/>empty_shelves・register_hiddenなど"]
     v3 --> i3["met / unmet / unknown"]
-    v4 --> i4["outliers と alternatives"]
-    i1 --> st["status と preview.html"]
+    v4 --> i4["outliersとalternatives"]
+    i1 --> st["statusとpreview.html"]
     i2 --> st
     i3 --> st
     i4 --> st
@@ -326,16 +326,16 @@ flowchart TD
     world --> objects["Objects"]
     world --> cams["Cameras/id<br/>写真と同じ視点"]
     room --> floor["Floor・ZoneFloors/id"]
-    room --> walls["Wall_S / Wall_N / Wall_W / Wall_E<br/>開口があれば Part_NN"]
+    room --> walls["Wall_S / Wall_N / Wall_W / Wall_E<br/>開口があればPart_NN"]
     room --> ceil["Ceiling"]
     room --> doors["Doors/id<br/>自動ドア"]
     room --> parts["Columns・Levels・Stairs・Railings<br/>FloorAreas・CeilingFeatures"]
     room --> looks["Looks<br/>Floor・Wall・Ceiling・SDG"]
-    objects --> obj["Objects/id<br/>Xform：配置の xformOps＋customData"]
-    obj --> asset["Asset<br/>アセットの参照＋バリアント PhysX=Enabled"]
+    objects --> obj["Objects/id<br/>Xform：配置のxformOps＋customData"]
+    obj --> asset["Asset<br/>アセットの参照＋バリアントPhysX=Enabled"]
     obj --> col["Collider<br/>物理の無いアセットだけ"]
-    objects --> grp["Objects/id<br/>array・fill のグループ"]
-    grp --> unit["id_r0c0 など<br/>それぞれに Asset"]
+    objects --> grp["Objects/id<br/>array・fillのグループ"]
+    grp --> unit["id_r0c0など<br/>それぞれにAsset"]
 ```
 
 - ステージは**Z-up、メートル**（metersPerUnit=1）、defaultPrimは`/World`。部屋の内側はx∈[0, width]、y∈[0, depth]、床の上面がz=0。
@@ -359,22 +359,22 @@ flowchart TD
 flowchart TD
     call["check_in_isaac"] --> live{"live=true？"}
     live -->|"はい"| risk{"重なりがある？<br/>_live_risk"}
-    risk -->|"無い、かつ python_server が応答"| lx["live_exec<br/>開いている Isaac Sim の :8226 へコードを送る"]
+    risk -->|"無い、かつpython_serverが応答"| lx["live_exec<br/>開いているIsaac Simの :8226へコードを送る"]
     risk -->|"ある・応答なし"| hl
-    live -->|"いいえ"| hl["_run_isaac<br/>scripts/isaac/check_scene.py を headless で<br/>（AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=1：起動したままの Kit に渡す。<br/>isaac_worker.run → scripts/isaac/worker.py、失敗したら 1 回実行）"]
+    live -->|"いいえ"| hl["_run_isaac<br/>scripts/isaac/check_scene.pyをheadlessで<br/>（AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=1：起動したままのKitに渡す。<br/>isaac_worker.run → scripts/isaac/worker.py、失敗したら1回実行）"]
     lx --> core["check_core.run"]
     hl --> core
-    core --> s1["open_stage：USD を開き参照の読み込みを待つ"]
+    core --> s1["open_stage：USDを開き参照の読み込みを待つ"]
     s1 --> s2["survey：剛体・コライダーを数える"]
-    s2 --> s3["物理を steps フレーム回す"]
+    s2 --> s3["物理をstepsフレーム回す"]
     s3 --> s4["judge：unstable・sunk・no_collider・static"]
-    s4 --> s5["check.png・check.gif<br/>draft=true は物理なしで撮影だけ"]
+    s4 --> s5["check.png・check.gif<br/>draft=trueは物理なしで撮影だけ"]
     s5 --> s6["orbit：check_orbit/NN.jpg"]
     s6 --> rep["check.json → summarize_report"]
 
     gen["generate_data"] --> sp["sdg.plan<br/>カメラ・照明・材質をシードから決める"]
     sp --> pj["sdg/plan.json"]
-    pj --> rs["scripts/isaac/sdg.py<br/>Replicator の writer"]
+    pj --> rs["scripts/isaac/sdg.py<br/>Replicatorのwriter"]
     rs --> out["sdg/basic・coco・kitti<br/>summary.json・sheet.jpg"]
 ```
 
@@ -408,25 +408,25 @@ sequenceDiagram
 
     U->>C: 6畳の書斎を作って
     C->>W: plan_questions
-    W-->>C: 結果を大きく変える項目と既定（場所が分からないときだけ先に聞く ask_now）
+    W-->>C: 結果を大きく変える項目と既定（場所が分からないときだけ先に聞くask_now）
     C->>W: get_preferences
-    C->>W: create_scene（用途・窓・プレビュー・叩き台の 3D まで）
-    W->>P: preview.html を書いて開く（以後、保存のたびに更新）
-    W->>I: 物理なしで撮影（叩き台の 3D）
-    C->>W: view_candidates（怪しい物の候補を 1 枚の一覧で） / select_asset
+    C->>W: create_scene（用途・窓・プレビュー・叩き台の3Dまで）
+    W->>P: preview.htmlを書いて開く（以後、保存のたびに更新）
+    W->>I: 物理なしで撮影（叩き台の3D）
+    C->>W: view_candidates（怪しい物の候補を1枚の一覧で） / select_asset
     C->>W: propose_layouts（並べ方に選択肢があるとき）
     C->>W: set_assumptions（配置から分からない推測だけ。残りはサーバーが記録）
-    C->>W: 直したら finish(draft=true)（叩き台を撮り直す）
+    C->>W: 直したらfinish(draft=true)（叩き台を撮り直す）
     C->>U: 叩き台と推測を見せて「違う所を教えてください」
     U->>P: ドラッグで移動・候補の差し替え・仮定に「違う」・メモ・雰囲気
     P->>W: POST api/edit（move / select / feedback / note / mood / choose_layout）
     U->>C: これでいい
-    C->>W: get_scene（preview_edits・assumption_feedback・notes を読む）
+    C->>W: get_scene（preview_edits・assumption_feedback・notesを読む）
     C->>W: finish
-    W->>I: USD を書いて物理 settle＋撮影
+    W->>I: USDを書いて物理settle＋撮影
     I-->>W: check.json・check.png・check_orbit
-    W-->>C: check・指示との突き合わせ・ライセンス（問題があれば stopped）
-    C->>W: 問題があれば直して再 finish
+    W-->>C: check・指示との突き合わせ・ライセンス（問題があればstopped）
+    C->>W: 問題があれば直して再finish
     C->>U: 指示との突き合わせ表・USD・ライセンスを報告
 ```
 
@@ -464,12 +464,12 @@ sequenceDiagram
 flowchart TD
     video["動画"] -->|"extract_frames"| frames["選んだコマ<br/>inputs/stem_tNNN_NN.jpg＋.source.json"]
     photos["写真"] --> lm
-    frames --> lm["Claude が目印を拾う<br/>部屋の角・壁の継ぎ目・開口の角"]
-    frames -->|"video_poses"| orb["video_pose.py<br/>OpenCV の ORB"]
+    frames --> lm["Claudeが目印を拾う<br/>部屋の角・壁の継ぎ目・開口の角"]
+    frames -->|"video_poses"| orb["video_pose.py<br/>OpenCVのORB"]
     orb --> rel["コマの間の回転・動いた向き<br/>relative"]
-    photos -->|"depth.run"| dep["MoGe-2 の深度<br/>stem.depth.npz"]
+    photos -->|"depth.run"| dep["MoGe-2の深度<br/>stem.depth.npz"]
     frames -->|"depth.run"| dep
-    lm --> fit["fit_photos<br/>photo_fit.fit 最小二乗"]
+    lm --> fit["fit_photos<br/>photo_fit.fit最小二乗"]
     rel --> fit
     dep -->|"depth=true"| fit
     fit --> res["部屋の寸法・開口・各カメラ"]
