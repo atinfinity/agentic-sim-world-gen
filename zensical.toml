@@ -14,12 +14,12 @@ extra_javascript = ["javascripts/lang.js"]  # the language switch keeps the page
 extra_css = ["stylesheets/extra.css"]  # the nav: section titles vs pages
 nav = [
   { "トップ" = "index.md" },
-  { "使う" = [
+  { "利用者向け" = [
     { "はじめに" = "getting-started.md" },
     { "手元の 1 台で使う" = "use-local.md" },
     { "ssh 先の GPU 機で使う" = "use-ssh.md" },
   ] },
-  { "開発する" = [
+  { "開発者向け" = [
     { "仕組み" = "architecture.md" },
     { "開発に参加する" = "contributing.md" },
   ] },
