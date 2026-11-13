@@ -11,6 +11,7 @@ repo_name = "atinfinity/agentic-sim-world-gen"
 edit_uri = "edit/main/docs/"
 copyright = "コードは Apache License 2.0。NVIDIA の公式の製品ではありません。"
 extra_javascript = ["javascripts/lang.js"]  # the language switch keeps the page
+extra_css = ["stylesheets/extra.css"]  # the nav: section titles vs pages
 nav = [
   { "トップ" = "index.md" },
   { "使う" = [
