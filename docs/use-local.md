@@ -47,7 +47,7 @@ flowchart LR
 |---|---|
 | Ubuntu＋RTX GPU とドライバー、デスクトップ（X / Wayland） | Isaac Sim の描画、ブラウザ |
 | Isaac Sim 6.1（pip 版かスタンドアロン版） | 物理チェック・スクショ・写真比較・合成データ |
-| Python 3.10 以上と [uv](https://docs.astral.sh/uv/) | agentic-sim-world-gen 本体 |
+| Python 3.12 以上と [uv](https://docs.astral.sh/uv/) | agentic-sim-world-gen 本体 |
 | [Claude Code](https://claude.com/claude-code)（ログイン済み） | 日本語の指示からシーンを作る |
 | ffmpeg（任意、`sudo apt install ffmpeg`） | 動画からコマを抜く |
 

@@ -26,7 +26,7 @@ The sections below apply to both setups (install, environment variables, workflo
 | | Used for |
 |---|---|
 | Ubuntu + RTX GPU, Isaac Sim 6.1 (tested with the pip version; the standalone `python.sh` is untested) | Physics checks, screenshots, photo comparison, synthetic data |
-| Python 3.10 or later, [uv](https://docs.astral.sh/uv/) | agentic-sim-world-gen itself (search, preview, USD output) |
+| Python 3.12 or later, [uv](https://docs.astral.sh/uv/) | agentic-sim-world-gen itself (search, preview, USD output) |
 | [Claude Code](https://claude.com/claude-code) | Building scenes from natural-language instructions (MCP server + skill) |
 | ffmpeg (optional; Ubuntu `apt install ffmpeg`, Mac `brew install ffmpeg`) | Extracting frames from videos (`extract_frames`) |
 
@@ -41,7 +41,7 @@ uv sync --extra usd --extra hf --extra mcp --extra dev   # for floor plans add -
 source .venv/bin/activate
 ```
 
-`uv sync` creates `.venv` with the versions in `uv.lock` and installs this repository in editable mode (uv picks a Python that fits `requires-python`, 3.10 or later).
+`uv sync` creates `.venv` with the versions in `uv.lock` and installs this repository in editable mode (uv picks a Python that fits `requires-python`, 3.12 or later).
 To add an extra later, run `uv sync` again with every `--extra` you use (extras you leave out are removed from `.venv`).
 
 **Install usd-core only into `.venv`.** Do not pip install anything into Isaac Sim's Python (`python.sh` or the pip version's venv).

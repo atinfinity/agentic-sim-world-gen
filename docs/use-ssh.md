@@ -52,7 +52,7 @@ GPU 機に入ってくる通信は ssh だけでよい。
 
 | 場所 | 要るもの |
 |---|---|
-| GPU 機 | Ubuntu＋RTX GPU とドライバー、Isaac Sim 6.1（pip 版かスタンドアロン版）、Python 3.10 以上と uv、Claude Code（ログイン済み）、tmux。画面は無くてよい |
+| GPU 機 | Ubuntu＋RTX GPU とドライバー、Isaac Sim 6.1（pip 版かスタンドアロン版）、Python 3.12 以上と uv、Claude Code（ログイン済み）、tmux。画面は無くてよい |
 | 手元 | ssh クライアントとブラウザ |
 
 ## 2. GPU 機の準備
