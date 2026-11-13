@@ -59,8 +59,8 @@ def segments(path: str | Path) -> tuple[list[tuple[float, float, float, float]],
         edges = cv2.Canny(small, 60, 160)
         lines = cv2.HoughLinesP(edges, 1, math.pi / 360, 40, minLineLength=MIN_LEN * small.shape[1], maxLineGap=4)
     out = []
-    for l in (lines if lines is not None else []):
-        x1, y1, x2, y2 = (float(c) / k for c in l[0])
+    for l in (lines.reshape(-1, 4) if lines is not None else []):  # (N, 1, 4) up to opencv 4, (N, 4) from 5
+        x1, y1, x2, y2 = (float(c) / k for c in l)
         if math.hypot(x2 - x1, y2 - y1) >= MIN_LEN * w:
             out.append((x1, y1, x2, y2))
     return out, (w, h)
