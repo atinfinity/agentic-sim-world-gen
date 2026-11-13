@@ -91,7 +91,7 @@ added with `local:`.
 | Isaac Sim | 6.1 pip install, Ubuntu 24.04, RTX 2080 Ti | the standalone (binary) build, other versions, Windows |
 | The rest (search, preview, USD) | Ubuntu 24.04 (Python 3.14), macOS on Apple Silicon (Python 3.12) | Windows |
 
-Python 3.11+ and [uv](https://docs.astral.sh/uv/); [Claude Code](https://claude.com/claude-code) to use it as an
+Python 3.12+ and [uv](https://docs.astral.sh/uv/); [Claude Code](https://claude.com/claude-code) to use it as an
 agent; Isaac Sim 6.1 only for the physics check, screenshots and synthetic data. Without a GPU you can still
 search, preview and write USD.
 

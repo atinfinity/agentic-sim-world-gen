@@ -47,7 +47,7 @@ There are two ports, both on 127.0.0.1 (not exposed to the network).
 |---|---|
 | Ubuntu + RTX GPU and driver, a desktop (X / Wayland) | Isaac Sim rendering, the browser |
 | Isaac Sim 6.1 (pip or standalone) | Physics checks, screenshots, photo comparison, synthetic data |
-| Python 3.11 or later and [uv](https://docs.astral.sh/uv/) | agentic-sim-world-gen itself |
+| Python 3.12 or later and [uv](https://docs.astral.sh/uv/) | agentic-sim-world-gen itself |
 | [Claude Code](https://claude.com/claude-code) (logged in) | Building scenes from your instructions |
 | ffmpeg (optional, `sudo apt install ffmpeg`) | Extracting frames from videos |
 

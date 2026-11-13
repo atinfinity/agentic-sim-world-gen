@@ -52,7 +52,7 @@ The only inbound traffic the GPU machine needs is ssh.
 
 | Where | What you need |
 |---|---|
-| GPU machine | Ubuntu + RTX GPU and driver, Isaac Sim 6.1 (pip or standalone), Python 3.11 or later and uv, Claude Code (logged in), tmux. No display needed |
+| GPU machine | Ubuntu + RTX GPU and driver, Isaac Sim 6.1 (pip or standalone), Python 3.12 or later and uv, Claude Code (logged in), tmux. No display needed |
 | Your computer | An ssh client and a browser |
 
 ## 2. Preparing the GPU machine
