@@ -26,7 +26,7 @@ flowchart LR
 | | 用途 |
 |---|---|
 | Ubuntu＋RTX GPU、Isaac Sim 6.1（pip 版で確認済み。スタンドアロンの `python.sh` は未確認） | 物理チェック・スクショ・写真比較・合成データ |
-| Python 3.10 以上、[uv](https://docs.astral.sh/uv/) | agentic-sim-world-gen 本体（検索・プレビュー・USD 出力） |
+| Python 3.11 以上、[uv](https://docs.astral.sh/uv/) | agentic-sim-world-gen 本体（検索・プレビュー・USD 出力） |
 | [Claude Code](https://claude.com/claude-code) | 日本語の指示からシーンを作る（MCP サーバー＋スキル） |
 | ffmpeg（任意。Ubuntu `apt install ffmpeg`、Mac `brew install ffmpeg`） | 動画からコマを抜く（`extract_frames`） |
 
@@ -41,7 +41,7 @@ uv sync --extra usd --extra hf --extra mcp --extra dev   # 間取り図も使う
 source .venv/bin/activate
 ```
 
-`uv sync` は `uv.lock` の版で `.venv` を作り、このリポジトリを編集可能な形で入れる（Python は `requires-python` の 3.10 以上から uv が選ぶ）。
+`uv sync` は `uv.lock` の版で `.venv` を作り、このリポジトリを編集可能な形で入れる（Python は `requires-python` の 3.11 以上から uv が選ぶ）。
 あとで extra を足すときは、使う `--extra` を全部付けて `uv sync` し直す（付けなかった extra は `.venv` から外れる）。
 
 **usd-core は `.venv` にだけ入れる。** Isaac Sim の Python（`python.sh` や pip 版の venv）には何も pip install しない

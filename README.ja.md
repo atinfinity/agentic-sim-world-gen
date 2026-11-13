@@ -81,7 +81,7 @@ Ubuntu の画面の録画（Isaac Sim は開かず、check は headless）。高
 | 本体（検索・プレビュー・USD 出力） | Ubuntu 24.04（Python 3.14）、macOS（Apple Silicon、Python 3.12） | Windows |
 
 GPU の無い環境でも検索・プレビュー・USD 出力まではできる（Isaac Sim を使う操作だけが使えない）。
-必要な物：Python 3.10 以上と [uv](https://docs.astral.sh/uv/)、[Claude Code](https://claude.com/claude-code)（エージェントとして使うとき）、Isaac Sim 6.1（物理チェック・スクショ・合成データのときだけ）。
+必要な物：Python 3.11 以上と [uv](https://docs.astral.sh/uv/)、[Claude Code](https://claude.com/claude-code)（エージェントとして使うとき）、Isaac Sim 6.1（物理チェック・スクショ・合成データのときだけ）。
 
 ## クイックスタート（CLI）
 
