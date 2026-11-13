@@ -10,21 +10,32 @@ the Isaac Sim bundled assets, [Poly Haven](https://polyhaven.com/models) CC0 mod
 ```mermaid
 flowchart TB
   IN["<b>Input</b><br/>text (Japanese or English)<br/>floor plan: JSON / DXF / IFC / image<br/>photos / video"]
+  CC["<b>Claude Code</b><br/>reads the request, decides which tools to call"]
+  subgraph WG["agentic-sim-world-gen (this repository): MCP server + skill, the same operations from the CLI"]
+    direction LR
+    S["Search and pick assets"] --> L["Lay out<br/>relations, arrays, shelves"] --> V["Review in the browser<br/>thumbnails, top view"] --> U["Write the USD world<br/>and LICENSES.md"]
+  end
   SRC["<b>Asset sources</b><br/>SimReady Central<br/>Isaac Sim bundled assets<br/>Poly Haven CC0<br/>your USD folders"]
-  subgraph AG["Claude Code + MCP server"]
-    direction LR
-    S["Search and pick assets"] --> L["Lay out<br/>relations, arrays, shelves"] --> V["Review in the browser<br/>thumbnails, top view"]
-  end
-  subgraph OUT["Result"]
-    direction LR
-    U["USD world"] --> C["Isaac Sim check<br/>physics, screenshots"]
-    U --> LIC["LICENSES.md"]
-  end
-  IN --> AG
-  SRC --> AG
-  AG --> OUT
-  OUT -- "fix" --> AG
+  ISAAC["<b>Isaac Sim 6.1</b><br/>runs the check script:<br/>physics, screenshots"]
+  IN --> CC
+  CC -- "calls the tools" --> WG
+  SRC -- "searched" --> WG
+  WG -- "USD" --> ISAAC
+  ISAAC -- "report: fix and check again" --> CC
+  style WG fill:#536dfe14,stroke:#536dfe,stroke-width:3px
+  classDef repo fill:#536dfe2e,stroke:#536dfe
+  classDef input fill:#9e9e9e26,stroke:#9e9e9e,stroke-dasharray:5 5
+  classDef claude fill:#d977572e,stroke:#d97757,stroke-dasharray:5 5
+  classDef assets fill:#e3a0082e,stroke:#e3a008,stroke-dasharray:5 5
+  classDef isaac fill:#76b9002e,stroke:#76b900,stroke-dasharray:5 5
+  class S,L,V,U repo
+  class IN input
+  class CC claude
+  class SRC assets
+  class ISAAC isaac
 ```
+
+Blue with a thick frame: this repository. Dashed: outside it (orange: Claude Code, yellow: asset sources, green: Isaac Sim, gray: your input).
 
 > [!IMPORTANT]
 > This is a personal project. It is not an official NVIDIA product and is not sponsored or endorsed by NVIDIA.
