@@ -16,8 +16,8 @@ nav = [
   { "トップ" = "index.md" },
   { "利用者向け" = [
     { "はじめに" = "getting-started.md" },
-    { "手元の 1 台で使う" = "use-local.md" },
-    { "ssh 先の GPU 機で使う" = "use-ssh.md" },
+    { "手元の 1 台" = "use-local.md" },
+    { "ssh 先の GPU 機" = "use-ssh.md" },
   ] },
   { "開発者向け" = [
     { "仕組み" = "architecture.md" },
