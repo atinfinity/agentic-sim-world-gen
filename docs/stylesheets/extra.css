@@ -1,5 +1,5 @@
 /* Sidebar (wide screens, where the sections are shown open): a section title is smaller and muted, and its pages are
-   indented with a line on the left, so "Use" does not look like the same level as "Getting started" under it. */
+   indented with a line on the left, so "User" does not look like the same level as "Getting started" under it. */
 @media screen and (min-width: 76.25em) {
   .md-nav--primary > .md-nav__list > .md-nav__item--section > .md-nav__link {
     margin-top: 1.4em;
