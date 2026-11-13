@@ -8,21 +8,24 @@
 ```mermaid
 flowchart TB
   IN["<b>入力</b><br/>文章（日本語・英語）<br/>間取り図：JSON / DXF / IFC / 画像<br/>写真・動画"]
+  CC["<b>Claude Code</b><br/>指示を読み、どのツールを呼ぶか決める"]
+  subgraph WG["agentic-sim-world-gen（このリポジトリ）：MCP サーバー＋スキル、同じ操作を CLI からも"]
+    direction LR
+    S["アセットを検索して選ぶ"] --> L["配置<br/>関係・繰り返し・棚への陳列"] --> V["ブラウザで確認<br/>候補の一覧・上面図"] --> U["USD のワールドと<br/>LICENSES.md を書き出す"]
+  end
   SRC["<b>アセットの出どころ</b><br/>SimReady Central<br/>Isaac Sim 同梱アセット<br/>Poly Haven CC0<br/>手持ちの USD フォルダ"]
-  subgraph AG["Claude Code + MCP server"]
-    direction LR
-    S["アセットを検索して選ぶ"] --> L["配置<br/>関係・繰り返し・棚への陳列"] --> V["ブラウザで確認<br/>候補の一覧・上面図"]
-  end
-  subgraph OUT["結果"]
-    direction LR
-    U["USD のワールド"] --> C["Isaac Sim で検証<br/>物理・スクリーンショット"]
-    U --> LIC["LICENSES.md"]
-  end
-  IN --> AG
-  SRC --> AG
-  AG --> OUT
-  OUT -- "手直し" --> AG
+  ISAAC["<b>Isaac Sim 6.1</b><br/>検証のスクリプトを動かす：<br/>物理・スクリーンショット"]
+  IN --> CC
+  CC -- "ツールを呼ぶ" --> WG
+  SRC -- "検索" --> WG
+  WG -- "USD" --> ISAAC
+  ISAAC -- "結果：手直しして再検証" --> CC
+  style WG stroke:#536dfe,stroke-width:3px
+  classDef outside stroke-dasharray:5 5
+  class IN,CC,SRC,ISAAC outside
 ```
+
+太い枠がこのリポジトリ、点線の箱はその外のもの。
 
 > [!IMPORTANT]
 > NVIDIA の公式の製品ではなく、NVIDIA の後援・承認も受けていない個人のプロジェクトです。Isaac Sim・Omniverse・SimReady・Replicator は NVIDIA Corporation の商標です。

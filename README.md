@@ -10,21 +10,24 @@ the Isaac Sim bundled assets, [Poly Haven](https://polyhaven.com/models) CC0 mod
 ```mermaid
 flowchart TB
   IN["<b>Input</b><br/>text (Japanese or English)<br/>floor plan: JSON / DXF / IFC / image<br/>photos / video"]
+  CC["<b>Claude Code</b><br/>reads the request, decides which tools to call"]
+  subgraph WG["agentic-sim-world-gen (this repository): MCP server + skill, the same operations from the CLI"]
+    direction LR
+    S["Search and pick assets"] --> L["Lay out<br/>relations, arrays, shelves"] --> V["Review in the browser<br/>thumbnails, top view"] --> U["Write the USD world<br/>and LICENSES.md"]
+  end
   SRC["<b>Asset sources</b><br/>SimReady Central<br/>Isaac Sim bundled assets<br/>Poly Haven CC0<br/>your USD folders"]
-  subgraph AG["Claude Code + MCP server"]
-    direction LR
-    S["Search and pick assets"] --> L["Lay out<br/>relations, arrays, shelves"] --> V["Review in the browser<br/>thumbnails, top view"]
-  end
-  subgraph OUT["Result"]
-    direction LR
-    U["USD world"] --> C["Isaac Sim check<br/>physics, screenshots"]
-    U --> LIC["LICENSES.md"]
-  end
-  IN --> AG
-  SRC --> AG
-  AG --> OUT
-  OUT -- "fix" --> AG
+  ISAAC["<b>Isaac Sim 6.1</b><br/>runs the check script:<br/>physics, screenshots"]
+  IN --> CC
+  CC -- "calls the tools" --> WG
+  SRC -- "searched" --> WG
+  WG -- "USD" --> ISAAC
+  ISAAC -- "report: fix and check again" --> CC
+  style WG stroke:#536dfe,stroke-width:3px
+  classDef outside stroke-dasharray:5 5
+  class IN,CC,SRC,ISAAC outside
 ```
+
+The thick frame is this repository; the dashed boxes are outside it.
 
 > [!IMPORTANT]
 > This is a personal project. It is not an official NVIDIA product and is not sponsored or endorsed by NVIDIA.
