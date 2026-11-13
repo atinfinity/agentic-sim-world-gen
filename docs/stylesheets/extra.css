@@ -1,0 +1,15 @@
+/* Sidebar (wide screens, where the sections are shown open): a section title is smaller and muted, and its pages are
+   indented with a line on the left, so "Use" does not look like the same level as "Getting started" under it. */
+@media screen and (min-width: 76.25em) {
+  .md-nav--primary > .md-nav__list > .md-nav__item--section > .md-nav__link {
+    margin-top: 1.4em;
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    color: var(--md-default-fg-color--light);
+  }
+  .md-nav--primary > .md-nav__list > .md-nav__item--section > .md-nav > .md-nav__list {
+    margin-left: 0.35rem;
+    padding-left: 0.5rem;
+    border-left: 0.05rem solid var(--md-default-fg-color--lightest);
+  }
+}

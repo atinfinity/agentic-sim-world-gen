@@ -11,6 +11,7 @@ repo_url = "https://github.com/atinfinity/agentic-sim-world-gen"
 repo_name = "atinfinity/agentic-sim-world-gen"
 copyright = "Code under the Apache License 2.0. Not an official NVIDIA product."
 extra_javascript = ["javascripts/lang.js"]  # the language switch keeps the page
+extra_css = ["stylesheets/extra.css"]  # the nav: section titles vs pages
 nav = [
   { "Home" = "index.md" },
   { "Use" = [

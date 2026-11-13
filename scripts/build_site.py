@@ -26,7 +26,7 @@ REPO = "https://github.com/atinfinity/agentic-sim-world-gen"
 BASE = "/agentic-sim-world-gen/"  # the path of the GitHub Pages site
 EN_DIR = ROOT / "build" / "site_en"
 JA_DIR = ROOT / "build" / "site_ja"
-SHARED = ("images", "javascripts", "videos")  # folders of docs/ copied into both sites
+SHARED = ("images", "javascripts", "stylesheets", "videos")  # folders of docs/ copied into both sites
 
 ALERTS = {  # GitHub alert -> admonition type, title in English, title in Japanese
     "NOTE": ("note", "Note", "メモ"),
