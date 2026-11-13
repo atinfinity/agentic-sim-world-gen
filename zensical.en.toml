@@ -14,12 +14,12 @@ extra_javascript = ["javascripts/lang.js"]  # the language switch keeps the page
 extra_css = ["stylesheets/extra.css"]  # the nav: section titles vs pages
 nav = [
   { "Home" = "index.md" },
-  { "Use" = [
+  { "User" = [
     { "Getting started" = "getting-started.md" },
     { "Everything on one machine" = "use-local.md" },
     { "Over ssh" = "use-ssh.md" },
   ] },
-  { "Develop" = [
+  { "Developer" = [
     { "How it works" = "architecture.md" },
     { "Contributing" = "contributing.md" },
   ] },
