@@ -39,7 +39,6 @@ git clone https://github.com/atinfinity/agentic-sim-world-gen.git
 cd agentic-sim-world-gen
 uv sync --extra usd --extra hf --extra mcp --extra dev   # for floor plans add --extra dxf --extra ifc
 source .venv/bin/activate
-pytest -q                                  # offline tests (about 2 minutes)
 ```
 
 `uv sync` creates `.venv` with the versions in `uv.lock` and installs this repository in editable mode (uv picks a Python that fits `requires-python`, 3.10 or later).
@@ -190,30 +189,24 @@ agentic-sim-world-gen check out/study                                  # physics
 agentic-sim-world-gen licenses out/study                               # -> out/study/LICENSES.md
 ```
 
-`agentic-sim-world-gen check` runs `scripts/isaac/check_scene.py` with Isaac Sim's python. To call it directly:
-
-```bash
-~/isaacsim/python.sh scripts/isaac/check_scene.py out/study/scene.usda \
-    --screenshot out/study/check.png --report out/study/check.json [--gif out/study/check.gif]
-```
-
-The SceneSpec format is in `src/agentic_sim_world_gen/scene/spec.py`; examples are in `examples/`.
+Examples of scene files are in `examples/`. Their format, and calling the Isaac Sim check script directly, are in
+[Contributing](contributing.md#2-where-things-are).
 
 ## 6. Other inputs
 
 | Input | Example | Details |
 |---|---|---|
-| Floor plan (JSON / DXF / IFC) | `agentic-sim-world-gen plan examples/plans/1ldk.json -o out/1ldk_plan` → put plan.json in `room.plan_file`. To Claude: "Use the floor plan in examples/plans/1ldk.json, with a sofa in the LDK and a low table in the Japanese-style room" (the Japanese-style room gets a tatami floor, the washroom a tile floor) | `src/agentic_sim_world_gen/scene/plan.py` |
+| Floor plan (JSON / DXF / IFC) | `agentic-sim-world-gen plan examples/plans/1ldk.json -o out/1ldk_plan` → put plan.json in `room.plan_file`. To Claude: "Use the floor plan in examples/plans/1ldk.json, with a sofa in the LDK and a low table in the Japanese-style room" (the Japanese-style room gets a tatami floor, the washroom a tile floor) | [Data](architecture.md#2-data) |
 | Floor plan (image / PDF) | Give Claude the image; it traces it into JSON (units in px, plus the image as an underlay) | plans.md in the skill |
 | Photos | "Make the room in examples/photos/living_room.jpg". The source is in the neighboring `<stem>.source.json`. `agentic-sim-world-gen photo <scene>` shows it side by side with a render from the same viewpoint | photos.md in the skill |
 | Depth for photos and videos | Create the venv from "Monocular depth" below, then run `agentic-sim-world-gen fit-photos req.json --depth` (photos in `image`). Room dimensions are easier to pin down | [Monocular depth](#monocular-depth-optional) below |
 | Video | "Make the room in walk.mp4" (a video taken while walking through the room, with no people in it). The source is in the neighboring `walk.source.json`. `agentic-sim-world-gen frames walk.mp4 -o <scene>` picks frames to use as input photos (needs ffmpeg) | videos.md in the skill |
 | Repeated placement | `agentic-sim-world-gen resolve examples/warehouse_racks.json -o out/racks` (rows of racks + aisles) | [Layout](architecture.md#4-layout) (`set_array`) |
-| Outdoor | `agentic-sim-world-gen resolve examples/outdoor_yard.json -o out/yard` (road, sidewalk, buildings, sky) | `src/agentic_sim_world_gen/scene/site.py` |
-| See missing assets, most frequent first | `agentic-sim-world-gen missing` (substitutions, objects with no candidates and skipped small items across all scenes made on this machine) | `src/agentic_sim_world_gen/missing.py` |
+| Outdoor | `agentic-sim-world-gen resolve examples/outdoor_yard.json -o out/yard` (road, sidewalk, buildings, sky) | [Data](architecture.md#2-data) |
+| See missing assets, most frequent first | `agentic-sim-world-gen missing` (substitutions, objects with no candidates and skipped small items across all scenes made on this machine) | [Asset search](architecture.md#3-asset-search) |
 | Your own USD folder | `AGENTIC_SIM_WORLD_GEN_SOURCES=+local:/data/usd`; list its contents with `agentic-sim-world-gen index /data/usd --list` | [Asset search](architecture.md#3-asset-search) |
-| Floor, walls, lighting | `room.floor: "wood_light"`, `room.lighting: "office"`, etc. (plain words such as "wood flooring, night lighting" work too) | `src/agentic_sim_world_gen/scene/looks.py` |
-| Synthetic data | `agentic-sim-world-gen sdg out/study --frames 24 --coco` → RGB, bbox, segmentation, depth | `src/agentic_sim_world_gen/sdg.py` |
+| Floor, walls, lighting | `room.floor: "wood_light"`, `room.lighting: "office"`, etc. (plain words such as "wood flooring, night lighting" work too) | [Composing the USD](architecture.md#6-composing-the-usd) |
+| Synthetic data | `agentic-sim-world-gen sdg out/study --frames 24 --coco` → RGB, bbox, segmentation, depth | [The Isaac Sim side](architecture.md#7-the-isaac-sim-side) |
 
 ### Monocular depth (optional)
 
@@ -291,8 +284,14 @@ For unknown licenses, check the license of the original folder or switch to a di
 
 ## What to read next
 
-- [tools.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/tools.md): every MCP tool and its arguments
+To use it:
+
 - [use-local.md](use-local.md) / [use-ssh.md](use-ssh.md): steps for the all-local and over-ssh setups
-- [architecture.md](architecture.md): how it works, with diagrams
+- [tools.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/tools.md): every MCP tool and its arguments
 - [.claude/skills/world-gen/SKILL.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/SKILL.md): Claude's conversation steps, standard furniture sizes, Japanese-to-English query examples
+
+To change the code:
+
+- [architecture.md](architecture.md): how it works, with diagrams
+- [contributing.md](contributing.md): setup, tests, where things are, pull requests
 - [CLAUDE.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/CLAUDE.md): conventions (coordinate system, USD structure)

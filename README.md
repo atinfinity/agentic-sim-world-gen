@@ -118,12 +118,20 @@ a chair and a bookshelf".
 
 ## Guides
 
+To use it:
+
 | Guide | |
 |---|---|
 | [Getting Started](docs/en/getting-started.md) | from the install to your first world |
 | [Everything on one machine](docs/en/use-local.md) | Ubuntu with an RTX GPU and a screen (live mode too) |
 | [Over ssh](docs/en/use-ssh.md) | the GPU machine is an Ubuntu box on the LAN; you use ssh and a browser from a Mac or similar |
+
+To change the code:
+
+| Guide | |
+|---|---|
 | [How it works](docs/en/architecture.md) | the flow, data, search, layout, checks, USD, Isaac Sim, the conversation and rooms from photos, with diagrams |
+| [Contributing](docs/en/contributing.md) | setup, tests, where things are, pull requests, the project page, GitHub Actions |
 
 The Japanese versions are in [docs/](docs/getting-started.md).
 
@@ -138,4 +146,4 @@ The code is under the [Apache License 2.0](LICENSE) (see [NOTICE](NOTICE)). Not 
 - **Optional dependency**: IFC import (extra `ifc`) uses [IfcOpenShell](https://ifcopenshell.org/), LGPL-3.0-or-later (imported, not bundled).
 - **Optional models** (not bundled; downloaded only when you allow it): [SigLIP 2](https://huggingface.co/google/siglip2-so400m-patch14-384) for the taste check (Apache-2.0), [MoGe-2](https://huggingface.co/Ruicheng/moge-2-vits-normal) for photo depth (MIT).
 
-Contributions: [CONTRIBUTING.md](CONTRIBUTING.md). Security: [SECURITY.md](SECURITY.md).
+Contributions: [Contributing](docs/en/contributing.md). Security: [SECURITY.md](SECURITY.md).

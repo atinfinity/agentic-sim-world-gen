@@ -56,7 +56,7 @@
 
 ## 開発の進め方
 
-- 手順は [CONTRIBUTING.md](CONTRIBUTING.md)。変更ごとにブランチを切って PR を作る（PR に GIF・画像などの動作の様子を貼る）。
+- 手順は [docs/contributing.md](docs/contributing.md)（英語 [docs/en/contributing.md](docs/en/contributing.md)、CONTRIBUTING.md はその案内）。変更ごとにブランチを切って PR を作る（PR に GIF・画像などの動作の様子を貼る）。
 - 仕組みを変えたら docs/architecture.md も直す。MCP ツールの説明を変えたら `python scripts/make_tool_reference.py` で
   `.claude/skills/world-gen/tools.md` を作り直す（`tests/test_mcp_schema.py` が確かめる）。
 - Isaac Sim での確認は RTX GPU の Linux 機（pip 版なら `ISAACSIM_PYTHON=<Isaac Sim の venv>/bin/python`、`OMNI_KIT_ACCEPT_EULA=YES`）。
