@@ -67,6 +67,10 @@ Ubuntuの画面の録画（Isaac Simは開かず、checkはheadless）。高画�
 "pallet" by ForgeCAD（[ForgeCAD/simready-assets](https://huggingface.co/datasets/ForgeCAD/simready-assets)）、
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。
 
+1回の流れ（[Getting Started](docs/getting-started.md#4-claude-codeで最初のワールド)の例。②〜④は実際の画面）：
+
+![指示からワールドまで：日本語で頼む、候補を見て選ぶ、関係で配置・検査、Isaac Simで物理チェック、scene.usdaとLICENSES.md](docs/images/overview_storyboard_ja.jpg)
+
 ## できること
 
 - **Claude CodeのMCPサーバー＋スキル**（63ツール）。同じ処理をCLI `agentic-sim-world-gen`でも呼べる
@@ -106,7 +110,8 @@ agentic-sim-world-gen check out/study                                    # Isaac
 ```
 
 usd-coreは`.venv`にだけ入れる（Isaac SimのPythonには入れない）。Isaac Simの場所は`ISAACSIM_PATH`（既定`~/isaacsim`）か
-`ISAACSIM_PYTHON`（pip版のpython）、非対話実行には`OMNI_KIT_ACCEPT_EULA=YES`。
+`ISAACSIM_PYTHON`（pip版のpython）で指定し、非対話で動かすには`OMNI_KIT_ACCEPT_EULA=YES`も要る。
+ほかの環境変数は[Getting Started「3. 環境変数」](docs/getting-started.md#3-環境変数)。
 
 ## Claude Codeから使う（MCP）
 
@@ -120,7 +125,8 @@ usd-coreは`.venv`にだけ入れる（Isaac SimのPythonには入れない）�
 |---|---|
 | search_assets | アセット検索：SimReady Central・Isaac同梱・Poly Haven・手持ちフォルダ（英語クエリ＋類義語、サイズ条件、一致スコアで再ランク） |
 | plan_questions | 場所ごとに結果を大きく変える質問と、その既定値（まず既定で叩き台を作り、後で聞く） |
-| create_scene | SceneSpecから候補検索＋プレビュー生成 |
+| create_scene | SceneSpecから叩き台までを1回で：候補検索・プレビュー、配置に問題が無ければUSD出力と物理なしの描画も |
+| show_gallery / start_from_example | 作例と過去のシーンを上面図で並べる / 選んだものから始める（指示があいまいな時） |
 | set_purpose | 用途（demo / amr / manipulation / sdg）の既定（密度、ロボットの通路幅など）を当てる |
 | open_preview | ブラウザでプレビューを開く（ツールを呼ぶたびに更新。上面図で物を動かす・候補を選ぶ・メモを書ける） |
 | get_scene | 状態（候補、選択、配置の問題、プレビューのパス） |
@@ -141,6 +147,8 @@ usd-coreは`.venv`にだけ入れる（Isaac SimのPythonには入れない）�
 | compose_scene | scene.usdaを出力 |
 | view_fronts | 各物体を想定した正面からIsaac Simで描画（向きの確認、Ubuntuのみ。fillの商品は除く、`ids`で絞れる） |
 | check_in_isaac | Isaac Sim（headless）で物理チェック＋スクショ（Ubuntuのみ）。`live=true`で起動中のIsaac Simの画面上で確認、`draft=true`で物理なしの叩き台の描画 |
+| finish | 仕上げを1回で：USD出力（古ければ）→ 物理チェック → 指示との突き合わせ → ライセンス。直す物があればそこで止まる |
+| set_collider | 当たり判定の無いアセットに見えない箱の当たり判定を付ける |
 | set_input / compare_photo | 入力写真の出典・撮影カメラの記録 / 写真と同じ視点で描画して並べる（Ubuntuのみ） |
 | fit_photos | 同じ部屋の写真が複数のとき、写真上の目印から部屋の寸法・開口・各カメラを求める |
 | extract_frames | 部屋を歩いて撮った動画から、ぶれが少なく見え方の違うコマを4〜8枚選び、出典・時刻つきの入力写真にする（ffmpegが必要） |
@@ -151,59 +159,70 @@ usd-coreは`.venv`にだけ入れる（Isaac SimのPythonには入れない）�
 | generate_data | Replicatorで合成データ（RGB・2D bbox・セグメンテーション・深度、COCO/KITTIも）。カメラ・照明・床壁色をランダム化（Ubuntuのみ） |
 | license_report | 使用アセットのライセンス集計・帰属表示・警告、LICENSES.md出力 |
 
-シーンは`$AGENTIC_SIM_WORLD_GEN_OUT/<name>/`（既定`~/agentic_sim_world_gen_scenes`）に保存。
+シーンは`$AGENTIC_SIM_WORLD_GEN_OUT/<name>/`（既定`~/agentic_sim_world_gen_scenes`）に保存される。
 
 ## アセット源
 
-`AGENTIC_SIM_WORLD_GEN_SOURCES`（既定`simready-central,isaac,polyhaven`）。
+検索元は`AGENTIC_SIM_WORLD_GEN_SOURCES`で選ぶ（既定`simready-central,isaac,polyhaven`）。
 
-- `simready-central`：SimReady Centralの検索（上のWARNINGを参照）。アセット本体はHugging Faceのデータセットから参照する
-- `isaac`：同梱の索引`src/agentic_sim_world_gen/data/isaac_6.1.jsonl.gz`をオフライン検索する（作り直し：`python scripts/build_isaac_index.py --bbox-props`）。
-  IsaacアセットをローカルやNucleusに置いている場合は`ISAAC_ASSETS_ROOT`にそのルート（`Isaac/`の親）を指定。未設定なら公開のURLを参照する
-- `polyhaven`：Poly HavenのCC0 3Dモデル（同梱の索引で検索し、シーンを合成するときだけ1kのUSDを取得してシーンに写す）
-- 床・壁の材質：Isaac Sim同梱のMDLとCC0のPBR（ambientCG・Poly Haven）。`AGENTIC_SIM_WORLD_GEN_MDL=0`でMDLを、`AGENTIC_SIM_WORLD_GEN_PBR=0`でPBRを検索しない
+| 名前 | 中身 | 検索のしかた |
+|---|---|---|
+| `simready-central` | [SimReady Central](https://huggingface.co/spaces/nvidia/simready-central)（Hugging Face。上のWARNINGを参照） | 検索APIに問い合わせる（オンライン）。アセット本体はHugging Faceのデータセットから参照する |
+| `isaac` | Isaac Sim同梱アセット | 同梱の索引`src/agentic_sim_world_gen/data/isaac_6.1.jsonl.gz`をオフラインで検索（作り直し：`python scripts/build_isaac_index.py --bbox-props`） |
+| `polyhaven` | Poly HavenのCC0 3Dモデル | 同梱の索引をオフラインで検索。シーンを合成するときだけ1kのUSDを取得し、シーンのフォルダにコピーする |
+| `local:<dir>` | 手持ちのUSDフォルダ | `agentic-sim-world-gen index`で作った索引（下） |
 
-同梱の索引（`src/agentic_sim_world_gen/data/*.gz`）はアセットの名前・寸法・URLの一覧で、アセット本体は含まない（出どころは[NOTICE](NOTICE)）。
+- IsaacアセットをローカルやNucleusに置いている場合は`ISAAC_ASSETS_ROOT`にそのルート（`Isaac/`の親）を指定する。未設定なら公開のURLを参照する。
+- 床・壁の材質は、Isaac Sim同梱のMDLとCC0のPBR（ambientCG・Poly Haven）の索引から選ぶ。`AGENTIC_SIM_WORLD_GEN_MDL=0`でMDLを、`AGENTIC_SIM_WORLD_GEN_PBR=0`でPBRを検索しない。
+- 同梱の索引（`src/agentic_sim_world_gen/data/*.gz`）はアセットの名前・寸法・URLの一覧で、アセット本体は含まない（出どころは[NOTICE](NOTICE)）。
 
 ### 手持ちのUSDフォルダ
 
-`AGENTIC_SIM_WORLD_GEN_SOURCES=+local:/data/usd_assets`（既定の検索元に足す）。
-`agentic-sim-world-gen index /data/usd_assets --list`で索引を作って中身を確認できる（初回は全ファイルを読むので時間がかかる。
-以後は変更分だけ）。ライセンスはフォルダ内のLICENSE / COPYINGから推定するので、確実にするにはフォルダに
-`agentic-sim-world-gen.json`を置く：`{"license": "CC-BY-4.0", "author": "ACME", "tags": ["kitchen"], "exclude": ["*_lod*.usd"]}`
-（近いフォルダの設定が優先）。SimReady形式のアセットフォルダ（`asset.json`つき）はその情報も読む。
+手持ちのUSDフォルダは`AGENTIC_SIM_WORLD_GEN_SOURCES=+local:/data/usd_assets`で既定の検索元に足せる。
+`agentic-sim-world-gen index /data/usd_assets --list`で索引を作り、中身を確認できる（初回は全ファイルを読むので時間がかかり、以後は変更分だけ読む）。
+ライセンスはフォルダ内のLICENSE / COPYINGから推定する。確実にするには、フォルダに`agentic-sim-world-gen.json`を置く（近いフォルダの設定が優先）：
+
+```json
+{"license": "CC-BY-4.0", "author": "ACME", "tags": ["kitchen"], "exclude": ["*_lod*.usd"]}
+```
+
+SimReady形式のアセットフォルダ（`asset.json`つき）は、その情報も読む。
 
 ## 間取り図・屋外・ライブモード
 
-間取り図：`agentic-sim-world-gen plan examples/plans/1ldk.json -o out/1ldk_plan`（DXFは`--extra dxf`、
-IFCは`--extra ifc`を付けて`uv sync`し直す）。出力のplan.jsonを`room.plan_file`に指定すると、部屋（ゾーン）ごとに壁際配置でき、
-ドア前を空け、USDの壁に開口が開く。形式は`src/agentic_sim_world_gen/scene/plan.py`のdocstring。
-IFCの家具はBIMの位置・向きのままアセットを置ける。
+### 間取り図
 
-屋外：`room.outdoor=true`でwidth×depthが敷地になり、道路・歩道・芝などのareas（ゾーンとして壁際配置に使える。
-歩道は縁石の高さ、道路は物を置かない）と建物buildings（箱）を置ける。照明はsun / overcast / dusk / street_nightで、
-Isaac Sim同梱のHDRIを空に使う（自分で用意したHDRは`sky`にパスを渡す）。例：`agentic-sim-world-gen resolve examples/outdoor_yard.json -o out/outdoor_yard`。
+`agentic-sim-world-gen plan examples/plans/1ldk.json -o out/1ldk_plan`で読み込む（DXFはextra `dxf`、IFCは`ifc`が要る。`uv sync`に`--extra dxf --extra ifc`を足す）。
+出力のplan.jsonを`room.plan_file`に指定すると、部屋（ゾーン）ごとに壁際へ配置でき、ドアの前は空き、USDの壁には開口が開く。
+形式は`src/agentic_sim_world_gen/scene/plan.py`のdocstring。
+IFCの家具は、BIMの位置・向きのままアセットに置き換えられる。
 
-ライブモード：Isaac Simを`--enable isaacsim.code_editor.python_server`付きで起動しておくと、`agentic-sim-world-gen check out/study --live`（MCPは`live=true`）がその画面でシーンを開いて物理を回し、問題の物を選択状態にする（2回目以降約8秒。headlessは毎回約34秒）。起動していなければheadlessで実行する。接続先は`AGENTIC_SIM_WORLD_GEN_ISAAC_LIVE`（既定`127.0.0.1:8226`）。
+### 屋外
+
+`room.outdoor=true`にすると、width×depthが敷地になる。置けるのは次の2つ：
+
+- areas：道路・歩道・芝など。ゾーンとして壁際配置に使える（歩道は縁石の高さ、道路には物を置かない）
+- buildings：建物（箱）
+
+照明はsun / overcast / dusk / street_nightで、空にはIsaac Sim同梱のHDRIを使う（自分で用意したHDRは`sky`にパスを渡す）。例：`agentic-sim-world-gen resolve examples/outdoor_yard.json -o out/outdoor_yard`。
+
+### ライブモード
+
+Isaac Simを`--enable isaacsim.code_editor.python_server`付きで起動しておくと、`agentic-sim-world-gen check out/study --live`（MCPでは`live=true`）が
+その画面でシーンを開いて物理を回し、問題のある物を選択状態にする（2回目以降は約8秒。headlessは毎回約34秒）。
+Isaac Simが起動していなければheadlessで動く。接続先は`AGENTIC_SIM_WORLD_GEN_ISAAC_LIVE`（既定`127.0.0.1:8226`）。
 python_serverは任意のコードを実行するので、127.0.0.1以外で待ち受けない。
 
 ## ドキュメント
 
-使う：
-
-| ファイル | 内容 |
-|---|---|
-| [docs/getting-started.md](docs/getting-started.md) | はじめての方向け：インストールから最初のワールドまで |
-| [docs/use-local.md](docs/use-local.md) | 全部手元：画面のあるUbuntu＋RTXの1台で使う（ライブモードも） |
-| [docs/use-ssh.md](docs/use-ssh.md) | ssh先：GPU機はLANのUbuntu、手元のMacなどからsshとブラウザで使う |
-
-コードを変える：
-
-| ファイル | 内容 |
-|---|---|
-| [docs/architecture.md](docs/architecture.md) | 仕組みの説明（全体の流れ・データの形・検索・レイアウト・検証・USD・Isaac Sim・対話・写真から推定を図で） |
-| [docs/contributing.md](docs/contributing.md) | 開発に参加する：セットアップ・テスト・どこに何があるか・プルリクエスト・プロジェクトページ・GitHub Actions |
-| [CLAUDE.md](CLAUDE.md) | このリポジトリで開発するエージェント向けの前提・規約・環境変数 |
+| 読む人 | ファイル | 内容 |
+|---|---|---|
+| 使う人 | [docs/getting-started.md](docs/getting-started.md) | はじめての方向け：インストールから最初のワールドまで（どの形で動かすかの選び方も） |
+| | [docs/use-local.md](docs/use-local.md) | 全部手元：画面のあるUbuntu＋RTXの1台で使う（ライブモードも） |
+| | [docs/use-ssh.md](docs/use-ssh.md) | ssh先：GPU機はLANのUbuntu、手元のMacなどからsshとブラウザで使う |
+| 仕組みを知りたい人 | [docs/architecture.md](docs/architecture.md) | 全体の流れ・データの形・検索・レイアウト・検証・USD・Isaac Sim・対話・写真からの推定を図で |
+| 開発する人 | [docs/contributing.md](docs/contributing.md) | 開発に参加する：セットアップ・テスト・どこに何があるか・プルリクエスト・プロジェクトページ・GitHub Actions |
+| | [CLAUDE.md](CLAUDE.md) | このリポジトリで開発するエージェント向けの前提・規約・環境変数 |
 
 手引きの英語版は[docs/en/](docs/en/getting-started.md)にある。
 

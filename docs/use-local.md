@@ -1,9 +1,9 @@
 # 全部手元で使う（Ubuntu＋RTXの1台）
 
 Isaac Sim・Claude Code・プレビューを、画面のある手元のUbuntu（RTX GPU）1台で動かす手順。
-Isaac Simの3D画面・プレビュー・ターミナルを同じ画面で見られる。checkを開いているIsaac Simの画面で行う「ライブモード」も、この形でだけ使える。
+Isaac Simの3D画面・プレビュー・ターミナルを同じ画面で見られる。開いているIsaac Simの画面でcheckする「ライブモード」も、この形でだけ使える。
 
-GPU機が別の場所にあり、手元（Mac等）からはsshで入る場合は[ssh先で使う](use-ssh.md)。
+GPU機が別の場所にあり、手元（Macなど）からsshで入るなら[ssh先で使う](use-ssh.md)。2つの形の違いは[Getting Started「0. どこで動かすか」](getting-started.md#0-どこで動かすか)の表。
 
 ```mermaid
 flowchart LR
@@ -55,7 +55,7 @@ flowchart LR
 
 1. Isaac Sim 6.1を入れる。pip版なら専用のvenvに`pip install "isaacsim[all,extscache]==6.1.0.0"`（NVIDIAの手順に従う）。
    スタンドアロン版なら`~/isaacsim`に展開する。
-2. agentic-sim-world-genを入れる（[Getting Started「2. インストール」](getting-started.md#2-インストール)と同じ）：
+2. agentic-sim-world-genを入れる（[Getting Started「2. インストール」](getting-started.md#2-インストール)と同じ。間取り図も使うなら`--extra dxf --extra ifc`も付ける）：
 
    ```bash
    git clone https://github.com/atinfinity/agentic-sim-world-gen.git
@@ -67,7 +67,7 @@ flowchart LR
 3. 環境変数を`~/.bashrc`などに書く：
 
    ```bash
-   export ISAACSIM_PYTHON=~/isaacsim_venv/bin/python   # pip 版の venv の python。スタンドアロン版なら ISAACSIM_PATH=~/isaacsim
+   export ISAACSIM_PYTHON=~/isaacsim_venv/bin/python   # pip版のvenvのpython。スタンドアロン版を ~/isaacsim以外に置いたならISAACSIM_PATH=<その場所>
    export OMNI_KIT_ACCEPT_EULA=YES                       # 非対話で Isaac Sim を動かすのに必要（NVIDIA Omniverse EULA に同意）
    ```
 
@@ -84,7 +84,7 @@ flowchart LR
 
 ## 3. 作業フォルダを作る
 
-ワールドを作るときは、リポジトリの外の作業フォルダでClaude Codeを起動する（リポジトリの中だと開発用のCLAUDE.mdを毎ターン読むので、料金が高く圧縮も早い）。
+ワールドを作るときは、リポジトリの外の作業フォルダでClaude Codeを起動する（リポジトリの中だと開発用のCLAUDE.mdを毎ターン読むので、料金が増え、会話の自動圧縮も早く起きる）。
 
 ```bash
 agentic-sim-world-gen workspace ~/agentic-sim-world-gen-ws     # .mcp.json・スキル world-gen（リポジトリへのリンク）・短い CLAUDE.md
@@ -101,8 +101,8 @@ cd ~/agentic-sim-world-gen-ws && claude
    > 6畳の書斎を作って。机と椅子、壁際に本棚
 
 2. **プレビュー**：候補が出たところで、Claudeがブラウザでプレビュー（`http://127.0.0.1:8765/<名前>/preview.html`）を開く。
-   開かないときはClaudeに「プレビューを開いて」と頼むか、返答のURLを開く。ページはツールを呼ぶたびに自動で書き換わる。
-   別のブラウザで開きたいときは`AGENTIC_SIM_WORLD_GEN_BROWSER="chromium --app={url}"`のように指定する。
+   開かないときはClaudeに「プレビューを開いて」と頼むか、返答のURLを開く。ページはツールが呼ばれるたびに自動で書き換わる。
+   既定のブラウザ以外で開きたいときは`AGENTIC_SIM_WORLD_GEN_BROWSER="chromium --app={url}"`のように指定する。
 3. **check**：ClaudeがUSDを出して（`compose_scene`）、Isaac Simで物理チェックとスクショを撮る（`check_in_isaac`、headlessで約35秒）。
    結果はプレビューの「Isaac Simチェック」に出る（周りから撮った24枚をドラッグで回せる）。
 4. **結果を開く**：Isaac Simで`scene.usda`を開く。
@@ -115,14 +115,14 @@ cd ~/agentic-sim-world-gen-ws && claude
 
 ### ライブモード（この形だけ）
 
-Isaac Simをpython_server付きで起動しておくと、checkがその画面で行われ、問題の物が選択状態になる。再チェックは約8秒（headlessは毎回約34秒）。
+Isaac Simをpython_server付きで起動しておくと、checkがその画面で行われ、問題の物が選択状態になる。再チェックは約8秒（headlessは毎回約35秒）。
 
 ```bash
 isaacsim isaacsim.exp.full.kit --enable isaacsim.code_editor.python_server   # 127.0.0.1:8226 で待ち受け
 ```
 
 Claudeには「開いているIsaac Simでチェックして」と頼む（MCP `check_in_isaac(live=true)`、CLI `agentic-sim-world-gen check <scene> --live`）。
-起動していないとき、物が重なっているとき（GUIのGPU物理が壊れることがある）はheadlessで実行される（報告の`live_fallback`）。
+Isaac Simが起動していないときと、物が重なっているとき（GUIのGPU物理が壊れることがある）は、headlessで実行される（報告の`live_fallback`）。
 python_serverは任意のコードを実行するので、127.0.0.1のまま使う。
 
 ## 5. 入力と結果
@@ -136,7 +136,7 @@ python_serverは任意のコードを実行するので、127.0.0.1のまま使�
 | 症状 | 対処 |
 |---|---|
 | プレビューが開かない | 返答のURLを手で開く。`DISPLAY`の無いシェル（sshで入った端末など）から`claude`を起動すると開けない |
-| プレビューのURLのポートが8765でない | 8765が使用中（別のClaudeのセッションなど）なら、このフォルダで前に使った番号か、次の空き番号で起動する。`AGENTIC_SIM_WORLD_GEN_PREVIEW=127.0.0.1:8770`で固定できる |
+| プレビューのURLのポートが8765でない | 8765が使用中（別のClaudeのセッションなど）だと、このフォルダが前回使った番号か、次の空き番号で起動する。最初に使う番号は`AGENTIC_SIM_WORLD_GEN_PREVIEW=127.0.0.1:8770`のように指定できる |
 | プレビューが更新されない | Claude Codeを終えるとプレビューのサーバーも止まる。起動し直して「プレビューを開いて」 |
 | ライブcheckがheadlessで動いた | `live_fallback`の理由を見る。Isaac Simを`--enable isaacsim.code_editor.python_server`で起動したか、物が重なっていないか |
 | checkで「physics did not run」 | 物どうしが接したりめり込んだりして吹き飛び、GPU物理が止まった（CUDA error）。同じシーンは何度やっても同じ。`blew_up`の物を数cm離す（キャスター付きの椅子を隙間なしで並べた等）。ライブならIsaac Simも再起動する |
