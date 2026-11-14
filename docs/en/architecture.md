@@ -50,19 +50,55 @@ flowchart TD
     fix -->|"No"| report["finish result (request match, licenses) → report"]
 ```
 
+### From inputs to SceneSpec
+
 Every input first goes into a **SceneSpec** (a JSON that describes the room and the objects).
-The calling Claude writes the SceneSpec from the text instruction. The server has no LLM. Search queries are in English (translating to English helps the most).
+The calling Claude writes the SceneSpec from the text instruction. The server has no LLM. Search queries are in English (translating to English helps search the most).
+
 Items the instruction leaves out (size, entrance, checkout position, etc.) are filled with the per-place defaults that `plan_questions` returns. This gives a first draft, and the filled values are recorded as guesses (see [8. The conversation](#8-the-conversation)).
-When the instruction gives no size, instead of one draft the user can pick from three top views that differ only in size (`create_scene(drafts="size")`, `propose_drafts`). The picked value is recorded as "chosen", not as a guess.
-For homes, offices, schools and labs, it asks "who uses the place, how many people, and for what" instead of size or headcount, and derives the size, main furniture and counts from a table (`scene/activity.py`, `derive_activity`). Derived values are guesses with the reason "from activity".
-When the user says a draft is "wrong" without a reason, it shows the current draft next to one that changes a single axis (size, amount of objects, mood, layout pattern) and asks "which is closer?". In 2–3 rounds this narrows down the axis that was off (`propose_contrast`, `choose_contrast`).
+Instead of filling in defaults, there are three other ways to proceed.
+
+| When | What happens | Name | How it is recorded |
+|---|---|---|---|
+| The instruction gives no size | Instead of one draft, show three top views that differ only in size and let the user pick | `create_scene(drafts="size")`, `propose_drafts` | "chosen", not a guess |
+| Homes, offices, schools, labs | Ask "who uses the place, how many people, and for what" instead of size or headcount, and derive the size, main furniture and counts from a table | `derive_activity` in `scene/activity.py` | A guess with the reason "from activity" |
+| The user says a draft is "wrong" without a reason | Show the current draft next to one that changes a single axis (size, amount of objects, mood, layout pattern) and ask "which is closer?". In 2–3 rounds this narrows down the axis that was off | `propose_contrast`, `choose_contrast` | |
+
+### ResolvedScene and what each save does
 
 `create_scene` searches assets for each object and attaches candidates. The result is the **ResolvedScene**, saved as `scene.resolved.json` in the scene directory.
-Later tools (`set_layout`, `select_asset`, `set_room` …) read this file, change it and save it. Every save re-solves the layout, runs the checks and rewrites the preview (`service._save`).
-At that point the server fixes problems that have exactly one fix (a narrow aisle, articulated chairs that touch, a TV with no stand) (`_auto_fix`). The checks attach fixes to `Issue.fixes`. The server applies them to a copy of the scene and re-solves, and keeps the result only if the problem is gone and no new problem appears. It does not move objects the user placed or objects the current call moved. The fixes show up in the result's `auto_fixed`, in the "auto-fixed" assumptions and in the preview's change history.
+Later tools (`set_layout`, `select_asset`, `set_room` …) all read this file, change it and save it. Every save (`service._save`) does the following.
 
-Once the user agrees, `finish` writes the USD (`compose_scene`), runs Isaac Sim physics to check it (`check_in_isaac`), and returns the request match and the license list, all in one call. If there is a problem it stops with `stopped`. You fix it and call `finish` again; that is the fix loop.
-In the same way, `create_scene` (`service.start_scene`) goes on after creating the scene to record the purpose, build the windows, open the preview and capture the draft 3D, all in one call (the individual tools still exist).
+1. Re-solves the layout (`solve`).
+2. Fixes problems that have exactly one fix (`_auto_fix`). These are a narrow aisle (`narrow_aisle`), articulated chairs too close together (`too_close`) and a TV with no stand (`tips_over`).
+   The server applies the fix the check attached to `Issue.fixes` to a copy of the scene and re-solves, and keeps the result only if the problem is gone and no new problem appears. It does not move objects the user placed or objects the current call moved.
+   The fixes show up in the result's `auto_fixed`, in the "auto-fixed" assumptions and in the preview's change history.
+3. Runs the static checks and the usability checks (see [5. Checks](#5-checks)).
+4. Rewrites the preview.
+
+### create_scene and finish
+
+Steps that are usually called one after another are bundled into one call (the individual tools still exist).
+
+- `create_scene` (MCP tool; `service.start_scene` inside): after creating the scene, it goes on to record the purpose (`purpose`), build the windows (`windows`), open the preview (`preview`) and capture the draft 3D (`draft`). `skip` leaves some of these out.
+- `finish`: the final step once the user agrees. It writes the USD (`compose_scene`), runs Isaac Sim physics to check it (`check_in_isaac`), and returns the request match and the license list.
+  If there is a problem it stops with `stopped`. You fix it and call `finish` again; that is the fix loop.
+
+```mermaid
+flowchart TD
+    f["finish"] --> iss{"Layout issues or<br/>an unchosen layout option?"}
+    iss -->|"Yes"| s1["stopped=issues / layout_options"]
+    iss -->|"No"| comp["compose_scene<br/>(only when scene.usda is stale)"]
+    comp -->|"Fails"| s2["stopped=compose"]
+    comp --> isaac{"Isaac Sim available?"}
+    isaac -->|"No"| lic
+    isaac -->|"Yes"| chk["check_in_isaac<br/>(reused if unchanged since the last passed)"]
+    chk -->|"verdict failed / needs_fix"| s3["stopped=check"]
+    chk -->|"draft=true"| dr["Ends after capturing the draft"]
+    chk -->|"passed"| req["check_request<br/>re-measure the request items"]
+    req --> lic["license_report<br/>license list"]
+    lic --> done["done (true if no unmet items)<br/>without Isaac Sim, physics is listed in unverified"]
+```
 
 Related files
 - [src/agentic_sim_world_gen/service.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/service.py): operations shared by the CLI and MCP (`create_scene`, `start_scene`, `_save`, `compose_scene`, `check_in_isaac`, `finish`, etc.)
@@ -71,6 +107,8 @@ Related files
 - [.claude/skills/world-gen/SKILL.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/SKILL.md): the procedure Claude follows
 
 ## 2. Data
+
+The diagram shows only the main fields (all fields are in `scene/spec.py` and `assets/record.py`).
 
 ```mermaid
 classDiagram
@@ -82,6 +120,7 @@ classDiagram
         sdg
         purpose
         mood
+        photo_aisle
         assumptions
         requirements
         layout_options
@@ -153,11 +192,13 @@ classDiagram
     Placement --> "0..*" AssetRecord : candidates
 ```
 
-- **SceneSpec**: the user's instruction itself (room, objects, inputs, purpose `purpose`, mood `mood`, assumptions, request items, preview notes `notes`). It does not include the asset choices.
-- **Room**: a rectangular room (`width`, `depth`), a floor plan (`plan`) or outdoors (`outdoor`). The kind of place `place` (home, office, store kinds `STORE_PLACES`, etc.), floor, walls, lighting, openings, columns, level changes and density also live here. Goods for store types not in the table go in `goods`. The surroundings of an indoor room (sidewalk, parking lot, neighboring buildings) go in `site`.
-- **ObjectSpec**: one object to place. An English `query`, and a `layout` that describes placement as relations (the solver decides the coordinates). A row of the same object is `array`; stocking shelves is `fill`. Objects added automatically by density have `decor=true` (id `decor_*`).
-- **ResolvedScene**: the SceneSpec plus a **Placement** per object (the list of candidate assets and the chosen index `selected`).
-- **AssetRecord**: one asset found by search. It holds what placement and composition need: bbox, axis, units, license, thumbnail, etc.
+| Class | Contents |
+|---|---|
+| **SceneSpec** | The user's instruction itself: room, objects, inputs, purpose `purpose`, mood `mood`, assumptions, request items, preview notes `notes`. It does not include the asset choices |
+| **Room** | A rectangular room (`width`, `depth`), a floor plan (`plan`) or outdoors (`outdoor`). The kind of place `place` (home, office, store kinds `STORE_PLACES`, etc.), floor, walls, lighting, openings, columns, level changes and density also live here. Goods for store types not in the table go in `goods`; the surroundings of an indoor room (sidewalk, parking lot, neighboring buildings) go in `site` |
+| **ObjectSpec** | One object to place. An English `query`, and a `layout` that describes placement as relations (the solver decides the coordinates). A row of the same object is `array`; stocking shelves is `fill`. Objects added automatically by density have `decor=true` (id `decor_*`) |
+| **ResolvedScene** | The SceneSpec plus a **Placement** per object (the list of candidate assets and the chosen index `selected`) |
+| **AssetRecord** | One asset found by search. It holds what placement and composition need: bbox, axis, units, license, thumbnail, etc. |
 
 A scene is "the directory that contains `scene.resolved.json`". The main files created there:
 
@@ -203,25 +244,42 @@ flowchart TD
     src3 --> merge
     src4 --> merge
     merge --> size["Size filter fits<br/>min_size / max_size"]
-    size --> rr["rerank: score by noun match<br/>weak = probably something else<br/>(card kind beats label if present, assets/cards.py)"]
+    size --> qmerge["Merge results per query<br/>same asset: better rank wins"]
+    qmerge --> rr["rerank: score by noun match<br/>weak = probably something else"]
     rr --> drop{"Strong match?"}
     drop -->|"Yes"| keep["Drop weak ones"]
     drop -->|"No"| sub["Keep all as weak<br/>substitute"]
-    keep --> order["Move poor fits to the back<br/>too_tall, off_size, off_place, _wrong_picture, heavy"]
+    keep --> order["Move poor fits to the back<br/>(table below)"]
     sub --> order
     order --> cands["Placement.candidates"]
     cands -->|"view_candidates"| img["Claude judges from thumbnails"]
     img -->|"select_asset / research_object"| cands
 ```
 
-1. For each object, it searches every configured source with `query` and `alt_queries` (English synonyms). The environment variable `AGENTIC_SIM_WORLD_GEN_SOURCES` picks the sources (default: SimReady Central, Isaac bundled assets, Poly Haven; `+local:<dir>` adds to the default).
+1. **Search**: for each object, it searches every configured source with `query` and `alt_queries` (English synonyms).
+   The environment variable `AGENTIC_SIM_WORLD_GEN_SOURCES` picks the sources (default: SimReady Central, Isaac bundled assets, Poly Haven; `+local:<dir>` adds to the default).
    All searches in one call (`create_scene`, `add_objects`) are sent up front in parallel (`service._searching`). SimReady Central answers are kept for one day in `AGENTIC_SIM_WORLD_GEN_CACHE/search`.
-2. Size (`min_size` / `max_size`: footprint long side, short side, height) drops objects that do not fit.
-3. **Rerank**: an asset scores by whether the last noun of the query (the object itself) appears as a noun in its class, tags, caption or name. A "desk lamp" is not a desk, and a "coffee table" does not stand in for a dining table (weak). If there is a strong match, weak ones are removed from the list. If all are weak, they stay as "no match = substitute".
-4. Moved to the back, not removed: objects taller than the ceiling (`too_tall`); when no size is given, objects far from the typical size of their kind (`TYPICAL` in `assets/sizes.py`) (`off_size`; a pasta box for "cardboard box"); assets from a field that does not fit the place (`Room.place`) (a hospital bed in a home, `off_place`); artwork that belongs to another store (a bookstore checkout sign in a drugstore); objects with too many faces for their size (`heavy`).
-   When everything is a substitute, the kind table (`assets/kinds.py`, MCP `kind_availability`) tells whether that kind exists in no source (`not_in_catalog`), so the search is not retried.
-   Missing objects are recorded per scene in `AGENTIC_SIM_WORLD_GEN_CACHE/missing/` (`missing.py`, on every save). `agentic-sim-world-gen missing` lists them, most frequent first.
-5. Claude makes the final call with `view_candidates` (returns thumbnail images). Metadata alone does not tell color, material or shape.
+2. **Size**: objects outside `min_size` / `max_size` (footprint long side, short side, height) are dropped (`fits`). This does not depend on the asset's direction.
+
+   ![fits: the same desk fits at 0° and at 90°, and fails on height](../images/arch_size_fits.svg)
+3. **Rerank** (`rerank`): an asset scores by whether the last noun of the query (the object itself) appears as a noun in its class, tags, caption or name.
+   For example, a "desk lamp" is not a desk, and a "coffee table" does not stand in for a dining table (both weak). If the asset's card (`assets/cards.py`) has a kind `kind` checked by eye, that is used instead of the labels.
+   If there is even one strong match, weak ones are removed from the list. If all are weak, they stay as "no match = substitute".
+4. **Move to the back**: poor fits are not removed. The higher their row in this table, the further back they go.
+
+   | Marker | What it is | Example |
+   |---|---|---|
+   | `too_tall` | Taller than the ceiling | |
+   | `off_size` | When no size is given, far from the typical size of its kind (`TYPICAL` in `assets/sizes.py`) | A pasta box for "cardboard box" |
+   | `off_place` | An asset from a field that does not fit the place (`Room.place`) (`assets/domain.py`) | A hospital bed in a home |
+   | The card's `physics_issue` | An asset that failed its own drop test | |
+   | `heavy` | Too many faces for its size | |
+   | `_wrong_picture` | Artwork that belongs to another store. Not a tier; it only lowers the score a little (`PICTURE_PENALTY`) | A bookstore checkout sign in a drugstore |
+
+5. **When nothing is found**: when everything is a substitute, the kind table (`assets/kinds.py`, MCP `kind_availability`) tells whether that kind exists in no source (`not_in_catalog`), so the search is not retried.
+   When all are weak and a size was given, the strong matches dropped by size are listed in `Placement.size_misses` (a hint for widening the size).
+   Missing objects are recorded per scene in `AGENTIC_SIM_WORLD_GEN_CACHE/missing/` on every save (`missing.py`). `agentic-sim-world-gen missing` lists them, most frequent first.
+6. **Final call**: Claude decides with `view_candidates` (returns thumbnail images). Metadata alone does not tell color, material or shape.
 
 Related files
 - [src/agentic_sim_world_gen/assets/providers/base.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/providers/base.py): `AssetProvider` protocol, `fits`
@@ -230,7 +288,7 @@ Related files
 - [src/agentic_sim_world_gen/assets/rerank.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/rerank.py): `rerank`, `score`, `noun_last`
 - [src/agentic_sim_world_gen/assets/cards.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/cards.py): per-asset cards (`of`, `physics_issue`, `brief`). Data is in `src/agentic_sim_world_gen/data/asset_cards.jsonl.gz`; rebuild with `scripts/build_asset_cards.py`
 - [src/agentic_sim_world_gen/assets/domain.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/domain.py): `off_place`
-- [src/agentic_sim_world_gen/service.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/service.py): `_find_candidates`, `_wrong_picture`, `research_object`
+- [src/agentic_sim_world_gen/service.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/service.py): `get_provider`, `_find_candidates`, `_wrong_picture`, `research_object`
 
 ## 4. Layout
 
@@ -258,14 +316,31 @@ flowchart TD
     win["fill_windows<br/>windows, curtains in openings"] --> pose
 ```
 
-- **RoomGeometry** gives rectangular rooms, floor plans and outdoor scenes the same shape: walls (centerline and thickness), faces (inner surfaces an object can put its back against; doors cut them), obstacles (wall bodies, space in front of doors, columns `columns`, level changes `levels`, stairs, ceiling beams and light fixtures) and zones (rooms of a floor plan). An object whose center is on a raised level is placed at that height by the solver. With `site`, it also has outside faces (the room's exterior walls, area edges, buildings) and obstacles for areas and buildings (outside objects have zone `outside` or an area ID).
-- **solve** decides position, direction and height from the `layout` relations (`against_wall`, `in_front_of`, `next_to`, `on`, `facing`, `center`, `gap`). `_order` decides the order, e.g. desk first, then chair. Because it re-solves on every save, it follows size changes when an asset is swapped. An object moved by hand with `move_object` loses its `layout` and keeps its coordinates.
-- **Front convention**: an asset's front is +X (checked in Isaac Sim 6.1 by rendering about 40 assets from 4 directions). Exceptions are in `KNOWN_FRONTS` and `KNOWN_FRONT_PATTERNS`; for your own folders, `front` in agentic-sim-world-gen.json; per object, `front_offset_deg`. To set a direction by hand, use `facing_deg` (0 = east, 90 = north).
+**RoomGeometry** gives rectangular rooms, floor plans and outdoor scenes the same shape.
+
+| Element | Contents |
+|---|---|
+| Walls `walls` | Centerline and thickness |
+| Faces `faces` | Inner surfaces an object can put its back against. The space in front of a door is an obstacle (kept free) |
+| Obstacles `obstacles` | Wall bodies, space in front of doors, columns `columns`, level changes `levels`, stairs, ceiling beams and light fixtures |
+| Zones `zones` | Rooms of a floor plan |
+| Surroundings (with `site`) | Faces of the room's exterior walls, area edges and buildings, and obstacles for areas and buildings. Outside objects have zone `outside` or an area ID |
+
+An object whose center is on a raised level is placed at that height by the solver.
+
+![RoomGeometry: walls, faces, openings, zones and columns of a rectangular room and a floor plan](../images/arch_room_geometry.svg)
+
+- **solve**: decides position, direction and height from the `layout` relations (`against_wall`, `in_front_of`, `next_to`, `on`, `facing`, `center`, `gap`). `_order` decides the solving order, e.g. desk first, then chair.
+  Because it re-solves on every save, the layout follows size changes when an asset is swapped. An object moved by hand with `move_object` loses its `layout` and keeps its coordinates.
+- **Front convention**: an asset's front is +X (checked in Isaac Sim 6.1 by rendering about 40 assets from 4 directions).
+  Exceptions go in `KNOWN_FRONTS` and `KNOWN_FRONT_PATTERNS`; for your own folders, in `front` in agentic-sim-world-gen.json; per object, in `front_offset_deg`. To set a direction by hand, use `facing_deg` (0 = east = +X, 90 = north = +Y).
 - **Repetition**: `array` places the whole block as one object, and expands it into units (`<id>.r<row>c<col>`) for checks, preview and USD.
 - **Displays**: `fill` puts goods on the shelf boards found in the fixture's geometry (`assets/shelves.py`).
 - **Small items**: depending on `Room.density` (sparse / normal / lived_in), `create_scene` adds small items `decor_*`, like books on a desk or a rug in front of a sofa. Placements that add problems are discarded (`service._apply_density`).
-- **Store displays**: in stores (`shop` and the 25 kinds in `STORE_PLACES`: convenience store, supermarket, drugstore, bookstore, bakery, bike shop, furniture store, etc.), the same mechanism stocks empty fixtures with goods via `fill`. Goods come from per-store tables (`decor.PRODUCTS`, `COLD_PRODUCTS` for refrigerated cases, `HANG` for hooks), and each fixture starts with different goods from its neighbor. For store types not in the table, `Room.goods` (English search terms for goods) and `goods_words` (words for the trade) place only goods that carry those words (`decor.fits_goods`). Defaults for store size, entrance, checkout, etc. are in the `plan_questions` table (`questions.STORE_SIZES`).
-- **Windows**: a window opening is a hole in the wall, so `fill_windows` adds a window asset `win_<id>` (stretched to the opening with `fit_scale`; in stores, windows 1.8 m or wider become shop windows) and, in homes, a curtain `curtain_<id>`.
+- **Store displays**: in stores (`shop` and the 25 kinds in `STORE_PLACES`: convenience store, supermarket, drugstore, bookstore, bakery, bike shop, furniture store, etc.), the same mechanism stocks empty fixtures with goods via `fill`.
+  Goods come from per-store tables (`decor.PRODUCTS`, `COLD_PRODUCTS` for refrigerated cases, `HANG` for hooks), and each fixture starts with different goods from its neighbor.
+  For store types not in the table, `Room.goods` (English search terms for goods) and `goods_words` (words for the trade) place only goods that carry those words (`decor.fits_goods`). Defaults for store size, entrance, checkout, etc. are in the `plan_questions` table (`questions.STORE_SIZES`).
+- **Windows**: a window opening is only a hole in the wall, so `fill_windows` adds a window asset `win_<id>`. The window is stretched to the opening (`fit_scale`), and in stores, windows 1.8 m or wider become shop windows. In homes it also adds a curtain `curtain_<id>` (`covers` can make it a blind).
 
 `layout.svg` (top view; arrows show the front):
 
@@ -288,7 +363,7 @@ flowchart LR
     scene --> v2["usability.usability<br/>usability warnings"]
     scene --> v3["request.evaluate<br/>request match"]
     scene --> v4["taste.report<br/>taste outliers"]
-    v1 --> i1["out_of_room, overlap 3D, hits_wall<br/>blocks_door, too_tall, etc."]
+    v1 --> i1["out_of_room, overlap 3D, hits_wall<br/>blocks_door, too_tall, tips_over, etc."]
     v2 --> i2["From the walkable grid<br/>narrow_aisle, unreachable, no_front_space<br/>chair_facing, tv_distance<br/>empty_shelves, register_hidden, etc."]
     v3 --> i3["met / unmet / unknown"]
     v4 --> i4["outliers and alternatives"]
@@ -303,11 +378,18 @@ There are four kinds of checks, with different weight.
 | Check | What it looks at | Handling |
 |---|---|---|
 | Static check `validate.check` | Sticking out of the room, overlap between objects (SAT on footprint polygons + height range = 3D), inside a wall or in front of a door, taller than the ceiling | **issues**. Fix until there are 0 |
-| Usability `usability` | Puts the floor on a grid, finds the area walkable from the door, and checks whether you can stand in front of shelves, checkouts, etc. and whether aisles are wide enough for the place (the robot's width if the purpose `purpose` is amr). Aisle width comes from one distance-transform map (`AisleMap`); the narrowest width and its location go into narrow_aisle, and layout.svg draws the centerline colored by width. Direction and distance of chairs to desks and TVs, tall objects blocking windows, empty store shelves, a checkout not visible from the entrance | Warning. May stay if there is a reason |
+| Usability `usability` | Walkable area, aisle widths, whether you can stand in front of objects, directions and distances (list below) | Warning. May stay if there is a reason |
 | Request match `request.evaluate` | Splits the instruction into items and measures against the wall, next to, count, direction, zone and on top of from the layout | `check_request`. Always run before reporting |
 | Taste `taste.report` | Embeds thumbnails of the chosen assets with SigLIP2 and looks for a single object that looks out of place | Warning. Never swapped automatically |
 
-A chair may go under a desk up to 60% of its depth (`tuck_pair`), but the solver does not tuck it in automatically. Running physics with overlaps makes PhysX explode.
+![Main static-check issues, the usability narrow_aisle, and the allowed chair tuck](../images/arch_validate_issues.svg)
+
+What the usability check looks at:
+- It puts the floor on a grid and finds the area walkable from the door. From that it checks whether you can stand in front of shelves, checkouts, etc.
+- It checks whether aisles are wide enough for the place (the robot's width if the purpose `purpose` is amr). Aisle width comes from one distance-transform map (`AisleMap`); the narrowest width and its location go into `narrow_aisle`. layout.svg draws the aisle centerline colored by width (red = impassable, orange = narrow, green = aisle, blue = wide).
+- It also checks the direction and distance of chairs to desks and TVs, tall objects blocking windows, empty store shelves, and a checkout not visible from the entrance.
+
+A chair may go under a desk by up to 60% of the short side of the chair's footprint (`tuck_pair`, `MAX_TUCK`). But the solver does not tuck chairs in by itself (only when `gap` is negative). A bbox does not tell whether there is legroom under the desk, and running physics with overlaps makes PhysX explode.
 
 Related files
 - [src/agentic_sim_world_gen/layout/validate.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/validate.py): `check`, `Issue`, `overlap_depth`
@@ -338,13 +420,45 @@ flowchart TD
     grp --> unit["id_r0c0 etc.<br/>each with an Asset"]
 ```
 
-- The stage is **Z-up, meters** (metersPerUnit=1), defaultPrim `/World`. The room interior is x∈[0, width], y∈[0, depth], with the floor's top surface at z=0.
-- Each object references its asset in a child `Asset` of `/World/Objects/<id>` (Xform). The reference sits on the child so the asset's own root transform (e.g. scale 0.01 for a cm asset) is kept.
-- The outer Xform's xformOps are in this order: `translate` (position) → `rotateZ` (yaw) → `scale` (the asset's metersPerUnit) → `rotateX:upAxis` (90° for Y-up assets only) → `translate:pivot` (moves the bbox bottom center to the origin).
-- The customData `agentic_sim_world_gen:source`, `agentic_sim_world_gen:uri`, `agentic_sim_world_gen:license`, `agentic_sim_world_gen:label`, `agentic_sim_world_gen:origin` (where it came from and version) and `agentic_sim_world_gen:facing_deg` are written on the object prim. `license_report` collects the license list into `LICENSES.md`.
-- Physics: setting the asset's `PhysX` variant to `Enabled` gives SimReady assets a rigid body and colliders. Assets without physics (`collider` auto where it applies, or box) get an invisible fixed box `Collider` the size of the bbox. Floor and walls have static colliders and a friction material.
-- The look of floor, walls and ceiling is a material under `Looks` (UsdPreviewSurface, textures, MDL). Materials come from named presets (`scene/looks.py`) or, via `select_surface`, from the indexes of Isaac Sim's bundled MDL (`materials.py`) and CC0 PBR (ambientCG, Poly Haven, `pbr.py`). `moods` / `apply_mood` (`scene/moods.py`) pick floor, walls and lighting together from a sample image.
-- Object colors use `tint` (`usd/tint.py`), which overrides material colors from the scene side without changing the asset files.
+### Coordinate convention
+
+The stage is **Z-up, meters** (metersPerUnit=1), and the defaultPrim is `/World`. The inside of a rectangular room is x∈[0, width], y∈[0, depth], with the floor's top surface at z=0.
+
+```
+  y (north)
+  ↑
+depth ┌──────────── Wall_N ────────────┐
+  │   │                                │
+  │ Wall_W     inside of the room    Wall_E
+  │   │      floor top surface z=0     │
+  │   │                                │
+  0   └──────────── Wall_S ────────────┘
+      0 ─────────────────────────── width → x (east)
+
+  facing_deg: 0 = east (+X), 90 = north (+Y). z points up
+```
+
+### The object prim and its xformOps
+
+Each object references its asset from a child `Asset` of `/World/Objects/<id>` (Xform). The reference sits on the child so the asset's own root transform (e.g. scale 0.01 for a cm asset) is kept. Writing an xformOpOrder on the outer Xform would override the root transform of a reference on the same prim.
+
+In xformOpOrder, the outer Xform's xformOps are listed in the order shown under "prim layout" in the figure. They act on points in the reverse order (from the right): an asset point is first moved so the pivot is at the origin, and last moved to its position in the room (steps 1→6 in the figure).
+
+![How an asset is placed: xformOps acting in the order pivot, upAxis, scale, yaw, position, and the prim layout](../images/arch_object_transform.svg)
+
+As a formula: `p' = translate · rotateZ(yaw) · scale(mpu) · rotateX(90°, for Y-up) · (p − pivot)`.
+In addition, windows and curtains stretched to an opening get a `scale:fit` right after `rotateZ`, and goods laid flat on a shelf (`fill.lay_flat`) get a series of `layFlat` ops.
+
+For `array` and `fill` objects, `/World/Objects/<id>` is a group, and each unit under it (`<id>_r<row>c<col>` for array, `<id>_<unit>_l<level>_<col>_<row>` for fill) has its own `Asset` in the same layout as above.
+
+### Provenance, physics and looks
+
+- **Provenance**: the customData `agentic_sim_world_gen:source`, `agentic_sim_world_gen:uri`, `agentic_sim_world_gen:license`, `agentic_sim_world_gen:label`, `agentic_sim_world_gen:origin` (where it came from and version) and `agentic_sim_world_gen:facing_deg` are written on the object prim. `license_report` collects the license list into `LICENSES.md`.
+- **Physics**: setting the asset's `PhysX` variant to `Enabled` gives SimReady assets a rigid body and colliders.
+  Assets without physics get an invisible fixed box `Collider` the size of the bbox (when `collider` is `box`, or `auto` and the asset is known to have no physics). Floor and walls have static colliders and a friction material.
+- **Floor, wall and ceiling looks**: materials under `Looks` (UsdPreviewSurface, textures, MDL).
+  Materials come from named presets (`scene/looks.py`) or, via `select_surface`, from the indexes of Isaac Sim's bundled MDL (`materials.py`) and CC0 PBR (ambientCG, Poly Haven, `pbr.py`). `moods` / `apply_mood` (`scene/moods.py`) pick floor, walls and lighting together from a sample image.
+- **Object colors**: `tint` (`usd/tint.py`) overrides material colors from the scene side without changing the asset files.
 
 Related files
 - [src/agentic_sim_world_gen/usd/compose.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/usd/compose.py): `compose`, `build_room`, `build_site`, `_add_asset`, `add_box_collider`, `build_inputs`
@@ -355,13 +469,16 @@ Related files
 
 ## 7. The Isaac Sim side
 
+Isaac Sim exists only on the Ubuntu (RTX) machine and runs in a separate process from agentic-sim-world-gen itself (Python using usd-core).
+agentic-sim-world-gen reaches Isaac Sim in one of two ways: it runs a script with Isaac Sim's Python, or it sends code to a running Isaac Sim.
+
 ```mermaid
 flowchart TD
     call["check_in_isaac"] --> live{"live=true?"}
     live -->|"Yes"| risk{"Overlaps?<br/>_live_risk"}
     risk -->|"None, and python_server responds"| lx["live_exec<br/>send code to the open Isaac Sim on :8226"]
     risk -->|"Overlaps / no response"| hl
-    live -->|"No"| hl["_run_isaac<br/>scripts/isaac/check_scene.py headless<br/>(AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=1: hand to a running Kit.<br/>isaac_worker.run → scripts/isaac/worker.py, run once on failure)"]
+    live -->|"No"| hl["_run_isaac<br/>scripts/isaac/check_scene.py headless<br/>(to the Isaac worker if there is one; diagram below)"]
     lx --> core["check_core.run"]
     hl --> core
     core --> s1["open_stage: open USD, wait for references to load"]
@@ -371,29 +488,65 @@ flowchart TD
     s4 --> s5["check.png, check.gif<br/>draft=true: capture only, no physics"]
     s5 --> s6["orbit: check_orbit/NN.jpg"]
     s6 --> rep["check.json → summarize_report"]
+```
 
+- **Headless**: `check_scene.py` starts its own `SimulationApp` and calls `check_core.run`. Isaac Sim's Python is `ISAACSIM_PYTHON` (pip install) or python.sh under `ISAACSIM_PATH`.
+- **Live mode**: sends the same `check_core` code to an Isaac Sim started with `--enable isaacsim.code_editor.python_server`. It opens the scene on the user's screen, runs physics and selects the problem objects.
+  Scenes with overlapping objects go to headless instead. If overlapping objects explode in PhysX, the GPU physics of the GUI Isaac Sim stays stopped for the rest of that session.
+- **What check does**: compares rigid body positions before and after physics, and reports objects that moved or fell (`unstable`), sank into the floor (`sunk`), have no collision (`no_collider`) or are fixed and do not move (`static`). Then it photographs the room from 24 directions so you can orbit it in the preview.
+- **Result**: `summarize_report` summarizes per object ID, and `check_in_isaac` adds a `verdict` (`passed` / `needs_fix` / `draft` / `failed`). `draft=true` skips physics and only captures the draft 3D.
+
+### Isaac worker
+
+Starting Kit takes most of the roughly 40 s of a draft check. With `AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=1`, the headless Isaac Sim started by the first call (`scripts/isaac/worker.py`) keeps running, and later `check_scene.py`, `front_views.py` and `render_view.py` runs go to it one after another.
+It is off by default (while waiting, one Kit holds several GB of GPU memory).
+
+```mermaid
+flowchart TD
+    req["_run_isaac → isaac_worker.run"] --> on{"AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=1 and<br/>a script the worker can run?"}
+    on -->|"No"| one["Start and run once (one-shot)"]
+    on -->|"Yes"| up{"Worker running?"}
+    up -->|"No"| start["Start worker.py<br/>wait in the spool folder (AGENTIC_SIM_WORLD_GEN_CACHE)"]
+    start --> job
+    up -->|"Yes"| job["Put job_NNNNNN.json<br/>wait for reply_N.json"]
+    job --> ok{"Succeeded?"}
+    ok -->|"Failed / timed out / crashed"| fail["Stop the worker<br/>(after a PhysX explosion, GPU physics stays broken)"]
+    fail --> one
+    ok -->|"Succeeded"| cnt{"Reached AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER_JOBS<br/>(default 40) jobs?"}
+    cnt -->|"Yes"| stop["Stop the worker<br/>restart on the next call"]
+    cnt -->|"No"| idle["Wait for the next job<br/>stops by itself after AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER_IDLE<br/>(default 600 s) with no job, or when the server exits"]
+```
+
+The worker closes the stage after each job and reloads the layers of that job's folder, so nothing from the previous job is left. Which way it ran shows in the result's `isaac` (`mode` is `worker` or `one-shot`).
+
+### Other Isaac Sim jobs
+
+- `view_fronts` (`front_views.py`): photographs each object from its assumed front. It opens a layer `front_views_stage.usda` with the other objects deactivated, so only the assets being photographed are loaded.
+- `compare_photo` (`render_view.py`): renders from the same viewpoint as a photo.
+- `nav_map(isaac=true)` (`nav_map.py`): makes a navigation map with Isaac Sim's Occupancy Map.
+
+Like check, all of these run with Isaac Sim's Python.
+
+### Synthetic data (SDG)
+
+```mermaid
+flowchart LR
     gen["generate_data"] --> sp["sdg.plan<br/>cameras, lights, materials from seed"]
     sp --> pj["sdg/plan.json"]
     pj --> rs["scripts/isaac/sdg.py<br/>Replicator writer"]
     rs --> out["sdg/basic, coco, kitti<br/>summary.json, sheet.jpg"]
 ```
 
-Isaac Sim exists only on the Ubuntu (RTX) machine and runs in a separate process from agentic-sim-world-gen itself (Python using usd-core). agentic-sim-world-gen reaches Isaac Sim in one of two ways: it runs a script with Isaac Sim's Python, or it sends code to a running Isaac Sim.
-
-- **Headless**: `check_scene.py` starts its own `SimulationApp` and calls `check_core.run`. Isaac Sim's Python is `ISAACSIM_PYTHON` (pip install) or python.sh under `ISAACSIM_PATH`.
-- **Live mode**: sends the same `check_core` code to an Isaac Sim started with `--enable isaacsim.code_editor.python_server`. It opens the scene on the user's screen, runs physics and selects the problem objects. Scenes with overlapping objects go to headless instead, because they stall PhysX in the GUI.
-- **What check does**: compares rigid body positions before and after physics, and reports objects that moved or fell (`unstable`), sank into the floor (`sunk`), have no collision (`no_collider`) or are fixed and do not move (`static`). Then it photographs the room from 24 directions so you can orbit it in the preview.
-- **Result**: `summarize_report` summarizes per object ID, and `check_in_isaac` adds a `verdict` (`passed` / `needs_fix` / `draft` / `failed`). `draft=true` skips physics and only captures the draft 3D.
-- **Other Isaac Sim jobs**: `view_fronts` (`front_views.py`; photographs each object from its assumed front. It opens a layer `front_views_stage.usda` with the other objects deactivated, so only the assets being photographed are loaded), `compare_photo` (`render_view.py`; renders from the same viewpoint as a photo) and `nav_map(isaac=true)` (`nav_map.py`; Isaac Sim's Occupancy Map) also run with Isaac Sim's Python.
-- **Synthetic data (SDG)**: the Python side (`sdg.plan`) decides camera positions, lighting and material assignments from a seed and writes them to `sdg/plan.json`. On the Isaac side, `scripts/isaac/sdg.py` only applies them and runs the Replicator writer. Labels use the UsdSemantics that compose put on the prims.
+The Python side (`sdg.plan`) decides camera positions, lighting and material assignments from a seed and writes them to `sdg/plan.json`. On the Isaac side, `scripts/isaac/sdg.py` only applies them and runs the Replicator writer. Labels use the UsdSemantics that compose put on the prims.
 
 `check_orbit` orbit images:
 
 ![check orbit](../images/check_orbit.gif)
 
 Related files
-- [scripts/isaac/check_scene.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/check_scene.py), [check_core.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/check_core.py), [view.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/view.py), [front_views.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/front_views.py), [nav_map.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/nav_map.py)
+- [scripts/isaac/check_scene.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/check_scene.py), [check_core.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/check_core.py), [view.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/view.py), [front_views.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/front_views.py), [nav_map.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/nav_map.py), [worker.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/worker.py)
 - [src/agentic_sim_world_gen/service.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/service.py): `check_in_isaac`, `live_exec`, `summarize_report`, `generate_data`
+- [src/agentic_sim_world_gen/isaac_worker.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/isaac_worker.py): `run` (hands jobs to an Isaac Sim that keeps running)
 - [src/agentic_sim_world_gen/sdg.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/sdg.py), [scripts/isaac/sdg.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/isaac/sdg.py)
 
 ## 8. The conversation
@@ -432,20 +585,49 @@ sequenceDiagram
 
 The skill (SKILL.md) sets this procedure for Claude.
 
-1. **Draft from defaults**: `plan_questions` returns, from a per-place question table, the items the instruction does not cover yet, with defaults. It does not ask first. It builds with the defaults and records them as guesses. It asks first only when the place is unknown (`ask_now`), when the user said "ask me first" (`ask_first`), and for two items that are costly to change later: when the purpose is a robot (amr / manipulation) and the robot size is not given, and when the request is for a real place ("our store") with no drawing or photo attached. For places with no question table (hospital, school, station, etc.; `plan_questions` returns `gallery`), `show_gallery` shows a page (`gallery.html`) with examples (`examples/`) and top views of past scenes, and `start_from_example` makes the chosen one's SceneSpec the draft. Inherited dimensions, place, finishes and fixtures are recorded as guesses "from example '…'" (`gallery.py`).
-2. **Create**: `get_preferences` reads earlier preferences, then `create_scene`. Next come `set_purpose` (sets defaults such as density and aisle width from the purpose, `scene/purpose.py`) and `fill_windows`. If assumptions conflict (an 8-seat table in a 10 m² room, an aisle narrower than the robot, etc., `scene/conflicts.py`), it returns `conflicts` without capturing the draft, and asks one question about which to prioritize (if the user leaves it to Claude, it goes with the larger one and reports).
+1. **Draft from defaults**: `plan_questions` returns, from a per-place question table, the items the instruction does not cover yet, with defaults. It does not ask first. It builds with the defaults and records them as guesses.
+   It asks first only in these cases:
+   - The place is unknown (`ask_now`)
+   - The user said "ask me first" (`ask_first`)
+   - Two items that are costly to change later: the purpose is a robot (amr / manipulation) and the robot size is not given; the request is for a real place ("our store") with no drawing or photo attached
+
+   For places with no question table (hospital, school, station, etc.; `plan_questions` returns `gallery`), `show_gallery` shows a page (`gallery.html`) with examples (`examples/`) and top views of past scenes, and `start_from_example` makes the chosen one's SceneSpec the draft. Inherited dimensions, place, finishes and fixtures are recorded as guesses "from example '…'" (`gallery.py`).
+2. **Create**: `get_preferences` reads earlier preferences, then `create_scene`. `create_scene` goes on to the purpose defaults (`set_purpose`; sets density, aisle width, etc. from the purpose, `scene/purpose.py`) and the windows (`fill_windows`).
+   If assumptions conflict (an 8-seat table in a 10 m² room, an aisle narrower than the robot, etc., `scene/conflicts.py`), it returns `conflicts` without capturing the draft. Claude asks one question about which to prioritize (if the user leaves it to Claude, it goes with the larger one and reports).
 3. **Check candidates**: `create_scene` opens the preview. For dubious candidates (substitutes, weak matches, objects with wrong size or place), `view_candidates` returns one sheet image; Claude looks and swaps.
 4. **Layout**: fix until there are 0 issues, then review the usability warnings. If the arrangement itself is a choice, `propose_layouts` gives 2–3 options.
-5. **Show the draft**: the server records the room's 5 items and per-object assumptions from the layout (`_auto_assumptions`), so `set_assumptions` gets only guesses the layout does not show. `create_scene` has already captured the 3D (after fixes, `finish(draft=true)`). Claude shows the guessed parts first and stops (it does not stop if the user said "leave it to you").
+5. **Show the draft**: the server records the room's 5 items and per-object assumptions from the layout (`_auto_assumptions`), so `set_assumptions` gets only guesses the layout does not show.
+   `create_scene` has already captured the 3D (after fixes, `finish(draft=true)`). Claude shows the guessed parts first and stops (it does not stop if the user said "leave it to you").
 6. **check**: once agreed, `finish` (USD → check → request match → licenses).
 7. **Request match**: `check_request` measures each item of the instruction.
 8. **Report**: the match table, USD path, chosen assets (substitutes marked) and licenses.
 
-Users can work in the preview page as well as in chat. Dragging and rotating objects in layout.svg, clicking a candidate card to swap, "wrong" in the assumptions table, "use this option" on a layout option, and picking a mood sample all call service functions through the preview server's `api/edit` and update the scene. Notes written by double-clicking the top view or the check 3D ("a light here") are kept without changing the scene (`notes.py`). Claude answers them with `resolve_notes`, which clears them. On the next turn Claude learns about all this from `preview_edits`, `assumption_feedback` and `notes` in the status of the tool results.
+### The preview page
 
-The preview server is a thread inside the MCP server process. It listens on `127.0.0.1:8765` (`AGENTIC_SIM_WORLD_GEN_PREVIEW`; if in use, the port used before for that folder or the next free one) and serves the parent folder of the scenes (usually `AGENTIC_SIM_WORLD_GEN_OUT`). The page checks `preview.json` every second and rewrites only the parts that changed. Writes need the token embedded in the page and a loopback connection.
+![The preview page (top view, check 3D, candidate list)](../images/gs_preview.jpg)
 
-Values the user corrected (`set_room`, `set_layout`, `set_array`, `select_asset` with `correction=true`, and swaps in the preview) are recorded as preferences. If they match across 2 or more scenes, they become the default from then on.
+Users can work in the preview page as well as in chat. Actions on the page call service functions through the preview server's `api/edit` and update the scene.
+
+| Action on the page | `api/edit` op |
+|---|---|
+| Dragging and rotating an object in layout.svg | `try` (checks while dragging), `move` |
+| Clicking a candidate card to swap | `select` |
+| "Wrong" in the assumptions table | `feedback` |
+| "Use this option" on a layout option | `choose_layout` |
+| Picking or undoing a mood sample | `mood`, `mood_undo` |
+| Writing or deleting a note | `note`, `note_delete` |
+| Undo, delete, duplicate, density, room, light | `restore`, `remove`, `duplicate`, `density`, `room`, `light` |
+
+Notes written by double-clicking the top view or the check 3D ("a light here") are kept without changing the scene (`notes.py`). Claude answers them with `resolve_notes`, which clears them.
+On the next turn, Claude learns about actions on the page from `preview_edits`, `assumption_feedback` and `notes` in the status of the tool results.
+
+The preview server is a thread inside the MCP server process.
+- Listens on: `127.0.0.1:8765` (`AGENTIC_SIM_WORLD_GEN_PREVIEW`). If in use, the port used before for that folder or the next free one.
+- Serves: the parent folder of the scenes (usually `AGENTIC_SIM_WORLD_GEN_OUT`).
+- Updates: the page checks `preview.json` every second and rewrites only the parts that changed.
+- Writes need: the token embedded in the page and a loopback connection.
+
+Values the user corrected (`set_room`, `set_layout`, `set_array`, `select_asset` with `correction=true`, and swaps in the preview) are recorded as preferences. An item with the same value (for numbers, a change in the same direction) in 2 or more scenes becomes the default from then on.
 
 Related files
 - [.claude/skills/world-gen/SKILL.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/SKILL.md): the full procedure
@@ -454,11 +636,15 @@ Related files
 - [src/agentic_sim_world_gen/scene/conflicts.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/scene/conflicts.py): detects conflicting assumptions (floor occupancy, ceiling height, robot aisle width, people vs. seats). `conflicts` in the status; if present, `create_scene` does not capture the draft
 - [src/agentic_sim_world_gen/gallery.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/gallery.py): list of examples and past scenes (`entries`, `rank`), the page (`write_page`), inherited values (`inherited`). Top views of the examples are built into `data/gallery/` by `scripts/make_gallery.py`
 - [src/agentic_sim_world_gen/preferences.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/preferences.py): `observe`, `apply`
-- [src/agentic_sim_world_gen/preview/server.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/preview/server.py): `serve`, `edit` (op move / select / try / feedback / choose_layout / mood / note), `api/gallery/pick` (example chosen in the gallery)
+- [src/agentic_sim_world_gen/preview/server.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/preview/server.py): `serve`, `edit` (the ops in the table above), `api/gallery/pick` (example chosen in the gallery)
 - [src/agentic_sim_world_gen/notes.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/notes.py): describes the location of preview notes in words
 - [src/agentic_sim_world_gen/preview/page.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/preview/page.py), [changes.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/preview/changes.py): the page and change history
 
 ## 9. Rooms from photos and videos
+
+There are two stages. First, the room dimensions and cameras are estimated from photos or video (`fit_photos`). Then the result goes into the scene, where it places furniture and is compared with the photos.
+
+### Estimating the room and cameras
 
 ```mermaid
 flowchart TD
@@ -473,18 +659,34 @@ flowchart TD
     rel --> fit
     dep -->|"depth=true"| fit
     fit --> res["Room size, openings, each camera"]
-    res -->|"set_room / set_input"| scene["Scene"]
+```
+
+The room is treated as a box. For each photo, Claude picks the pixels of visible landmarks (room corners, wall-floor lines, door and window corners, points shared across photos).
+`fit_photos` takes the room width and depth, opening positions, and each camera's position, direction and field of view as unknowns, and minimizes the reprojection error of the landmarks (pure-Python Levenberg–Marquardt).
+The wall height sets the scale. If there are no ceiling landmarks, the camera height (`eye_height`) sets it.
+
+For video, `extract_frames` first selects sharp frames where the view changes. Then `video_poses` measures how much the camera rotated between frames (OpenCV ORB features, `video_pose.py`) and adds that to `fit_photos`.
+Adding monocular depth (MoGe-2) helps fix the dimensions even for photos that show only 1–2 walls.
+
+### Putting it into the scene and checking
+
+```mermaid
+flowchart TD
+    res["fit_photos result<br/>room size, openings, each camera"] -->|"set_room / set_input"| scene["Scene"]
     res -->|"place_from_photos"| pp["photo_place.py<br/>furniture position and direction from foot points"]
+    pp -->|"with outlines"| ref["photo_refine.py<br/>fit the projected box to foot points and rectangle"]
     pp --> scene
+    ref --> scene
     scene -->|"compare_photo"| cmp["Render same view, place next to photo"]
     scene -->|"measure_photo"| ms["photo_measure.py<br/>room and aisle widths seen from the photo camera<br/>floor plane and free width from depth map (depth_floor)"]
 ```
 
-The room is treated as a box. For each photo, Claude picks the pixels of visible landmarks (room corners, wall-floor lines, door and window corners, points shared across photos). `fit_photos` takes the room width and depth, opening positions, and each camera's position, direction and field of view as unknowns, and minimizes the reprojection error of the landmarks (pure-Python Levenberg–Marquardt). The wall height sets the scale. If there are no ceiling landmarks, the camera height (`eye_height`) sets it.
-
-For video, `extract_frames` first selects sharp frames where the view changes. `video_poses` measures how much the camera rotated between frames and adds that to `fit_photos`. It uses OpenCV ORB features. Adding monocular depth (MoGe-2) helps fix the dimensions even for photos that show only 1–2 walls.
-
-The result goes into the scene with `set_room` and `set_input` (cameras). If foot points of furniture were picked in the photos, `place_from_photos` fits the chosen asset's footprint to those points to set position and direction. If you also pass rectangles around objects in the photo (`outlines`), it projects the asset's box into the photo with the fitted camera and refines the position to match the foot pixels and the rectangle (`photo_refine.py`). Finally, `compare_photo` renders from the same viewpoint to compare with the photo, and `measure_photo` compares room and aisle widths with the photo in numbers. Pointing at a pixel pair across an aisle with `aisle_pair` makes that width a layout target (`SceneSpec.photo_aisle`: array aisles, the walking-width and too-wide checks through `usability.photo_aisle`, and the ratio `photo_aisle` in the status). Passing the pixels of an object of known size in the photo (one shelf unit, a door, floor tiles, etc.) with `known` also gives widths and the camera height using that object as a ruler.
+1. The result goes into the scene with `set_room` and `set_input` (cameras).
+2. If foot points of furniture were picked in the photos, `place_from_photos` fits the chosen asset's footprint to those points to set position and direction.
+   If you also pass rectangles around objects in the photo (`outlines`), it projects the asset's box into the photo with the fitted camera and refines the position to match the foot pixels and the rectangle (`photo_refine.py`).
+3. `compare_photo` renders from the same viewpoint to compare with the photo, and `measure_photo` compares room and aisle widths with the photo in numbers.
+   - Pointing at a pixel pair across an aisle with `aisle_pair` makes that width a layout target (`SceneSpec.photo_aisle`). It is used for array aisles, the walking-width and too-wide checks through `usability.photo_aisle`, and the ratio `photo_aisle` in the status.
+   - If an object of known size (one shelf unit, a door, floor tiles, etc.) is in the photo, pass its pixels with `known`. Widths and the camera height are then also given using that object as a ruler.
 
 Related files
 - [src/agentic_sim_world_gen/photo_fit.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_fit.py): `fit` (the result's `scale` = the list of scale evidence, from `_scale_evidence`), `FitRequest`, `PointObs`, `LineObs`, `SurfaceObs`, `RelativePose`

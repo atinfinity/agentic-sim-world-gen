@@ -1,9 +1,10 @@
 # ssh先で使う（GPU機はLANのUbuntu、手元はMacなど）
 
-Isaac Sim・Claude Code・agentic-sim-world-genはssh先のGPU機（LANのUbuntu＋RTXなど）で動かし、手元のPC（Macなど、GPU不要）からは
-sshのターミナルで頼み、ブラウザでプレビューだけを見る手順。手元には何もインストールしない（sshとブラウザだけ）。
+Isaac Sim・Claude Code・agentic-sim-world-genは、ssh先のGPU機（LANのUbuntu＋RTXなど）で動かす。
+手元のPC（Macなど。GPUは要らない）では、sshのターミナルでClaudeに頼み、ブラウザでプレビューを見るだけ。手元には何もインストールしない（sshとブラウザだけ）。
 
 GPU機の前に座って使うなら[全部手元で使う](use-local.md)。
+2つの形の違いは[Getting Started「0. どこで動かすか」](getting-started.md#0-どこで動かすか)の表。
 
 ```mermaid
 flowchart LR
@@ -43,7 +44,7 @@ flowchart LR
 | つながり | ポート | 中身 |
 |---|---|---|
 | 手元のターミナル → GPU機 | 22（ssh） | tmuxの中のclaudeに日本語で頼む |
-| 手元のブラウザ → GPU機のプレビュー | 8765を`ssh -L`で転送 | preview.html・配置図・checkの画像。GPU機の127.0.0.1にだけ開き、LANには公開しない |
+| 手元のブラウザ → GPU機のプレビュー | 8765を`ssh -L`で転送 | preview.html・配置図・checkの画像。GPU機の127.0.0.1でだけ待ち受け、LANには公開しない |
 | 手元のブラウザ → Hugging Face / S3 | 443 | 候補のサムネイル（URLのものはブラウザが直接取る） |
 
 GPU機に入ってくる通信はsshだけでよい。
@@ -61,23 +62,20 @@ GPU機に入ってくる通信はsshだけでよい。
 
 1. Isaac Sim 6.1とagentic-sim-world-genを入れる（[全部手元で使う「2. インストール」](use-local.md#2-インストール)の1・2と同じ）。
 2. 環境変数を`~/.profile`か、`~/.bashrc`の**冒頭**（`case $- in`で対話シェル以外を抜ける行より前）に書く。
-   末尾に書くと`ssh <gpu-host> 'コマンド'`のような対話でないシェルには効かない：
+   末尾に書くと、`ssh <gpu-host> 'コマンド'`のような対話でないシェルには効かない。
 
    ```bash
-   export ISAACSIM_PYTHON=~/isaacsim_venv/bin/python   # スタンドアロン版なら ISAACSIM_PATH=~/isaacsim
+   export ISAACSIM_PYTHON=~/isaacsim_venv/bin/python   # pip版のvenvのpython。スタンドアロン版を ~/isaacsim以外に置いたならISAACSIM_PATH=<その場所>
    export OMNI_KIT_ACCEPT_EULA=YES
    ```
 
-   プレビューのポートは8765。使用中（別の作業フォルダのClaudeなど）なら、そのフォルダで前回使った番号（`~/.cache/agentic-sim-world-gen/preview_ports.json`）、
-   それも使用中なら次の空き番号になる。作業フォルダが1つなら毎回8765なので、`ssh -L`は同じでよい。
-   フォルダごとに番号を固定したいときは、`agentic-sim-world-gen workspace … --env AGENTIC_SIM_WORLD_GEN_PREVIEW=127.0.0.1:8766`のように .mcp.jsonに書く。
 3. 作業フォルダを作る（リポジトリの外に）：
 
    ```bash
    cd agentic-sim-world-gen && .venv/bin/agentic-sim-world-gen workspace ~/agentic-sim-world-gen-ws
    ```
 
-4. 確かめる（ssh越しに）：`out/study/check.png`ができればheadlessの描画が動いている。
+4. 手元からssh越しに確かめる。`out/study/check.png`ができれば、headlessの描画と、対話でないシェルの環境変数の両方が効いている。
 
    ```bash
    ssh <gpu-host> 'cd agentic-sim-world-gen && .venv/bin/agentic-sim-world-gen resolve examples/p0_study_room.json -o out/study \
@@ -86,7 +84,7 @@ GPU機に入ってくる通信はsshだけでよい。
 
 ## 3. 最初のワールド
 
-1. 手元から、プレビューのポートを転送して入り、tmuxの中でClaude Codeを起動する：
+1. 手元から、プレビューのポートを転送してGPU機に入り、tmuxの中でClaude Codeを起動する：
 
    ```bash
    ssh -L 8765:127.0.0.1:8765 <gpu-host>
@@ -100,13 +98,18 @@ GPU機に入ってくる通信はsshだけでよい。
    > 6畳の書斎を作って。机と椅子、壁際に本棚
 
 3. **プレビュー**：GPU機ではブラウザを開けないので、Claudeの返答にURL（`http://127.0.0.1:8765/<名前>/preview.html`）と`ssh -L`の手順が出る。
-   そのURLを手元のブラウザで開く。ページはツールを呼ぶたびに自動で書き換わる（1秒ごとに確かめる）。
-   ポートが8765でなければ、その番号で`ssh -L`し直す（別のターミナルで`ssh -N -L 8766:127.0.0.1:8766 <gpu-host>`でもよい）。
+   そのURLを手元のブラウザで開く。ページは1秒ごとに更新を確かめ、ツールが呼ばれるたびに書き換わる。
+   URLのポートが8765でなければ（下の「5. 注意」）、その番号で`ssh -L`し直す（別のターミナルで`ssh -N -L 8766:127.0.0.1:8766 <gpu-host>`を足してもよい）。
 4. **check**：Isaac SimはGPU機でheadlessで動く（1回35〜50秒）。結果はプレビューの「Isaac Simチェック」に出る。
-   物理のあと周りから撮った24枚をドラッグ（← → キー）で回せるので、3Dの画面の代わりになる。
+   物理が落ち着いたあとに周りから撮った24枚を、ドラッグか ← → キーで回して見られる。これが3D画面の代わりになる。
+
+   ![checkの回り込み画像（プレビューでドラッグして回す）](images/check_orbit.gif)
+
 5. **結果を開く**：GPU機の画面でIsaac Simを開くか、シーンを手元に持ってくる（次の節）。
 
 ## 4. 入力を渡す・結果を持ってくる
+
+写真から部屋を作るとき、Claudeは写真を切り出して画素の位置を読む。手元のパスは読めないので、写真・動画・図面はGPU機に置いてから、そのパスをClaudeに渡す。
 
 ```bash
 # 写真・動画・図面を GPU 機へ（Claude にはそのパスを渡す）
@@ -116,17 +119,19 @@ ssh <gpu-host> 'cd agentic-sim-world-gen && .venv/bin/agentic-sim-world-gen comp
 rsync -av <gpu-host>:~/agentic-sim-world-gen-ws/scenes/study ./
 ```
 
-Claudeに「USDをローカル参照で出し直して」と頼んでもよい（MCP `compose_scene(localize=true)`）。
-`--localize`なしのscene.usdaはアセットをURLで参照していて、ネットにつながればどこでも開ける。
-写真から部屋を作るときは、Claudeが写真を切り出して画素の位置を読むので、写真はGPU機に置く（手元のパスは読めない）。
+出し直しは、Claudeに「USDをローカル参照で出し直して」と頼んでもよい（MCP `compose_scene(localize=true)`）。
+`--localize`なしのscene.usdaはアセットをURLで参照するので、ネットにつながればどこでも開ける。
 
 ## 5. できないこと・注意
 
-- **ライブモードは使えない**（checkを開いているIsaac Simの画面で行う）。GPU機の画面の前にいないと見えないので、headlessのcheckと、プレビューで回して見る画像で確かめる。
-  頼んでもheadlessに切り替えて続ける（報告の`live_fallback`）。GPU機の前でも作業するなら[全部手元で使う](use-local.md)の形で。
+- **ライブモード**（開いているIsaac Simの画面でcheckする）は使わない。GPU機の画面の前にいないと見えないので、headlessのcheckと、プレビューで回して見る画像で確かめる。
+  頼んでもheadlessに切り替えて続ける（報告の`live_fallback`）。GPU機の前でも作業するなら[全部手元で使う](use-local.md)の形にする。
 - sshが切れるとプレビューも見えなくなるが、tmuxの中のClaudeは動き続ける。`ssh -L …`でつなぎ直して`tmux attach -t agentic-sim-world-gen`。
 - プレビューのサーバーはClaude Codeのセッションの中で動く。`claude`を終えると止まるので、起動し直したら「プレビューを開いて」と頼む。
-- 作業フォルダを複数同時に使うと、後から起動した方が別のポート（8766 …）になる。それぞれ`ssh -L`する（番号を固定するなら上の`AGENTIC_SIM_WORLD_GEN_PREVIEW`）。
+- プレビューのポートは既定で8765。使用中（別の作業フォルダのClaudeなど）なら、そのフォルダが前回使った番号（`~/.cache/agentic-sim-world-gen/preview_ports.json`に記録）、
+  それも使用中なら次の空き番号になる。作業フォルダが1つなら毎回8765なので、`ssh -L`はいつも同じでよい。
+  作業フォルダを複数同時に使うなら、それぞれの番号で`ssh -L`する。フォルダごとに番号を決めておくには、
+  `agentic-sim-world-gen workspace … --env AGENTIC_SIM_WORLD_GEN_PREVIEW=127.0.0.1:8766`のように`.mcp.json`に書く。
 
 ## 6. トラブルシューティング
 

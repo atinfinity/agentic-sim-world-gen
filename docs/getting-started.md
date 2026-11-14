@@ -23,7 +23,7 @@ flowchart LR
 
 ## 1. 必要なもの
 
-| | 用途 |
+| 必要なもの | 何に使うか |
 |---|---|
 | Ubuntu＋RTX GPU、Isaac Sim 6.1（pip版で確認済み。スタンドアロンの`python.sh`は未確認） | 物理チェック・スクショ・写真比較・合成データ |
 | Python 3.12以上、[uv](https://docs.astral.sh/uv/) | agentic-sim-world-gen本体（検索・プレビュー・USD出力） |
@@ -61,7 +61,7 @@ source .venv/bin/activate
 | `AGENTIC_SIM_WORLD_GEN_MDL` | `1` | `0`で床・壁・天井の材質にIsaac Sim同梱のMDLを使わない（CC0のPBRか色だけ）。同梱アセットを写さない絵を作る時に`AGENTIC_SIM_WORLD_GEN_SOURCES`から`isaac`を外すのと一緒に使う |
 | `ISAAC_ASSETS_ROOT` | 公開S3 | Isaac Sim同梱アセットをローカル / Nucleusに置いているならそのルート（`Isaac/`の親） |
 | `AGENTIC_SIM_WORLD_GEN_ISAAC_LIVE` | `127.0.0.1:8226` | ライブcheckの接続先（[use-local.md「ライブモード」](use-local.md#ライブモードこの形だけ)） |
-| `AGENTIC_SIM_WORLD_GEN_PREVIEW` | `127.0.0.1:8765` | プレビューのHTTPサーバー。使用中なら、そのフォルダで前に使った番号か次の空き番号（フォルダごとに`~/.cache/agentic-sim-world-gen/preview_ports.json`に覚える） |
+| `AGENTIC_SIM_WORLD_GEN_PREVIEW` | `127.0.0.1:8765` | プレビューのHTTPサーバー。ポートが使用中なら、同じ保存先フォルダで前回使った番号、それも使用中なら次の空き番号を使う（sshのトンネルを張り直さずに済むよう、`~/.cache/agentic-sim-world-gen/preview_ports.json`に覚える） |
 | `AGENTIC_SIM_WORLD_GEN_BROWSER` | `xdg-open` / `open` | プレビューを開くコマンド（例`chromium --app={url}`）。画面の無いシェルでは開かず、URLを返す |
 
 例（pip版）：
@@ -76,12 +76,15 @@ export OMNI_KIT_ACCEPT_EULA=YES
 作業用のフォルダを作って、そこでClaude Codeを起動する：
 
 ```bash
-agentic-sim-world-gen workspace ~/agentic-sim-world-gen-ws     # .mcp.json・スキル world-gen（リポジトリへのリンク）・短い CLAUDE.md・圧縮の後も返答の言語を保つフック
+agentic-sim-world-gen workspace ~/agentic-sim-world-gen-ws
 cd ~/agentic-sim-world-gen-ws && claude
 ```
 
+`workspace`は作業フォルダに次のものを作る：`.mcp.json`（agentic-sim-world-genのMCPサーバー）、スキルworld-gen（リポジトリへのリンク）、
+短いCLAUDE.md、会話の圧縮（compaction）の後も返答の言語を保つフック。シーンは`~/agentic-sim-world-gen-ws/scenes`にできる。
+
 作業フォルダは**リポジトリの外**に作る（中に作るとエラー）。リポジトリの中で`claude`を起動しても動くが、
-開発メモ（CLAUDE.md）を毎ターン読むので料金が高く、会話の圧縮も早く来る。シーンは`~/agentic-sim-world-gen-ws/scenes`にできる。
+開発用のCLAUDE.mdを毎ターン読むので料金が高く、会話の圧縮も早く起きる。
 
 `workspace`のオプション：
 
@@ -92,14 +95,14 @@ cd ~/agentic-sim-world-gen-ws && claude
 | `--allow-tools` | agentic-sim-world-genのツールを使うたびの許可を省く |
 | `--model sonnet` | このフォルダのClaude Codeのモデル（安いモデルで作る時。出来の比較はまだしていない） |
 | `--copy-skill` | スキルをリンクでなく写しにする（リンクなら`git pull`で更新される） |
-| `--force` | 作り直す |
+| `--force` | 中身の違うファイルを置き換える |
 
 初回に`.mcp.json`の`agentic-sim-world-gen` MCPサーバーを承認する（スキルworld-genは自動で読み込まれる）。あとは頼むだけ：
 
 > 6畳の書斎を作って。机と椅子、壁際に本棚
 
 Claudeは次の順に進める（質問が来たら答える。2–3分、API料金は1回 $1前後）。
-大きく分けると、`create_scene`で叩き台を作って見せ、あなたが「これでいい」と言ったら`finish`で仕上げる：
+大きく分けると、`create_scene`が叩き台（下の1〜5）までを1回で作って見せ、あなたが「これでいい」と言ったら`finish`が仕上げ（5〜7）を1回で進める：
 
 ```mermaid
 flowchart TD
@@ -126,37 +129,45 @@ flowchart TD
 5. USDを出力（`compose_scene`）し、物理なしで描画した叩き台を見せて、違う所を聞く（`check_in_isaac`の`draft`）。
    「最後まで進めて」と頼めば止まらない
 6. Isaac Simで物理チェック＋スクショ（`check_in_isaac`）。倒れた・沈んだ物があれば直して再チェック
-7. 指示の項目ごとに満たしたかを確かめ（`check_request`）、使ったアセットのライセンスをまとめる（`license_report` → LICENSES.md）。
-   5の叩き台までは`create_scene`が、5〜7は`finish`が1回でまとめて進める
+7. 指示の項目ごとに満たしたかを確かめ（`check_request`）、使ったアセットのライセンスをまとめる（`license_report` → LICENSES.md）
 
-シーンは`$AGENTIC_SIM_WORLD_GEN_OUT/<名前>/`にできる。途中のプレビューはブラウザで開ける：
+続けて「本棚を窓の反対側に」「椅子を黒いものに替えて」のように直していける。
+シーンは`$AGENTIC_SIM_WORLD_GEN_OUT/<名前>/`（作業フォルダから起動したなら`scenes/<名前>/`）にできる。
 
-| candidates.html（候補一覧、緑枠が選択中） | layout.svg（上から見た配置。矢印が正面） |
-|---|---|
-| ![candidates](images/gs_candidates.jpg) | ![layout](images/gs_layout.png) |
+この例の流れ（②〜④は実際の画面。それぞれ下の「プレビューで見るもの」で詳しく）：
 
-checkのスクショ（check.png）：
+![指示からワールドまで：日本語で頼む、候補を見て選ぶ、関係で配置・検査、Isaac Simで物理チェック、scene.usdaとLICENSES.md](images/overview_storyboard_ja.jpg)
 
-![check](images/gs_check.jpg)
+### プレビューで見るもの
 
-checkは物理が落ち着いたあとの部屋を周りから24方向で撮る（check_orbit/、約6秒増える。`orbit=0` / `--orbit 0`で撮らない）。
-プレビューのページでは、この画像をドラッグ（← → キー）で回せる：
-
-![orbit](images/check_orbit.gif)
-
-preview.html（`agentic-sim-world-gen preview --open` / MCP `open_preview`）は変更のたびにその場で書き換わる（再読み込みしないので、ちらつかない）。
-アセット候補は1物体1行（選択中のサムネイル・アセット名・ライセンスのバッジ・代用や配置の問題のバッジ）で、
-今作業中の物だけ開く。「要確認のみ」で代用・ライセンス不明・非商用・配置の問題のある物だけに絞れる。
-「変更履歴」はこのシーンで行った操作の一覧（新しい順、最大200件。元に戻す機能は無い）。
-操作ごとに何がどう変わったか（アセット、位置・向き、部屋の寸法、床・壁・照明、配置の問題の数）が日本語で付き、
-直前の操作の変更内容はページ上部にも出る。関係で決まる物（机の前の椅子など）が連動して動いた分も載る。
-checkの結果は「OK」（緑）/「要修正」（赤）のバッジで出る。
+作業中はブラウザのプレビュー（preview.html。MCPは`open_preview`、CLIは`agentic-sim-world-gen preview <scene> --open`）を開いておく。
+変更のたびにその場で書き換わる（再読み込みしないので、ちらつかない）。
 
 ![preview](images/gs_preview.jpg)
 
 （Claude Codeに「6畳の書斎を作って。机と椅子、壁際に本棚を置いて」と頼み、Isaac Simのチェックまで終えたところ。ページ上部の「指示との突き合わせ」「雰囲気」「仮定」は省いている）
 
-続けて「本棚を窓の反対側に」「椅子を黒いものに替えて」のように直していける。
+| ページの部分 | 中身 |
+|---|---|
+| アセット候補 | 1物体1行：選択中のサムネイル・アセット名・ライセンスのバッジ・代用や配置の問題のバッジ。今作業中の物だけ開く。「要確認のみ」で代用・ライセンス不明・非商用・配置の問題のある物だけに絞れる |
+| 変更履歴 | このシーンで行った操作の一覧（新しい順、最大200件）。ヘッダーの「取り消す」で1つ前の版に、行の「ここに戻す」でその版に戻せる（直近30版まで）。操作ごとに、何がどう変わったか（アセット、位置・向き、部屋の寸法、床・壁・照明、配置の問題の数）を日本語で書く。関係で決まる物（机の前の椅子など）が連動して動いた分も載る。直前の操作の変更内容はページ上部にも出る |
+| 上面図・3Dの叩き台 | 物をドラッグで動かす・候補を選ぶ。ダブルクリックすると、その場所へのメモ（「ここにゴミ箱を置いて」など）をClaudeに書き込める |
+| checkの結果 | 「OK」（緑）/「要修正」（赤）のバッジ |
+
+同じフォルダには、候補一覧と上面図が単独のファイルとしてもできる：
+
+| candidates.html（候補一覧、緑枠が選択中） | layout.svg（上から見た配置。矢印が正面） |
+|---|---|
+| ![candidates](images/gs_candidates.jpg) | ![layout](images/gs_layout.png) |
+
+Isaac Simのcheckは、物理が落ち着いたあとの部屋をcheck.pngに撮る：
+
+![check](images/gs_check.jpg)
+
+さらに部屋を周りから24方向で撮る（check_orbit/。約6秒増える。`orbit=0` / `--orbit 0`で撮らない）。
+プレビューのページでは、この画像をドラッグ（← → キー）で回せる：
+
+![orbit](images/check_orbit.gif)
 
 できたワールドをIsaac Simで開く方法と、開いているIsaac Simの画面でcheckする「ライブモード」は[use-local.md](use-local.md#4-最初のワールド)。
 ssh先でのプレビューの開き方（`ssh -L`）は[use-ssh.md](use-ssh.md#3-最初のワールド)。
@@ -181,10 +192,11 @@ agentic-sim-world-gen resolve examples/p0_study_room.json -o out/study
 #   out/study/candidates.html      候補一覧
 #   out/study/layout.svg           配置図
 agentic-sim-world-gen preview out/study/scene.resolved.json            # 編集後にプレビューを作り直す
-agentic-sim-world-gen preview out/study --open                         # preview.html をブラウザで開き、変更のたびに自動更新
+agentic-sim-world-gen preview out/study --open                         # preview.htmlをブラウザで開き、変更のたびに自動更新（--serveはブラウザを開かずURLだけ）
 agentic-sim-world-gen compose out/study/scene.resolved.json            # -> out/study/scene.usda
 agentic-sim-world-gen check out/study                                  # Isaac Sim headless で物理＋スクショ（約 35 秒）
 agentic-sim-world-gen licenses out/study                               # -> out/study/LICENSES.md
+agentic-sim-world-gen finish out/study                                 # compose（古ければ）・check・指示との突き合わせ・licensesをまとめて（MCPのfinishと同じ）
 ```
 
 シーンのファイルの例は`examples/`。その形式と、Isaac Simのチェックのスクリプトを直接呼ぶ方法は
@@ -192,19 +204,15 @@ agentic-sim-world-gen licenses out/study                               # -> out/
 
 ## 6. 他の入力
 
+文章のほかに、間取り図・写真・動画からも作れる。
+
 | 入力 | 例 | 詳しく |
 |---|---|---|
-| 間取り図（JSON / DXF / IFC） | `agentic-sim-world-gen plan examples/plans/1ldk.json -o out/1ldk_plan` → plan.jsonを`room.plan_file`に。Claudeには「examples/plans/1ldk.jsonの間取りで、LDKにソファ、和室に座卓」（和室は畳、洗面はタイルの床になる） | [データの形](architecture.md#2-データの形) |
-| 間取り図（画像 / PDF） | Claudeに画像を渡すと、なぞってJSONにする（単位px＋下敷き画像） | スキルのplans.md |
-| 写真 | 「examples/photos/living_room.jpgの部屋を作って」。出典は隣の`<stem>.source.json`。`agentic-sim-world-gen photo <scene>`で同じ視点の描画と並べる | スキルのphotos.md |
+| 間取り図（JSON / DXF / IFC） | `agentic-sim-world-gen plan examples/plans/1ldk.json -o out/1ldk_plan`でplan.jsonにし、`room.plan_file`に指定する。Claudeには「examples/plans/1ldk.jsonの間取りで、LDKにソファ、和室に座卓」（和室は畳、洗面はタイルの床になる） | [データの形](architecture.md#2-データの形)、`src/agentic_sim_world_gen/scene/plan.py` |
+| 間取り図（画像 / PDF） | Claudeに画像を渡すと、なぞってJSONにする（単位px＋下敷き画像） | [スキルのplans.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/plans.md) |
+| 写真 | 「examples/photos/living_room.jpgの部屋を作って」。出典は隣の`<stem>.source.json`。`agentic-sim-world-gen photo <scene>`で同じ視点の描画と並べる | [スキルのphotos.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/photos.md) |
 | 写真・動画の深度 | 下の「単眼の深度」のvenvを作り、`agentic-sim-world-gen fit-photos req.json --depth`（写真に`image`）。部屋の寸法が決まりやすくなる | 下の「単眼の深度」 |
-| 動画 | 「walk.mp4の部屋を作って」（部屋を歩いて撮った動画、人が写っていないもの）。出典は隣の`walk.source.json`。`agentic-sim-world-gen frames walk.mp4 -o <scene>`でコマを選んで入力写真にする（ffmpegが必要） | スキルのvideos.md |
-| 繰り返し配置 | `agentic-sim-world-gen resolve examples/warehouse_racks.json -o out/racks`（ラック列＋通路） | READMEのset_array |
-| 屋外 | `agentic-sim-world-gen resolve examples/outdoor_yard.json -o out/yard`（道路・歩道・建物・空） | [データの形](architecture.md#2-データの形) |
-| 足りなかったアセットを多い順に見る | `agentic-sim-world-gen missing`（この機械で作った全シーンの代用・候補なし・見送った小物） | [アセット検索](architecture.md#3-アセット検索) |
-| 手持ちのUSDフォルダ | `AGENTIC_SIM_WORLD_GEN_SOURCES=+local:/data/usd`、中身の確認は`agentic-sim-world-gen index /data/usd --list` | README |
-| 床・壁・照明 | `room.floor: "wood_light"`、`room.lighting: "office"`など（「床はフローリング、照明は夜」でも可） | [USDの合成](architecture.md#6-usdの合成) |
-| 合成データ | `agentic-sim-world-gen sdg out/study --frames 24 --coco` → RGB・bbox・セグメンテーション・深度 | [Isaac Sim側](architecture.md#7-isaac-sim側) |
+| 動画 | 「walk.mp4の部屋を作って」（部屋を歩いて撮った動画、人が写っていないもの）。出典は隣の`walk.source.json`。`agentic-sim-world-gen frames walk.mp4 -o <scene>`でコマを選んで入力写真にする（ffmpegが必要） | [スキルのvideos.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/videos.md) |
 
 ### 単眼の深度（任意）
 
@@ -222,6 +230,17 @@ AGENTIC_SIM_WORLD_GEN_DEPTH_DOWNLOAD=1 agentic-sim-world-gen fit-photos req.json
 
 同じ手順が`scripts/depth/moge_depth.py`の先頭にある。深度は各写真の隣の`<stem>.depth.npz`に残り、2回目からはモデルを回さない。
 `AGENTIC_SIM_WORLD_GEN_DEPTH_MODEL`で別のMoGe-2のモデルにできる。
+
+### ほかの機能
+
+| 機能 | 例 | 詳しく |
+|---|---|---|
+| 繰り返し配置 | `agentic-sim-world-gen resolve examples/warehouse_racks.json -o out/racks`（ラック列＋通路） | READMEのset_array |
+| 屋外 | `agentic-sim-world-gen resolve examples/outdoor_yard.json -o out/yard`（道路・歩道・建物・空） | [データの形](architecture.md#2-データの形) |
+| 手持ちのUSDフォルダ | `AGENTIC_SIM_WORLD_GEN_SOURCES=+local:/data/usd`、中身の確認は`agentic-sim-world-gen index /data/usd --list` | README「手持ちのUSDフォルダ」 |
+| 床・壁・照明 | `room.floor: "wood_light"`、`room.lighting: "office"`など（「床はフローリング、照明は夜」のように言葉でも可） | [USDの合成](architecture.md#6-usdの合成) |
+| 合成データ | `agentic-sim-world-gen sdg out/study --frames 24 --coco` → RGB・bbox・セグメンテーション・深度 | [Isaac Sim側](architecture.md#7-isaac-sim側) |
+| 足りなかったアセットを多い順に見る | `agentic-sim-world-gen missing`（この機械で作った全シーンの、代用した物・候補が無かった物・見送った小物） | [アセット検索](architecture.md#3-アセット検索) |
 
 ## 7. 出力
 
@@ -244,6 +263,10 @@ check.jsonの主な項目：`unstable`（動いた・倒れた）、`sunk`（床
 物理が無いと分かっているSimReadyのアセット（Vertivのラックなど）には最初から付く。
 Claude（MCP）や`agentic-sim-world-gen check`に返すのは要約で、物体IDごとの数と最大移動、問題のある物体の詳細だけ（物が多くても数千字）。
 
+それぞれの項目が表す状態（`exploded`は物ごとの項目、`blew_up`は「physics did not run」の時だけ出る）：
+
+![checkの結果：unstable・sunk・no_collider・static・exploded・blew_up](images/check_results_ja.svg)
+
 ## 8. ライセンス
 
 USDの各アセットのcustomData `agentic_sim_world_gen:license`とLICENSES.mdに、出典・作者・ライセンスが記録される。
@@ -253,8 +276,8 @@ SimReady Central / SimReady（Isaac Sim同梱）は主にCC BY 4.0（帰属表�
 アセットのフォルダの`asset.json`に`image_credits`（テクスチャに使った写真や書体）があれば、LICENSES.mdの
 「Material used in the assets」に1件ずつ、使っている物の名前と並べて出る（例: Noto Sans JP、SIL Open Font License 1.1）。
 
-入手先と版も、アセットごとに一つに決まる形で残る（LICENSES.mdの「Sources」、プレビューの「ライセンスと入手先」、
-USDのcustomData `agentic_sim_world_gen:origin`）。
+どこから入手したどの版かも、アセットごとに後から同じものを特定できる形で残る（LICENSES.mdの「Sources」、プレビューの「ライセンスと入手先」、
+USDのcustomData `agentic_sim_world_gen:origin`）。記録する内容は出どころで違う：
 
 - SimReady Central：Hugging Faceのコミット（URLに入っている）とデータセット内のパス
 - Isaac Sim同梱：リリース（例6.1）とパス。リリース内で差し替わる可能性があるので「リリース単位」と表示

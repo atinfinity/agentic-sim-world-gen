@@ -23,7 +23,7 @@ The sections below apply to both setups (install, environment variables, workflo
 
 ## 1. Requirements
 
-| | Used for |
+| What you need | Used for |
 |---|---|
 | Ubuntu + RTX GPU, Isaac Sim 6.1 (tested with the pip version; the standalone `python.sh` is untested) | Physics checks, screenshots, photo comparison, synthetic data |
 | Python 3.12 or later, [uv](https://docs.astral.sh/uv/) | agentic-sim-world-gen itself (search, preview, USD output) |
@@ -61,7 +61,7 @@ Isaac Sim ships its own pxr, and mixing the two breaks it.
 | `AGENTIC_SIM_WORLD_GEN_MDL` | `1` | `0` stops using Isaac Sim's bundled MDL for floor, wall and ceiling materials (CC0 PBR or plain colors only). Use it together with removing `isaac` from `AGENTIC_SIM_WORLD_GEN_SOURCES` when rendering images that must not show bundled assets |
 | `ISAAC_ASSETS_ROOT` | public S3 | Root of the Isaac Sim bundled assets if you keep them locally or on Nucleus (the parent of `Isaac/`) |
 | `AGENTIC_SIM_WORLD_GEN_ISAAC_LIVE` | `127.0.0.1:8226` | Address for live check ([use-local.md "Live mode"](use-local.md#live-mode-this-setup-only)) |
-| `AGENTIC_SIM_WORLD_GEN_PREVIEW` | `127.0.0.1:8765` | HTTP server for the preview. If the port is in use, it takes the port that folder used before, or the next free one (remembered per folder in `~/.cache/agentic-sim-world-gen/preview_ports.json`) |
+| `AGENTIC_SIM_WORLD_GEN_PREVIEW` | `127.0.0.1:8765` | HTTP server for the preview. If the port is in use, it takes the port the same output folder used last time, and if that is in use too, the next free one (remembered in `~/.cache/agentic-sim-world-gen/preview_ports.json`, so an ssh tunnel does not have to be set up again) |
 | `AGENTIC_SIM_WORLD_GEN_BROWSER` | `xdg-open` / `open` | Command that opens the preview (e.g. `chromium --app={url}`). In a shell without a display it does not open anything and returns the URL |
 
 Example (pip version):
@@ -76,12 +76,15 @@ export OMNI_KIT_ACCEPT_EULA=YES
 Create a workspace folder and start Claude Code in it:
 
 ```bash
-agentic-sim-world-gen workspace ~/agentic-sim-world-gen-ws     # .mcp.json, the world-gen skill (a link into the repository), a short CLAUDE.md, a hook that keeps the reply language after compaction
+agentic-sim-world-gen workspace ~/agentic-sim-world-gen-ws
 cd ~/agentic-sim-world-gen-ws && claude
 ```
 
+`workspace` creates these in the folder: `.mcp.json` (the agentic-sim-world-gen MCP server), the world-gen skill (a link into the repository),
+a short CLAUDE.md, and a hook that keeps the reply language after the conversation is compacted. Scenes go to `~/agentic-sim-world-gen-ws/scenes`.
+
 Create the workspace **outside the repository** (creating it inside is an error). Starting `claude` inside the repository also works,
-but then it reads the development notes (CLAUDE.md) on every turn: that costs more and compaction comes sooner. Scenes go to `~/agentic-sim-world-gen-ws/scenes`.
+but then it reads the development CLAUDE.md on every turn: that costs more and the conversation gets compacted sooner.
 
 Options of `workspace`:
 
@@ -92,7 +95,7 @@ Options of `workspace`:
 | `--allow-tools` | skip the permission prompts for agentic-sim-world-gen tools |
 | `--model sonnet` | the Claude Code model for this folder (for building with a cheaper model; output quality has not been compared yet) |
 | `--copy-skill` | copy the skill instead of linking it (a link is updated by `git pull`) |
-| `--force` | recreate the workspace |
+| `--force` | replace files whose contents differ |
 
 On first start, approve the `agentic-sim-world-gen` MCP server in `.mcp.json` (the world-gen skill loads automatically). Then just ask:
 
@@ -101,7 +104,7 @@ On first start, approve the `agentic-sim-world-gen` MCP server in `.mcp.json` (t
 Japanese works too, e.g. 「6畳の書斎を作って。机と椅子、壁際に本棚」 (the same request).
 
 Claude goes through these steps (answer its questions if it asks; 2–3 minutes, about $1 in API cost per run).
-In short: `create_scene` builds a draft and shows it, and once you say it is fine, `finish` completes it:
+In short: `create_scene` builds the draft (steps 1–5 below) in one call and shows it, and once you say it is fine, `finish` does the finishing (steps 5–7) in one call:
 
 ```mermaid
 flowchart TD
@@ -128,37 +131,47 @@ flowchart TD
 5. Writes the USD (`compose_scene`), shows a draft rendered without physics, and asks what is wrong (`draft` of `check_in_isaac`).
    Say "go all the way to the end" and it does not stop
 6. Physics check and screenshots in Isaac Sim (`check_in_isaac`). If anything fell over or sank, it fixes it and checks again
-7. Verifies each item of the request (`check_request`) and collects the licenses of the assets used (`license_report` → LICENSES.md).
-   `create_scene` runs everything up to the draft in step 5 in one call; `finish` runs steps 5–7 in one call
+7. Verifies each item of the request (`check_request`) and collects the licenses of the assets used (`license_report` → LICENSES.md)
 
-The scene is created in `$AGENTIC_SIM_WORLD_GEN_OUT/<name>/`. You can open the intermediate previews in a browser:
+You can keep refining with requests like "move the bookshelf to the wall opposite the window" or "swap the chair for a black one".
+The scene is created in `$AGENTIC_SIM_WORLD_GEN_OUT/<name>/` (`scenes/<name>/` if you started from a workspace).
+
+The flow of this example (②–④ are real screens; each is explained under "What the preview shows" below):
+
+![From request to world: ask in words, look at the candidates and pick, lay out by relations and check, physics check in Isaac Sim, scene.usda and LICENSES.md](../images/overview_storyboard.jpg)
+
+### What the preview shows
+
+Keep the preview (preview.html; MCP `open_preview`, CLI `agentic-sim-world-gen preview <scene> --open`) open in a browser while you work.
+It updates in place on every change (no reload, so no flicker).
+
+![preview](../images/gs_preview.jpg)
+
+(After asking Claude Code「6畳の書斎を作って。机と椅子、壁際に本棚を置いて」 (make a 10 m² study; a desk and a chair, and put a bookshelf against the wall) and finishing the Isaac Sim check. The "Match against the request", "Mood" and "Assumptions" sections at the top of the page are omitted.)
+
+The preview UI is in Japanese; the Japanese labels are given in parentheses.
+
+| Part of the page | What it shows |
+|---|---|
+| Asset candidates | One row per object: selected thumbnail, asset name, license badge, badges for substitutions and placement problems. Only the object being worked on is expanded. "Needs review only" (要確認のみ) filters to objects with a substitution, unknown license, non-commercial license or placement problem |
+| Change history (変更履歴) | The operations done on this scene (newest first, up to 200). "Undo" (取り消す) in the header goes back one version, and "Return here" (ここに戻す) on a row goes back to that version (up to the last 30 versions). Each operation notes what changed and how (asset, position and orientation, room size, floor/wall/lighting, number of placement problems) in Japanese. Objects that moved along because of a relation (such as the chair in front of the desk) are listed too. The changes from the latest operation also appear at the top of the page |
+| Top-down layout and 3D draft | Drag objects to move them, pick candidates. Double-click to leave Claude a note about that spot (such as "put a trash can here") |
+| check result | An "OK" (green) / "Needs fix" (要修正, red) badge |
+
+The same folder also gets the candidate list and the top-down layout as standalone files:
 
 | candidates.html (candidate list; green frame = selected) | layout.svg (top-down layout; arrows show the front) |
 |---|---|
 | ![candidates](../images/gs_candidates.jpg) | ![layout](../images/gs_layout.png) |
 
-Screenshot from check (check.png):
+The Isaac Sim check photographs the room after physics settles into check.png:
 
 ![check](../images/gs_check.jpg)
 
-After physics settles, check photographs the room from 24 directions around it (check_orbit/; adds about 6 seconds; `orbit=0` / `--orbit 0` skips it).
+It also photographs the room from 24 directions around it (check_orbit/; adds about 6 seconds; `orbit=0` / `--orbit 0` skips it).
 On the preview page you can rotate this view by dragging (or with the ← → keys):
 
 ![orbit](../images/check_orbit.gif)
-
-preview.html (`agentic-sim-world-gen preview --open` / MCP `open_preview`) updates in place on every change (no reload, so no flicker).
-Asset candidates are one row per object (selected thumbnail, asset name, license badge, badges for substitutions and placement problems),
-and only the object currently being worked on is expanded. "Needs review only" (要確認のみ; the preview UI is in Japanese) filters to objects with a substitution, unknown license, non-commercial license or placement problem.
-"Change history" (変更履歴) lists the operations done on this scene (newest first, up to 200; there is no undo).
-Each operation notes what changed and how (asset, position and orientation, room size, floor/wall/lighting, number of placement problems) in Japanese,
-and the changes from the latest operation also appear at the top of the page. Objects that moved along because of a relation (such as the chair in front of the desk) are listed too.
-The check result shows as an "OK" (green) / "Needs fix" (要修正, red) badge.
-
-![preview](../images/gs_preview.jpg)
-
-(After asking Claude Code 「6畳の書斎を作って。机と椅子、壁際に本棚を置いて」 (make a 10 m² study; a desk and a chair, and put a bookshelf against the wall) and finishing the Isaac Sim check. The "Match against the request", "Mood" and "Assumptions" sections at the top of the page are omitted.)
-
-You can keep refining with requests like "move the bookshelf to the wall opposite the window" or "swap the chair for a black one".
 
 How to open the finished world in Isaac Sim, and "live mode", which runs check in the Isaac Sim window you already have open, are in [use-local.md](use-local.md#4-your-first-world).
 How to open the preview over ssh (`ssh -L`) is in [use-ssh.md](use-ssh.md#3-your-first-world).
@@ -183,10 +196,11 @@ agentic-sim-world-gen resolve examples/p0_study_room.json -o out/study
 #   out/study/candidates.html      candidate list
 #   out/study/layout.svg           layout drawing
 agentic-sim-world-gen preview out/study/scene.resolved.json            # rebuild the preview after editing
-agentic-sim-world-gen preview out/study --open                         # open preview.html in the browser; auto-updates on every change
+agentic-sim-world-gen preview out/study --open                         # open preview.html in the browser; auto-updates on every change (--serve gives only the URL, no browser)
 agentic-sim-world-gen compose out/study/scene.resolved.json            # -> out/study/scene.usda
 agentic-sim-world-gen check out/study                                  # physics + screenshots in headless Isaac Sim (about 35 seconds)
 agentic-sim-world-gen licenses out/study                               # -> out/study/LICENSES.md
+agentic-sim-world-gen finish out/study                                 # compose (if stale), check, match against the request and licenses in one go (same as MCP finish)
 ```
 
 Examples of scene files are in `examples/`. Their format, and calling the Isaac Sim check script directly, are in
@@ -194,13 +208,20 @@ Examples of scene files are in `examples/`. Their format, and calling the Isaac 
 
 ## 6. Other inputs
 
+Besides text, you can build from floor plans, photos and videos.
+
 | Input | Example | Details |
 |---|---|---|
-| Floor plan (JSON / DXF / IFC) | `agentic-sim-world-gen plan examples/plans/1ldk.json -o out/1ldk_plan` → put plan.json in `room.plan_file`. To Claude: "Use the floor plan in examples/plans/1ldk.json, with a sofa in the LDK and a low table in the Japanese-style room" (the Japanese-style room gets a tatami floor, the washroom a tile floor) | [Data](architecture.md#2-data) |
-| Floor plan (image / PDF) | Give Claude the image; it traces it into JSON (units in px, plus the image as an underlay) | plans.md in the skill |
-| Photos | "Make the room in examples/photos/living_room.jpg". The source is in the neighboring `<stem>.source.json`. `agentic-sim-world-gen photo <scene>` shows it side by side with a render from the same viewpoint | photos.md in the skill |
+| Floor plan (JSON / DXF / IFC) | `agentic-sim-world-gen plan examples/plans/1ldk.json -o out/1ldk_plan` into plan.json, then set it as `room.plan_file`. To Claude: "Use the floor plan in examples/plans/1ldk.json, with a sofa in the LDK and a low table in the Japanese-style room" (the Japanese-style room gets a tatami floor, the washroom a tile floor) | [Data](architecture.md#2-data), `src/agentic_sim_world_gen/scene/plan.py` |
+| Floor plan (image / PDF) | Give Claude the image; it traces it into JSON (units in px, plus the image as an underlay) | [plans.md in the skill](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/plans.md) |
+| Photos | "Make the room in examples/photos/living_room.jpg". The source is in the neighboring `<stem>.source.json`. `agentic-sim-world-gen photo <scene>` shows it side by side with a render from the same viewpoint | [photos.md in the skill](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/photos.md) |
 | Depth for photos and videos | Create the venv from "Monocular depth" below, then run `agentic-sim-world-gen fit-photos req.json --depth` (photos in `image`). Room dimensions are easier to pin down | [Monocular depth](#monocular-depth-optional) below |
-| Video | "Make the room in walk.mp4" (a video taken while walking through the room, with no people in it). The source is in the neighboring `walk.source.json`. `agentic-sim-world-gen frames walk.mp4 -o <scene>` picks frames to use as input photos (needs ffmpeg) | videos.md in the skill |
+| Video | "Make the room in walk.mp4" (a video taken while walking through the room, with no people in it). The source is in the neighboring `walk.source.json`. `agentic-sim-world-gen frames walk.mp4 -o <scene>` picks frames to use as input photos (needs ffmpeg) | [videos.md in the skill](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/videos.md) |
+
+### Other features
+
+| Feature | Example | Details |
+|---|---|---|
 | Repeated placement | `agentic-sim-world-gen resolve examples/warehouse_racks.json -o out/racks` (rows of racks + aisles) | [Layout](architecture.md#4-layout) (`set_array`) |
 | Outdoor | `agentic-sim-world-gen resolve examples/outdoor_yard.json -o out/yard` (road, sidewalk, buildings, sky) | [Data](architecture.md#2-data) |
 | See missing assets, most frequent first | `agentic-sim-world-gen missing` (substitutions, objects with no candidates and skipped small items across all scenes made on this machine) | [Asset search](architecture.md#3-asset-search) |
@@ -246,6 +267,10 @@ For objects with `no_collider`, `set_collider` (`box`) adds an invisible box col
 SimReady assets known to have no physics (such as Vertiv racks) get one from the start.
 What is returned to Claude (MCP) or by `agentic-sim-world-gen check` is a summary: counts and maximum displacement per object ID, plus details only for problem objects (a few thousand characters even with many objects).
 
+What each item means (`exploded` is per object; `blew_up` appears only when "physics did not run"):
+
+![check results: unstable, sunk, no_collider, static, exploded, blew_up](../images/check_results.svg)
+
 ## 8. Licenses
 
 The source, author and license are recorded in each asset's customData `agentic_sim_world_gen:license` in the USD and in LICENSES.md.
@@ -255,8 +280,8 @@ SimReady Central / SimReady (bundled with Isaac Sim) are mostly CC BY 4.0 (attri
 If an asset folder's `asset.json` has `image_credits` (photos or fonts used in textures), each one is listed in the
 "Material used in the assets" section of LICENSES.md, next to the name of the object that uses it (e.g. Noto Sans JP, SIL Open Font License 1.1).
 
-Where each asset came from, and which version, is also recorded so that it identifies exactly one asset (the "Sources" section of LICENSES.md, "License and source" in the preview,
-and the USD customData `agentic_sim_world_gen:origin`).
+Where each asset came from, and which version, is also recorded in a form that lets you identify the same asset later (the "Sources" section of LICENSES.md, "License and source" in the preview,
+and the USD customData `agentic_sim_world_gen:origin`). What is recorded depends on the source:
 
 - SimReady Central: the Hugging Face commit (included in the URL) and the path inside the dataset
 - Bundled with Isaac Sim: the release (e.g. 6.1) and the path. Files may be replaced within a release, so it is shown as "per release"

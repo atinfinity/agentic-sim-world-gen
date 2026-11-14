@@ -77,6 +77,10 @@ Assets (all CC BY 4.0, details in [LICENSES.md](docs/images/warehouse_LICENSES.m
 ([ForgeCAD/simready-assets](https://huggingface.co/datasets/ForgeCAD/simready-assets)),
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
+One run end to end (the example in [Getting Started](docs/en/getting-started.md#4-your-first-world-with-claude-code); ②–④ are real screens):
+
+![From request to world: ask in words, look at the candidates and pick, lay out by relations and check, physics check in Isaac Sim, scene.usda and LICENSES.md](docs/images/overview_storyboard.jpg)
+
 ## Features
 
 - **MCP server + skill for Claude Code** (63 tools); the same operations from the CLI `agentic-sim-world-gen`
@@ -120,7 +124,8 @@ agentic-sim-world-gen check out/study                                    # physi
 ```
 
 Install usd-core only in this venv, never in Isaac Sim's Python. Point to Isaac Sim with `ISAACSIM_PYTHON`
-(pip install) or `ISAACSIM_PATH`, and set `OMNI_KIT_ACCEPT_EULA=YES` to run it non-interactively.
+(pip install) or `ISAACSIM_PATH` (default `~/isaacsim`), and set `OMNI_KIT_ACCEPT_EULA=YES` to run it non-interactively.
+The other environment variables are in [Getting Started "3. Environment variables"](docs/en/getting-started.md#3-environment-variables).
 
 With Claude Code: `.mcp.json` registers the `agentic-sim-world-gen` MCP server and `.claude/skills/world-gen`
 is the skill. To only make worlds, create a workspace outside the repository with

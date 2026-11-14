@@ -1,9 +1,10 @@
 # Over ssh (GPU machine: Ubuntu on the LAN; you: a Mac or similar)
 
-How to run Isaac Sim, Claude Code and agentic-sim-world-gen on a GPU machine you reach over ssh (for example, Ubuntu + RTX on the LAN). From your own computer (a Mac or similar, no GPU needed)
-you give instructions in an ssh terminal and only view the preview in a browser. Nothing is installed on your computer (only ssh and a browser).
+Isaac Sim, Claude Code and agentic-sim-world-gen run on a GPU machine you reach over ssh (for example, Ubuntu + RTX on the LAN).
+On your own computer (a Mac or similar; no GPU needed) you only talk to Claude in an ssh terminal and view the preview in a browser. Nothing is installed on your computer (only ssh and a browser).
 
 If you sit at the GPU machine, see [Everything on one machine](use-local.md).
+The table in [Getting Started "0. Where to run it"](getting-started.md#0-where-to-run-it) compares the two setups.
 
 ```mermaid
 flowchart LR
@@ -61,23 +62,20 @@ Below, replace `<gpu-host>` with the host you ssh to the GPU machine with (`user
 
 1. Install Isaac Sim 6.1 and agentic-sim-world-gen (same as steps 1 and 2 of [Everything on one machine "2. Install"](use-local.md#2-install)).
 2. Set environment variables in `~/.profile`, or at the **top** of `~/.bashrc` (before the `case $- in` line that exits for non-interactive shells).
-   If you put them at the end, they do not apply to non-interactive shells such as `ssh <gpu-host> 'command'`:
+   If you put them at the end, they do not apply to non-interactive shells such as `ssh <gpu-host> 'command'`.
 
    ```bash
-   export ISAACSIM_PYTHON=~/isaacsim_venv/bin/python   # for the standalone version: ISAACSIM_PATH=~/isaacsim
+   export ISAACSIM_PYTHON=~/isaacsim_venv/bin/python   # python of the pip version's venv. Standalone version somewhere other than ~/isaacsim: ISAACSIM_PATH=<that folder>
    export OMNI_KIT_ACCEPT_EULA=YES
    ```
 
-   The preview port is 8765. If it is in use (by Claude in another workspace, for example), the server uses the number that folder used last time (`~/.cache/agentic-sim-world-gen/preview_ports.json`),
-   and if that is also in use, the next free number. With a single workspace it is 8765 every time, so the same `ssh -L` always works.
-   To pin a number per folder, write it into .mcp.json, like `agentic-sim-world-gen workspace … --env AGENTIC_SIM_WORLD_GEN_PREVIEW=127.0.0.1:8766`.
 3. Create a workspace (outside the repository):
 
    ```bash
    cd agentic-sim-world-gen && .venv/bin/agentic-sim-world-gen workspace ~/agentic-sim-world-gen-ws
    ```
 
-4. Check it (over ssh): if `out/study/check.png` is created, headless rendering works.
+4. Check it over ssh from your computer. If `out/study/check.png` is created, both headless rendering and the environment variables in non-interactive shells work.
 
    ```bash
    ssh <gpu-host> 'cd agentic-sim-world-gen && .venv/bin/agentic-sim-world-gen resolve examples/p0_study_room.json -o out/study \
@@ -86,7 +84,7 @@ Below, replace `<gpu-host>` with the host you ssh to the GPU machine with (`user
 
 ## 3. Your first world
 
-1. From your computer, connect with the preview port forwarded, and start Claude Code inside tmux:
+1. From your computer, connect to the GPU machine with the preview port forwarded, and start Claude Code inside tmux:
 
    ```bash
    ssh -L 8765:127.0.0.1:8765 <gpu-host>
@@ -102,13 +100,18 @@ Below, replace `<gpu-host>` with the host you ssh to the GPU machine with (`user
    Japanese works too, e.g. 「6畳の書斎を作って。机と椅子、壁際に本棚」 (the same request).
 
 3. **Preview**: the GPU machine cannot open a browser, so Claude's reply shows the URL (`http://127.0.0.1:8765/<name>/preview.html`) and the `ssh -L` steps.
-   Open that URL in your local browser. The page updates itself every time a tool is called (it polls once a second).
-   If the port is not 8765, redo `ssh -L` with that number (or run `ssh -N -L 8766:127.0.0.1:8766 <gpu-host>` in another terminal).
+   Open that URL in your local browser. The page checks for updates once a second and changes every time a tool is called.
+   If the port in the URL is not 8765 (see "5. Limitations and notes" below), redo `ssh -L` with that number (or add `ssh -N -L 8766:127.0.0.1:8766 <gpu-host>` in another terminal).
 4. **check**: Isaac Sim runs headless on the GPU machine (35–50 seconds per run). The results appear under "Isaac Sim check" in the preview.
-   After physics, 24 shots are taken from around the scene; drag (or use the ← → keys) to rotate them. This stands in for a 3D view.
+   Once physics settles, 24 shots are taken from around the scene; drag or use the ← → keys to rotate them. This stands in for a 3D view.
+
+   ![The check's orbit images (drag to rotate in the preview)](../images/check_orbit.gif)
+
 5. **Open the result**: open Isaac Sim on the GPU machine's display, or bring the scene to your computer (next section).
 
 ## 4. Passing inputs and fetching results
+
+When building a room from photos, Claude crops the photos and reads pixel positions. It cannot read paths on your computer, so put photos, videos and drawings on the GPU machine first and give Claude that path.
 
 ```bash
 # Photos, videos and drawings to the GPU machine (give Claude that path)
@@ -118,17 +121,19 @@ ssh <gpu-host> 'cd agentic-sim-world-gen && .venv/bin/agentic-sim-world-gen comp
 rsync -av <gpu-host>:~/agentic-sim-world-gen-ws/scenes/study ./
 ```
 
-You can also ask Claude to "re-export the USD with local references" (MCP `compose_scene(localize=true)`).
+For the re-export, you can also ask Claude to "re-export the USD with local references" (MCP `compose_scene(localize=true)`).
 A scene.usda without `--localize` references assets by URL, so it opens anywhere with a network connection.
-When building a room from photos, Claude crops the photos and reads pixel positions, so put the photos on the GPU machine (it cannot read paths on your computer).
 
 ## 5. Limitations and notes
 
-- **Live mode is not available** (it runs the check in an open Isaac Sim window). You would have to be at the GPU machine's display to see it, so check with the headless check and the rotatable images in the preview.
+- **Live mode** (running the check in an open Isaac Sim window) is not used. You would have to be at the GPU machine's display to see it, so check with the headless check and the rotatable images in the preview.
   If you ask for it, the check switches to headless and continues (`live_fallback` in the report). If you also work at the GPU machine, use the [Everything on one machine](use-local.md) setup.
 - If ssh drops, you lose the preview too, but Claude inside tmux keeps running. Reconnect with `ssh -L …` and run `tmux attach -t agentic-sim-world-gen`.
 - The preview server runs inside the Claude Code session. It stops when you quit `claude`, so after restarting, ask to "open the preview".
-- If you use several workspaces at once, the one started later gets a different port (8766 …). Forward each with `ssh -L` (to pin the numbers, use `AGENTIC_SIM_WORLD_GEN_PREVIEW` above).
+- The preview port is 8765 by default. If it is in use (by Claude in another workspace, for example), the server uses the number that folder used last time (recorded in `~/.cache/agentic-sim-world-gen/preview_ports.json`),
+  and if that is also in use, the next free number. With a single workspace it is 8765 every time, so the same `ssh -L` always works.
+  If you use several workspaces at once, forward each number with `ssh -L`. To fix a number per folder,
+  write it into `.mcp.json`, like `agentic-sim-world-gen workspace … --env AGENTIC_SIM_WORLD_GEN_PREVIEW=127.0.0.1:8766`.
 
 ## 6. Troubleshooting
 

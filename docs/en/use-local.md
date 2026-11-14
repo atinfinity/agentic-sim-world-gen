@@ -3,7 +3,7 @@
 How to run Isaac Sim, Claude Code and the preview on one local Ubuntu machine with an RTX GPU and a display.
 You can see the Isaac Sim 3D view, the preview and the terminal on the same screen. "Live mode", which runs the check in the Isaac Sim window you have open, works only in this setup.
 
-If the GPU machine is somewhere else and you reach it over ssh from your own computer (a Mac or similar), see [Over ssh](use-ssh.md).
+If the GPU machine is somewhere else and you reach it over ssh from your own computer (a Mac or similar), see [Over ssh](use-ssh.md). The table in [Getting Started "0. Where to run it"](getting-started.md#0-where-to-run-it) compares the two setups.
 
 ```mermaid
 flowchart LR
@@ -55,7 +55,7 @@ There are two ports, both on 127.0.0.1 (not exposed to the network).
 
 1. Install Isaac Sim 6.1. For the pip version, run `pip install "isaacsim[all,extscache]==6.1.0.0"` in a dedicated venv (follow NVIDIA's instructions).
    For the standalone version, extract it to `~/isaacsim`.
-2. Install agentic-sim-world-gen (same as [Getting Started "2. Install"](getting-started.md#2-install)):
+2. Install agentic-sim-world-gen (same as [Getting Started "2. Install"](getting-started.md#2-install); add `--extra dxf --extra ifc` if you also use floor plans):
 
    ```bash
    git clone https://github.com/atinfinity/agentic-sim-world-gen.git
@@ -67,7 +67,7 @@ There are two ports, both on 127.0.0.1 (not exposed to the network).
 3. Set environment variables in `~/.bashrc` or similar:
 
    ```bash
-   export ISAACSIM_PYTHON=~/isaacsim_venv/bin/python   # python of the pip version's venv. For the standalone version: ISAACSIM_PATH=~/isaacsim
+   export ISAACSIM_PYTHON=~/isaacsim_venv/bin/python   # python of the pip version's venv. Standalone version somewhere other than ~/isaacsim: ISAACSIM_PATH=<that folder>
    export OMNI_KIT_ACCEPT_EULA=YES                       # needed to run Isaac Sim non-interactively (accepts the NVIDIA Omniverse EULA)
    ```
 
@@ -84,7 +84,7 @@ There are two ports, both on 127.0.0.1 (not exposed to the network).
 
 ## 3. Create a workspace
 
-To build worlds, start Claude Code in a workspace folder outside the repository (inside the repository it reads the development CLAUDE.md every turn, which costs more and fills the context sooner).
+To build worlds, start Claude Code in a workspace folder outside the repository (inside the repository it reads the development CLAUDE.md every turn, which costs more and makes the conversation get compacted sooner).
 
 ```bash
 agentic-sim-world-gen workspace ~/agentic-sim-world-gen-ws     # .mcp.json, the world-gen skill (link to the repository), a short CLAUDE.md
@@ -104,7 +104,7 @@ For options (`--env`, `--allow-tools`, etc.), see [Getting Started "4."](getting
 
 2. **Preview**: once there are candidates, Claude opens the preview (`http://127.0.0.1:8765/<name>/preview.html`) in the browser.
    If it does not open, ask Claude to "open the preview", or open the URL from the reply. The page updates itself every time a tool is called.
-   To use a different browser, set something like `AGENTIC_SIM_WORLD_GEN_BROWSER="chromium --app={url}"`.
+   To use a browser other than the default, set something like `AGENTIC_SIM_WORLD_GEN_BROWSER="chromium --app={url}"`.
 3. **check**: Claude writes the USD (`compose_scene`) and runs a physics check and screenshots in Isaac Sim (`check_in_isaac`, about 35 seconds headless).
    The results appear under "Isaac Sim check" in the preview (24 shots taken from around the scene; drag to rotate).
 4. **Open the result**: open `scene.usda` in Isaac Sim.
@@ -117,7 +117,7 @@ For options (`--env`, `--allow-tools`, etc.), see [Getting Started "4."](getting
 
 ### Live mode (this setup only)
 
-If you start Isaac Sim with python_server, the check runs in that window and the problem objects are selected. A re-check takes about 8 seconds (headless takes about 34 seconds every time).
+If you start Isaac Sim with python_server, the check runs in that window and the problem objects are selected. A re-check takes about 8 seconds (headless takes about 35 seconds every time).
 
 ```bash
 isaacsim isaacsim.exp.full.kit --enable isaacsim.code_editor.python_server   # listens on 127.0.0.1:8226
@@ -138,7 +138,7 @@ python_server runs arbitrary code, so keep it on 127.0.0.1.
 | Symptom | Fix |
 |---|---|
 | The preview does not open | Open the URL from the reply by hand. If you start `claude` from a shell without `DISPLAY` (such as a terminal you reached over ssh), it cannot open a browser |
-| The preview URL port is not 8765 | If 8765 is in use (by another Claude session, for example), the server starts on the number this folder used before, or the next free one. Pin it with `AGENTIC_SIM_WORLD_GEN_PREVIEW=127.0.0.1:8770` |
+| The preview URL port is not 8765 | If 8765 is in use (by another Claude session, for example), the server starts on the number this folder used last time, or the next free one. Set the number to try first with something like `AGENTIC_SIM_WORLD_GEN_PREVIEW=127.0.0.1:8770` |
 | The preview does not update | Quitting Claude Code also stops the preview server. Start it again and ask to "open the preview" |
 | A live check ran headless | Read the reason in `live_fallback`. Did you start Isaac Sim with `--enable isaacsim.code_editor.python_server`? Do objects overlap? |
 | check says "physics did not run" | Objects touching or interpenetrating blew apart and GPU physics stopped (CUDA error). The same scene fails the same way every time. Move the `blew_up` objects a few cm apart (for example, chairs with casters placed with no gap). In live mode, also restart Isaac Sim |
