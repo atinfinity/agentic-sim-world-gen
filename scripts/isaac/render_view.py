@@ -50,7 +50,7 @@ app = SimulationApp({"headless": True, "width": W, "height": jobs[0]["H"]})
 import omni.usd  # noqa: E402
 from omni.kit.viewport.utility import get_active_viewport  # noqa: E402
 from PIL import Image, ImageDraw, ImageFont  # noqa: E402  (bundled with Isaac Sim)
-from view import capture, hide_guides, wait_frames  # noqa: E402
+from view import capture_settled, hide_guides  # noqa: E402
 
 ctx = omni.usd.get_context()
 assert ctx.open_stage(args.usd), f"failed to open {args.usd}"
@@ -67,18 +67,12 @@ hide_guides()
 for k, j in enumerate(jobs):
     vp.resolution = (W, j["H"])
     vp.camera_path = j["camera"]
-    wait_frames(app, 120 if k == 0 else 60)  # let textures stream in and the renderer converge
     out = Path(j["out"])
-    if out.exists():
-        out.unlink()
-    capture(out)
-    for _ in range(300):
-        if out.exists():
-            break
-        app.update()
-    wait_frames(app, 10)
+    # shot until two in a row match: textures stream in, shaders compile (#34)
+    j["settle_frames"] = capture_settled(app, out, 120 if k == 0 else 60)
 
-result = {"renders": [{"camera": j["camera"], "render": j["out"], "size": [W, j["H"]]} for j in jobs]}
+result = {"renders": [{"camera": j["camera"], "render": j["out"], "size": [W, j["H"]], "settle_frames": j["settle_frames"]}
+                       for j in jobs]}
 if len(jobs) == 1:
     result.update(render=jobs[0]["out"], camera=jobs[0]["camera"], size=[W, jobs[0]["H"]])
 

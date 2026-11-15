@@ -47,7 +47,7 @@ lap("start")
 import omni.usd  # noqa: E402
 from PIL import Image, ImageDraw  # noqa: E402  (bundled with Isaac Sim)
 from pxr import Gf, Usd, UsdGeom  # noqa: E402
-from view import capture, hide_guides, wait_frames  # noqa: E402
+from view import capture_settled, hide_guides, wait_frames  # noqa: E402
 
 ctx = omni.usd.get_context()
 assert ctx.open_stage(args.usd), f"failed to open {args.usd}"
@@ -102,10 +102,8 @@ for prim, facing in shoot:
         side = math.radians(facing + off)
         eye = Gf.Vec3d(c[0] + dist * math.cos(side), c[1] + dist * math.sin(side), c[2] + 0.45 * dist)
         cam_op.Set(Gf.Matrix4d().SetLookAt(eye, Gf.Vec3d(*c), Gf.Vec3d(0, 0, 1)).GetInverse())
-        wait_frames(app, 120 if not report else 40)  # the first: let textures stream in (render_view.py)
         f = tiles_dir / f"{prim.GetName()}{'_' + str(off) if args.around else ''}.png"
-        capture(f)
-        wait_frames(app, 10)
+        capture_settled(app, f, 120 if not report else 40)  # until two shots match (#34)
         report.append({"id": str(prim.GetPath()).removeprefix("/World/Objects/"),
                        "label": prim.GetCustomDataByKey("agentic_sim_world_gen:label") or "", "facing_deg": facing,
                        "view": "front" if not args.around else (f"+{off}" if off else "front"),

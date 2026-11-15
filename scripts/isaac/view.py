@@ -51,6 +51,54 @@ def wait_frames(app, n: int) -> None:
         app.update()
 
 
+SETTLE_EVERY = 20  # frames between two shots of the same view
+SETTLE_MOST = 900  # frames: give up waiting and keep the last shot (a scene that never stops changing)
+SETTLE_PIXEL = 24  # 0-255: a thumbnail pixel that changed more than this has changed (not denoiser noise)
+SETTLE_SHARE = 0.002  # the view is still when fewer than this share of its pixels changed
+
+
+def _shoot(app, path: Path):
+    """Capture the viewport to path and wait for the file. Returns a small grayscale thumbnail (None if the
+    capture did not arrive)."""
+    from PIL import Image
+
+    if path.exists():
+        path.unlink()
+    capture(path)
+    for _ in range(300):
+        if path.exists():
+            break
+        app.update()
+    for _ in range(3):  # the file can appear before it is fully written
+        try:
+            im = Image.open(path).convert("L")
+            im.thumbnail((160, 160))
+            return list(im.getdata())
+        except Exception:
+            app.update()
+    return None
+
+
+def capture_settled(app, path: str | Path, first: int) -> int:
+    """Wait `first` frames, then capture to path again every SETTLE_EVERY frames until two shots in a row show
+    the same picture (at most SETTLE_MOST frames); path keeps the last shot. A fixed wait missed Poly Haven
+    (MaterialX) models whose shaders were still compiling (#34). Returns the frames waited."""
+    path = Path(path)
+    wait_frames(app, first)
+    n = first
+    prev = _shoot(app, path)
+    while n < SETTLE_MOST and prev is not None:
+        wait_frames(app, SETTLE_EVERY)
+        n += SETTLE_EVERY
+        cur = _shoot(app, path)
+        if cur is None or len(cur) != len(prev):
+            break
+        if sum(abs(a - b) > SETTLE_PIXEL for a, b in zip(cur, prev)) < SETTLE_SHARE * len(cur):
+            break
+        prev = cur
+    return n
+
+
 def hide_guides() -> None:
     """Hide the viewport grid and axis overlays (they end up in captured images)."""
     import carb.settings
