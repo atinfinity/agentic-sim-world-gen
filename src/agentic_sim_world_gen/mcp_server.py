@@ -1197,7 +1197,8 @@ def fit_photos(request: FitRequest, out_dir: str | None = None, depth: bool = Fa
     wrong corner). Returns room (Room fields), cameras (PhotoCamera fields + yaw/pitch, rms, ±sigma),
     points, located, and `outside` for a camera fitted beyond a wall: verdict doorway (it looks in through an
     opening - a hallway frame) or wall (it sees through the wall: the wall is likely too far in; `wall_moved_out`
-    is the fit with that wall moved out - about as good means fix that wall's landmarks). `inside` = photo ids
+    is the fit with that wall moved out - about as good means fix that wall's landmarks) or loose (too few
+    measurements and no relative pose: the camera is free, say nothing of the walls). `inside` = photo ids
     whose camera stood in the room. Mark both edges of each opening: one edge alone leaves its width at the guess
     (warned), and an opening under 0.4 m wide is refitted with start / end swapped (`swapped`) to tell a swap. Writes photo_fit.json into out_dir (e.g. the scene folder) when given.
     depth=true (needs AGENTIC_SIM_WORLD_GEN_DEPTH_PYTHON, a venv with MoGe-2): give each photo its `image` path; every point /

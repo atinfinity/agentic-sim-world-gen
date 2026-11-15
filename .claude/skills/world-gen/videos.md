@@ -123,6 +123,7 @@ file adds what is specific to video frames.
    |---|---|---|
    | `doorway` | it sees the room only through an opening (`through`, pixels per opening): it stood in that door or in the hallway | fine if that is where the frame was taken, but never name the hallway's own corners / floor as this room's |
    | `wall` | it sees pixels through the wall itself (`solid`) or floor / ceiling pixels beyond it (`floor_beyond`): the wall is likely placed too far in. The fit is redone with that wall moved out past the camera (`wall_moved_out`: rms / depth rms before and after, the room) | "about as good" → the wall is the error: find the landmarks that hold that wall (its corners, `floor:<wall>` lines, `wall:<wall>` surfaces in every frame), fix them and fit again (until then trust the moved-out size more). "much worse" → the other frames do see the wall there: check this frame's own landmarks, or it stood beyond the wall |
+   | `loose` | the photo has fewer `measurements` than a camera's 6 unknowns and no relative pose: nothing holds the camera, so its place says nothing about the walls (no refit) | add points / lines to that photo, or leave it out; do not move a wall for it |
 
    **Windows and doors are fitted only from their own landmarks**: an opening with no marked corner stays at
    the guess (warning "not seen in any photo"), and compare_photo then shows it in the wrong place and size (on

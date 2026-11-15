@@ -941,6 +941,9 @@ def _outside_text(o: dict) -> str:
         via = ", ".join(f"{k} ({n} pixels)" for k, n in o["through"].items())
         return (f"{head}, looking in through {via}: it stood in that opening or beyond it (a hallway) - fine if the "
                 "frame was taken there; landmarks of the hallway itself must not be named for this room")
+    if o["verdict"] == "loose":
+        return (f"{head}, but its {o['measurements']} measurements and no relative pose leave the camera free: "
+                "its place says nothing about the walls - add points / lines to it, or leave it out")
     if o["verdict"] == "wall":
         seen = " and ".join(t for t in (f"sees {o['solid']} of its pixels through the wall itself (not an opening)"
                                         if o["solid"] else "",
@@ -1064,6 +1067,7 @@ def fit(req: FitRequest | dict, compare: bool = True) -> dict:
         openings.append(d)
     cams = {}
     outside = []
+    tied = {k for rp in req.relative for k in (rp.a, rp.b)}
     for cid, c in req.photos.items():
         pos = [p[f"{cid}.x"], p[f"{cid}.y"], p[f"{cid}.z"]]
         fw, _, _ = _cam_axes(p, cid)
@@ -1098,10 +1102,12 @@ def fit(req: FitRequest | dict, compare: bool = True) -> dict:
             n_in = sum(through.values())
             # mostly through an opening: it stood there (a few pixels near the opening's edge cross the wall)
             # floor / ceiling pixels beyond the wall (and nothing through an opening): the room goes on there
-            verdict = ("doorway" if n_in and n_in >= 2 * solid else "wall" if solid or floor_out else "unknown")
+            # too few measurements and no relative pose: the camera is free, its place says nothing of the walls (#28)
+            verdict = ("loose" if nobs < MIN_OBS and cid not in tied else
+                       "doorway" if n_in and n_in >= 2 * solid else "wall" if solid or floor_out else "unknown")
             outside.append({"photo": cid, "wall": out[0], "beyond_m": round(out[1], 2),
                             "position": cams[cid]["position"], "through": through, "solid": solid,
-                            "floor_beyond": floor_out,
+                            "floor_beyond": floor_out, "measurements": nobs,
                             "verdict": verdict})
         elif not 0 < pos[2] < H:
             warnings.append(f"photo {cid}: camera ends up outside the room {cams[cid]['position']} (its height) - "

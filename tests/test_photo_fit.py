@@ -323,6 +323,21 @@ def test_camera_beyond_a_misplaced_wall(monkeypatch):
     assert not service.fit_photos({**_request(), "inside": ["x"]})["ok"]
 
 
+def test_a_thin_camera_beyond_a_wall_is_loose(monkeypatch):
+    """A camera with fewer measurements than unknowns and no relative pose is free: beyond a wall it is `loose`,
+    with no wall advice and no refit; tied to another photo by a relative pose it is judged as usual (#28)."""
+    monkeypatch.setitem(CAMS, "s", ((2.6, -0.35, 1.45), (2.3, 3.6, 0.9), 75.0))
+    req = _request()
+    req["photos"]["s"]["points"] = req["photos"]["s"]["points"][:2]
+    req["photos"]["s"]["lines"] = []
+    r = service.fit_photos(req)
+    (o,) = r["outside"]
+    assert (o["photo"], o["verdict"], o["measurements"]) == ("s", "loose", 4) and "wall_moved_out" not in o, o
+    assert any("leave the camera free" in w for w in r["warnings"]) and not any("too far in" in w for w in r["warnings"])
+    tied = service.fit_photos({**req, "relative": [_relative("s", "ne")]})
+    assert all(o["verdict"] != "loose" for o in tied.get("outside", [])), tied.get("outside")
+
+
 def test_swapped_opening_ends_stay_positive():
     """start / end of a window swapped in every photo: the width stays > 0 and the fit warns."""
     req = _request()
