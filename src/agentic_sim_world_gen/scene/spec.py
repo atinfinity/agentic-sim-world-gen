@@ -512,8 +512,8 @@ class Screen(BaseModel):
 
 class Tint(BaseModel):
     """A new color for some of the asset's materials (a red rack where the asset is white).
-    compose overrides the shaders' base color in the scene's root layer (UsdPreviewSurface, OmniPBR, OpenPBR);
-    on a textured material the color multiplies the texture."""
+    compose overrides the shaders' base color in the scene's root layer (UsdPreviewSurface, OmniPBR, OpenPBR,
+    MaterialX standard_surface); on a textured material the color multiplies the texture."""
 
     color: str = Field(description="#rrggbb (sRGB)")
     materials: list[str] | None = Field(

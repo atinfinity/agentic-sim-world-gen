@@ -458,7 +458,7 @@ For `array` and `fill` objects, `/World/Objects/<id>` is a group, and each unit 
   Assets without physics get an invisible fixed box `Collider` the size of the bbox (when `collider` is `box`, or `auto` and the asset is known to have no physics). Floor and walls have static colliders and a friction material.
 - **Floor, wall and ceiling looks**: materials under `Looks` (UsdPreviewSurface, textures, MDL).
   Materials come from named presets (`scene/looks.py`) or, via `select_surface`, from the indexes of Isaac Sim's bundled MDL (`materials.py`) and CC0 PBR (ambientCG, Poly Haven, `pbr.py`). `moods` / `apply_mood` (`scene/moods.py`) pick floor, walls and lighting together from a sample image.
-- **Object colors**: `tint` (`usd/tint.py`) overrides material colors from the scene side without changing the asset files.
+- **Object colors**: `tint` (`usd/tint.py`) overrides material colors from the scene side without changing the asset files (the base color of UsdPreviewSurface, OmniPBR, OpenPBR and MaterialX standard_surface; a texture is multiplied by the color).
 
 Related files
 - [src/agentic_sim_world_gen/usd/compose.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/usd/compose.py): `compose`, `build_room`, `build_site`, `_add_asset`, `add_box_collider`, `build_inputs`

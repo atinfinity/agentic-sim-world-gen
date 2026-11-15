@@ -176,3 +176,53 @@ def test_no_match_is_reported_and_none_goes_back(scene):
     assert service.load(scene).obj("rack").tint == []
     hist = service.status(scene)
     assert hist["issues"] == [] and st["issues"] == []
+
+
+def _stdsurf(textured: bool):
+    """A Poly Haven-like MaterialX material: ND_standard_surface, base_color from an image node (#30)."""
+    stage = Usd.Stage.CreateInMemory()
+    m = UsdShade.Material.Define(stage, "/M")
+    sh = UsdShade.Shader.Define(stage, "/M/Surface")
+    sh.CreateIdAttr("ND_standard_surface_surfaceshader")
+    sh.CreateInput("metalness", Sdf.ValueTypeNames.Float).Set(0.0)
+    base = sh.CreateInput("base_color", Sdf.ValueTypeNames.Color3f)
+    if textured:
+        img = UsdShade.Shader.Define(stage, "/M/Image")
+        img.CreateIdAttr("ND_image_color3")
+        base.ConnectToSource(img.CreateOutput("out", Sdf.ValueTypeNames.Color3f))
+        nrm = UsdShade.Shader.Define(stage, "/M/Normal")
+        nrm.CreateIdAttr("ND_normalmap")
+        sh.CreateInput("normal", Sdf.ValueTypeNames.Float3).ConnectToSource(
+            nrm.CreateOutput("out", Sdf.ValueTypeNames.Float3))
+    else:
+        base.Set(WHITE)
+    m.CreateSurfaceOutput("mtlx").ConnectToSource(sh.ConnectableAPI(), "out")
+    return stage, m.GetPrim(), sh
+
+
+def test_tint_standard_surface():
+    """#30: RTX renders a Poly Haven model through its MaterialX standard_surface, so the tint goes there."""
+    from agentic_sim_world_gen.usd.tint import TINT_NODE, describe, paint
+
+    stage, m, sh = _stdsurf(textured=False)
+    assert describe(m) == {"color": tuple(WHITE), "metal": False, "glass": False}
+    red = linear("#cc2222")
+    assert paint(m, red) == ["/M/Surface.base_color"] and sh.GetInput("base_color").Get() == red
+
+    stage, m, sh = _stdsurf(textured=True)
+    assert describe(m)["color"] == "texture"
+    assert "/M/Surface.base_color" in paint(m, red)
+    node = UsdShade.Shader(stage.GetPrimAtPath(f"/M/Surface_{TINT_NODE}"))
+    assert node.GetIdAttr().Get() == "ND_multiply_color3" and node.GetInput("in2").Get() == red
+    assert node.GetInput("in1").GetConnectedSources()[0][0].source.GetPath() == "/M/Image"
+    assert sh.GetInput("base_color").GetConnectedSources()[0][0].source.GetPath() == node.GetPath()
+    gold = linear("#ffd700")
+    paint(m, gold)  # painted again: the same node, a new color
+    assert node.GetInput("in2").Get() == gold
+    assert node.GetInput("in1").GetConnectedSources()[0][0].source.GetPath() == "/M/Image"
+
+    stage, m, sh = _stdsurf(textured=True)
+    changed = paint(m, red, texture=False)
+    assert {"/M/Surface.base_color", "/M/Surface.normal"} <= set(changed)
+    assert not sh.GetInput("base_color").HasConnectedSource() and not sh.GetInput("normal").HasConnectedSource()
+    assert sh.GetInput("base_color").Get() == red and not stage.GetPrimAtPath(f"/M/Surface_{TINT_NODE}")

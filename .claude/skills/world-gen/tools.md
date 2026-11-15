@@ -1873,8 +1873,8 @@ alt_queries + select_asset for furniture) and record each choice with set_assump
 ## Tint
 
 A new color for some of the asset's materials (a red rack where the asset is white).
-compose overrides the shaders' base color in the scene's root layer (UsdPreviewSurface, OmniPBR, OpenPBR);
-on a textured material the color multiplies the texture.
+compose overrides the shaders' base color in the scene's root layer (UsdPreviewSurface, OmniPBR, OpenPBR,
+MaterialX standard_surface); on a textured material the color multiplies the texture.
 
 - `color`: str — #rrggbb (sRGB)
 - `materials`?: [str] — material names or patterns (fnmatch, e.g. Tray*Mat); null = the asset's main color: the largest painted area (glass, metal and screens left out) and every material of that same color

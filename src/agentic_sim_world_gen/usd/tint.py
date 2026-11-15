@@ -2,8 +2,9 @@
 
 The asset's own files stay as they are: overs in the scene's root layer set the base color of every shader of the
 material (UsdPreviewSurface diffuseColor, OmniPBR diffuse_color_constant, OmniGlass glass_color, OpenPBR
-base_color). A textured material keeps its texture and is multiplied by the color (UsdUVTexture scale, OmniPBR
-diffuse_tint); with Tint.texture = false the color and normal textures are dropped for a flat color. Instanced parts are made editable (instanceable = false) so each unit can carry its own color.
+base_color, MaterialX standard_surface base_color). A textured material keeps its texture and is multiplied by the
+color (UsdUVTexture scale, OmniPBR diffuse_tint, an ND_multiply_color3 node before standard_surface base_color);
+with Tint.texture = false the color and normal textures are dropped for a flat color. Instanced parts are made editable (instanceable = false) so each unit can carry its own color.
 """
 
 from __future__ import annotations
@@ -48,6 +49,8 @@ def _kind(sh: UsdShade.Shader) -> str:
         return "preview"
     if sid.startswith("ND_open_pbr"):
         return "openpbr"
+    if sid.startswith("ND_standard_surface"):  # Poly Haven's outputs:mtlx:surface, what RTX renders (#30)
+        return "stdsurf"
     src = sh.GetSourceAsset("mdl")
     if src is not None and src.path:
         return "glass" if "glass" in src.path.lower() else "mdl"
@@ -83,6 +86,14 @@ def describe(material: Usd.Prim) -> dict[str, Any]:
             metal = _value(sh, "metallic_constant") if metal is None else metal
         elif k == "glass":
             glass = True
+        elif k == "stdsurf":
+            if sh.GetInput("base_color") and sh.GetInput("base_color").HasConnectedSource():
+                color = color or "texture"
+            elif color is None and _value(sh, "base_color") is not None:
+                color = tuple(_value(sh, "base_color"))
+            metal = _value(sh, "metalness") if metal is None else metal
+            tw = _value(sh, "transmission")
+            glass = glass or (tw is not None and tw > 0)
         elif k == "openpbr":
             if color is None and _value(sh, "base_color") is not None:
                 color = tuple(_value(sh, "base_color"))
@@ -155,8 +166,10 @@ def paint(material: Usd.Prim, color: Gf.Vec3f, texture: bool = True) -> list[str
     for sh in _shaders(material):
         k = _kind(sh)
         if not texture:
-            if k in ("preview", "openpbr"):
-                for name in ("diffuseColor", "normal") if k == "preview" else ("base_color",):
+            if k in ("preview", "openpbr", "stdsurf"):
+                names = {"preview": ("diffuseColor", "normal"), "openpbr": ("base_color",),
+                         "stdsurf": ("base_color", "normal")}[k]
+                for name in names:
                     i = sh.GetInput(name)
                     if i and i.HasConnectedSource():
                         i.DisconnectSource()
@@ -185,7 +198,33 @@ def paint(material: Usd.Prim, color: Gf.Vec3f, texture: bool = True) -> list[str
             if sh.GetInput("base_color") and sh.GetInput("base_color").HasConnectedSource():
                 continue  # an image node: left as it is (RTX uses the MDL shader)
             put(sh, "base_color", color)
+        elif k == "stdsurf":
+            i = sh.GetInput("base_color")
+            if i and i.HasConnectedSource():  # a texture: multiply it by the color in a node of our own
+                changed.extend(_multiply(sh, i, color))
+            else:
+                put(sh, "base_color", color)
     return changed
+
+
+TINT_NODE = "agentic_sim_world_gen_tint"  # the ND_multiply_color3 put before a textured standard_surface base_color
+
+
+def _multiply(sh: UsdShade.Shader, base: UsdShade.Input, color: Gf.Vec3f) -> list[str]:
+    """base_color = (what it was connected to) * color, through an ND_multiply_color3 next to the shader. Painting
+    again only changes the node's color."""
+    stage = sh.GetPrim().GetStage()
+    path = sh.GetPath().GetParentPath().AppendChild(f"{sh.GetPath().name}_{TINT_NODE}")
+    node = UsdShade.Shader(stage.GetPrimAtPath(path)) if stage.GetPrimAtPath(path) else None
+    if node is None:
+        node = UsdShade.Shader.Define(stage, path)
+        node.CreateIdAttr("ND_multiply_color3")
+        src = base.GetConnectedSources()[0][0]
+        node.CreateInput("in1", Sdf.ValueTypeNames.Color3f).ConnectToSource(src)
+        out = node.CreateOutput("out", Sdf.ValueTypeNames.Color3f)
+        base.ConnectToSource(out)
+    node.CreateInput("in2", Sdf.ValueTypeNames.Color3f).Set(color)
+    return [f"{path}.in2", f"{sh.GetPath()}.base_color"]
 
 
 def apply_tint(stage: Usd.Stage, prim_paths: list[str], asset, o) -> list[dict[str, Any]]:

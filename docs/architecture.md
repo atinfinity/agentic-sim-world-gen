@@ -458,7 +458,7 @@ depth ┌──────────── Wall_N ─────────
   物理の無いアセットには、bboxと同じ大きさの見えない固定の箱`Collider`を付けます（`collider`が`box`のとき、または`auto`で物理の無いことが分かっているとき）。床・壁は静的なコライダーと摩擦のマテリアルを持ちます。
 - **床・壁・天井の見た目**：`Looks`の下のマテリアル（UsdPreviewSurface、テクスチャ、MDL）です。
   材質は、名前のプリセット（`scene/looks.py`）か、索引（Isaac Sim同梱のMDLの`materials.py`、CC0のPBR＝ambientCG・Poly Havenの`pbr.py`）から`select_surface`で選びます。見本の画像から床・壁・照明をまとめて選ぶのが`moods` / `apply_mood`（`scene/moods.py`）です。
-- **物の色**：`tint`（`usd/tint.py`）で、アセットのファイルを変えずにシーンの側からマテリアルの色を上書きします。
+- **物の色**：`tint`（`usd/tint.py`）で、アセットのファイルを変えずにシーンの側からマテリアルの色を上書きします（UsdPreviewSurface・OmniPBR・OpenPBR・MaterialX standard_surfaceの基本色。テクスチャには色を掛けます）。
 
 関係するファイル
 - [src/agentic_sim_world_gen/usd/compose.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/usd/compose.py)：`compose`・`build_room`・`build_site`・`_add_asset`・`add_box_collider`・`build_inputs`
