@@ -125,3 +125,32 @@ def test_misfit_warns(tmp_path):
     f.write_text(json.dumps(j))
     r = service.place_from_photos(d, apply=False)
     assert any("not the size of the real one" in w for w in r["warnings"]), r["warnings"]
+
+
+def _shift(d, to_x):
+    """The desk's located feet moved so its center is at x = to_x."""
+    f = d / "photo_fit.json"
+    j = json.loads(f.read_text())
+    for lo in j["result"]["located"]:
+        if "xy" in lo:
+            lo["xy"] = [lo["xy"][0] + to_x - DESK[0], lo["xy"][1]]
+    f.write_text(json.dumps(j))
+
+
+def test_a_fit_through_the_wall_is_moved_back_in(tmp_path):
+    """#32: a bench fitted through the west wall stayed there, with nothing in the warnings."""
+    d = _scene(tmp_path)
+    _shift(d, 0.1)
+    r = service.place_from_photos(d, objects=["desk"])
+    p = r["placed"][0]
+    assert 0.1 < p["pushed_in_m"] <= service.PUSH_IN_M and p["position"][0] > 0.1
+    assert any("outside the room" in w and "desk" in w for w in r["warnings"])
+    assert "desk" in r["left"] and not [i for i in r["issues"] if "out_of_room" in str(i)]
+
+
+def test_a_fit_far_outside_is_skipped(tmp_path):
+    d = _scene(tmp_path)
+    _shift(d, -1.5)
+    r = service.place_from_photos(d, objects=["desk"])
+    assert not r["applied"] and "outside the room" in r["skipped"][0]["why"]
+    assert service.load(d).obj("desk").layout is not None  # left where it was
