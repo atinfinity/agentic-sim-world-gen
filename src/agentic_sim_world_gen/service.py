@@ -3414,6 +3414,31 @@ def make_variants(scene: str | Path, count: int = 4, seed: int = 0, vary: list[s
                          for r in rows], "warnings": warnings}
 
 
+PUSH_IN_M = 0.6  # a fitted footprint this far outside the room is moved back in; farther, the object is skipped
+PUSH_STEP_M = 0.02
+
+
+def _push_inside(geom, zone: str | None, center: tuple[float, float], wd: tuple[float, float],
+                 yaw_deg: float) -> tuple[tuple[float, float], float] | None:
+    """(center, how far it moved) with the footprint inside the room: the nearest shift up to PUSH_IN_M (#32).
+    None when no such shift does it."""
+    from agentic_sim_world_gen.layout.validate import footprint
+
+    if geom.inside(footprint(center, wd, yaw_deg), zone=zone):
+        return center, 0.0
+    n = round(PUSH_IN_M / PUSH_STEP_M)
+    shifts = sorted(((i * PUSH_STEP_M, j * PUSH_STEP_M) for i in range(-n, n + 1) for j in range(-n, n + 1)),
+                    key=lambda v: math.hypot(*v))
+    for dx, dy in shifts:
+        dist = math.hypot(dx, dy)
+        if dist > PUSH_IN_M:
+            break
+        c = (center[0] + dx, center[1] + dy)
+        if geom.inside(footprint(c, wd, yaw_deg), zone=zone):
+            return c, dist
+    return None
+
+
 def place_from_photos(scene: str | Path, objects: list[str] | None = None, apply: bool = True,
                       outlines: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     """Put furniture where the photos show it: each located object (photo_fit.json, fit_photos with
@@ -3429,6 +3454,8 @@ def place_from_photos(scene: str | Path, objects: list[str] | None = None, apply
     from agentic_sim_world_gen.layout.array import placed_size
     from agentic_sim_world_gen.layout.frame import front_local_deg, norm_deg
     from agentic_sim_world_gen.photo_fit import located_objects
+    from agentic_sim_world_gen.layout.room import RoomGeometry
+    from agentic_sim_world_gen.layout.validate import zone_of
     from agentic_sim_world_gen.photo_place import MISFIT_M, fit_pose
 
     s = load(scene)
@@ -3463,6 +3490,7 @@ def place_from_photos(scene: str | Path, objects: list[str] | None = None, apply
     outlined = {k[0] for k in drawn}
     want = list(objects) if objects else sorted(k for k in set(found) | outlined if k in ids)
     placed, skipped, warnings = [], [], []
+    geom = None
     for oid in want:
         if oid not in ids:
             skipped.append({"id": oid, "why": "no such object in the scene"})
@@ -3518,6 +3546,18 @@ def place_from_photos(scene: str | Path, objects: list[str] | None = None, apply
             else:
                 r = {**r, "center": fine["center"],
                      **({"facing_deg": fine["facing_deg"], "facing_from": "photos"} if fine["turned"] else {})}
+        # inside the room (#32): a loose fit can put a bench by the wall through it
+        geom = geom or RoomGeometry(s.spec.room)
+        pushed = _push_inside(geom, zone_of(s, o), tuple(r["center"]), (w, dd), r["facing_deg"] - front)
+        if pushed is None:
+            skipped.append({"id": oid, "why": f"fitted at ({r['center'][0]:.2f}, {r['center'][1]:.2f}), outside the "
+                            f"room by more than {PUSH_IN_M} m: the feet / outlines are on something else, or the "
+                            "room's walls are off"})
+            continue
+        if pushed[1] > 0:
+            warnings.append(f"{oid}: fitted at ({r['center'][0]:.2f}, {r['center'][1]:.2f}), partly outside the "
+                            f"room; moved {pushed[1]:.2f} m back in - check it against the photos (compare_photo)")
+            r = {**r, "center": list(pushed[0])}
         before = [round(x, 2) for x in o.position] if o.position is not None else None
         row = {"id": oid, "position": [round(x, 2) for x in r["center"]], "facing_deg": r["facing_deg"],
                "rms_m": r["rms_m"], "facing_from": r["facing_from"], "points": len(pts),
@@ -3525,7 +3565,8 @@ def place_from_photos(scene: str | Path, objects: list[str] | None = None, apply
                **({"px": fine["rms_px"], "px_was": fine["rms_px_was"], "outlines": fine["outlines"]} if fine else {}),
                "size_m": [round(size[0], 2), round(size[1], 2)],
                **({"moved_m": round(math.dist(before, r["center"]), 2)} if before else {}),
-               **({"ties": r["ties"]} if "ties" in r else {})}
+               **({"ties": r["ties"]} if "ties" in r else {}),
+               **({"pushed_in_m": round(pushed[1], 2)} if pushed[1] > 0 else {})}
         if r["rms_m"] > MISFIT_M:
             span = v.get("extent_m") or ([v["span_m"]] if "span_m" in v else None)
             warnings.append(f"{oid}: the feet are {r['rms_m']} m off the asset's {size[0]:.2f} x {size[1]:.2f} m "
@@ -3553,7 +3594,7 @@ def place_from_photos(scene: str | Path, objects: list[str] | None = None, apply
                       f"{len(pts)} 点、ずれ {r['rms_m']:.2f} m"
                       + (f"、写真上 {fine['rms_px']:.0f} px" + (f"・輪郭 {len(outs)}" if outs else "") if fine else "")
                       + "）")]
-    left = [p["id"] for p in placed if p.get("loose") or p["rms_m"] > MISFIT_M] + [k["id"] for k in skipped]
+    left = [p["id"] for p in placed if p.get("loose") or p.get("pushed_in_m") or p["rms_m"] > MISFIT_M] + [k["id"] for k in skipped]
     out: dict[str, Any] = {"ok": True, "placed": placed, **({"skipped": skipped} if skipped else {}),
                            **({"outlines_skipped": bad_outlines} if bad_outlines else {}),
                            **({"left": left} if left else {}),

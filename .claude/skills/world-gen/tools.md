@@ -602,8 +602,9 @@ issues, the Isaac Sim screenshot and licenses. Returns the URL; if no browser co
 
 Place each object located in photo_fit.json (locate with `object`) by fitting its selected asset's footprint
 to its 2+ feet (center and facing; edge front / back sets the front); with `outlines` it is then refined in the
-photos. Clears its layout, records assumption 位置. `left` = the objects still to look at (loose /
-skipped); the others need no compare-and-move. objects: only these; apply=false reports only.
+photos. Clears its layout, records assumption 位置. `left` = the objects still to look at (loose / pushed in /
+skipped); the others need no compare-and-move. objects: only these; apply=false reports only. A fit partly
+outside the room is moved back in (`pushed_in_m`, a warning); one more than 0.6 m out is skipped.
 
 outlines: [{object, photo, box: [u0, v0, u1, v1]}] - a rectangle drawn tightly around the whole object in a
 photo (pixels, origin top-left; a side at the image border = it runs out of the frame there). Give one for each
