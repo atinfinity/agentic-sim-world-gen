@@ -246,7 +246,8 @@ def apply_tint(stage: Usd.Stage, prim_paths: list[str], asset, o) -> list[dict[s
         else:
             names = sorted(n for n in found if any(fnmatchcase(n, pat) for pat in t.materials))
         if not names:
-            done.append({"color": t.color, "materials": t.materials, "error": "no material matched"})
+            why = "no material matched" if found else "the asset's materials could not be read (not opened here)"
+            done.append({"color": t.color, "materials": t.materials, "error": why})
             continue
         rgb = linear(t.color)
         inputs = 0

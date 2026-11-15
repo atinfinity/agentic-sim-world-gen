@@ -168,7 +168,8 @@ def test_texture_false_paints_flat(scene):
 
 def test_no_match_is_reported_and_none_goes_back(scene):
     service.set_tint(scene, "rack", {"color": "#000000", "materials": ["Nothing*"]})
-    service.compose_scene(scene)
+    r = service.compose_scene(scene)
+    assert any("no material matched" in w and "rack" in w for w in r["warnings"])  # #31: not only in customData
     stage = Usd.Stage.Open(str(scene / "scene.usda"))
     cd = stage.GetPrimAtPath("/World/Objects/rack").GetCustomDataByKey("agentic_sim_world_gen:tint")
     assert cd["#000000"]["error"] == "no material matched"
@@ -176,6 +177,47 @@ def test_no_match_is_reported_and_none_goes_back(scene):
     assert service.load(scene).obj("rack").tint == []
     hist = service.status(scene)
     assert hist["issues"] == [] and st["issues"] == []
+
+
+HF = "https://huggingface.co/datasets/nvidia/SimReady/resolve/" + "0" * 40 + "/rack/rack.usda"
+
+
+def _remote(scene):
+    """The rack's asset as a Hugging Face URL, the way SimReady Central assets are referenced. Returns its local file."""
+    s = service.load(scene)
+    p = next(p for p in s.placements if p.object_id == "rack")
+    local = p.asset.uri
+    p.candidates[p.selected]["uri"] = HF
+    s.save(scene / "scene.resolved.json")
+    return local
+
+
+def test_tint_fetches_a_remote_asset(scene, monkeypatch):
+    """#31: a tinted asset referenced by URL is fetched at compose (only that one), else the tint silently failed."""
+    from agentic_sim_world_gen.assets import localize
+
+    local = _remote(scene)
+    service.set_tint(scene, "rack", "#cc2222")
+    seen = {}
+
+    def fake(s, cache_dir=None, only=None):
+        seen["only"] = only
+        return {HF: local}
+
+    monkeypatch.setattr(localize, "localize", fake)
+    r = service.compose_scene(scene)
+    assert seen["only"] == {"rack"} and "warnings" not in r
+    stage = Usd.Stage.Open(str(scene / "scene.usda"))
+    assert _shader(stage, "/World/Objects/rack", "Tray0Mat", "Preview").GetInput("diffuseColor").Get() == linear("#cc2222")
+    del stage  # the layer stays open while a stage holds it
+
+    def no_hf(s, cache_dir=None, only=None):
+        raise ImportError("huggingface_hub")
+
+    monkeypatch.setattr(localize, "localize", no_hf)
+    r = service.compose_scene(scene)
+    assert any("huggingface_hub" in w for w in r["warnings"])
+    assert any("could not be read" in w for w in r["warnings"])
 
 
 def _stdsurf(textured: bool):
