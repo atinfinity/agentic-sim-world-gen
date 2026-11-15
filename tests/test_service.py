@@ -319,7 +319,7 @@ def test_decor_in_one_line():
 def test_reply_language(fake, tmp_path):
     """The user's language from what the agent wrote in their words, with a hint to answer in it."""
     d = tmp_path / "study"
-    st = service.create_scene(SPEC, d)
+    st = service.create_scene({**SPEC, "room": {**SPEC["room"], "name": "room"}}, d)
     assert "reply_language" not in st
     st = service.set_assumptions(d, [{"item": "size", "value": "6 畳", "given": True}])
     assert st["reply_language"] == "ja" and "日本語" in st["reply_language_hint"] and "圧縮" in st["reply_language_hint"]
@@ -334,7 +334,7 @@ def test_reply_language(fake, tmp_path):
 def test_check_results_carry_reply_language(fake, tmp_path):
     """Results without the scene status (check_in_isaac, view_fronts, ...) repeat the language too."""
     d = tmp_path / "study"
-    service.create_scene(SPEC, d)
+    service.create_scene({**SPEC, "room": {**SPEC["room"], "name": "room"}}, d)
     assert service.with_language(d, {"ok": True}) == {"ok": True}  # no language known yet
     service.set_assumptions(d, [{"item": "size", "value": "6 畳", "given": True}])
     r = service.with_language(d, {"ok": True, "verdict": "passed"})
@@ -483,3 +483,11 @@ def test_select_a_searched_asset(fake, tmp_path):
     assert p.candidates[p.selected]["uri"] == found[0]["uri"]
     with pytest.raises(KeyError, match="search_assets"):
         service.select_asset(st["scene_dir"], "bookshelf", uri="https://example.com/never_searched.usd")
+
+
+def test_reply_language_from_the_room_name(fake, tmp_path):
+    """#29: the room can be fitted before any furniture is placed, so its name tells the language."""
+    st = service.create_scene({**SPEC, "objects": []}, tmp_path / "coffee")  # the room is 書斎
+    assert st["reply_language"] == "ja"
+    st = service.create_scene({**SPEC, "objects": [], "room": {**SPEC["room"], "name": "room"}}, tmp_path / "plain")
+    assert "reply_language" not in st  # the default room name says nothing

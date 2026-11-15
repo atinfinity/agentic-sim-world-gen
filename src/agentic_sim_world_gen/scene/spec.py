@@ -1041,7 +1041,7 @@ class SceneSpec(BaseModel):
                            "narrow aisle, part touching jointed chairs, hang a footless TV on the wall behind its "
                            "stand (reported as auto_fixed). false: only report them as issues")
     lang: str | None = Field(default=None, description="the user's language ('ja', 'en'); unset: guessed from the "
-                             "labels, request items and assumptions written in the user's words")
+                             "labels, request items, assumptions and room / zone names written in the user's words")
 
     @classmethod
     def load(cls, path: str | Path) -> "SceneSpec":
