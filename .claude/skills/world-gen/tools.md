@@ -1704,7 +1704,7 @@ One thing the user asked for, matched against the result after generating.
 - `decor_skipped`?: [DecorSkip] — decor items Room.density left out, with the reason
 - `notes`?: [Note] — what the user wrote at spots on the preview
 - `auto_fix`?: bool — apply the fixes that need no judgement at every save: widen a narrow aisle, part touching jointed chairs, hang a footless TV on the wall behind its stand (reported as auto_fixed). false: only report them as issues
-- `lang`?: str — the user's language ('ja', 'en'); unset: guessed from the labels, request items and assumptions written in the user's words
+- `lang`?: str — the user's language ('ja', 'en'); unset: guessed from the labels, request items, assumptions and room / zone names written in the user's words
 
 ## Screen
 

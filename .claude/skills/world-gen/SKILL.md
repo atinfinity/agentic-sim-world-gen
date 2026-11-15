@@ -12,6 +12,8 @@ they want in detail up front, but they can say what is wrong with one they see.
 Talk to the user in their language (usually Japanese) in every message: progress notes, one-line notes between
 tool calls (「通りました。スクショを見ます。」, not "Passed. Let me look at the screenshot."), and after a context
 compaction (the summary is in English; your replies are not). Search queries are always English.
+Set `lang` ("ja", "en") in the spec at create_scene: it keeps the reply language known before any furniture or
+request is written (#29).
 
 ## Fewer turns
 

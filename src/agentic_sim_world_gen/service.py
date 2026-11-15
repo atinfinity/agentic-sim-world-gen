@@ -1891,10 +1891,14 @@ JA = re.compile(r"[\u3040-\u30ff\u4e00-\u9fff]")
 
 def scene_language(s: ResolvedScene) -> str | None:
     """The user's language: SceneSpec.lang, else Japanese when the labels, requests, assumptions or name
-    the agent wrote in the user's words have kana or kanji, else English once any of them is written."""
+    the agent wrote in the user's words have kana or kanji, else English once any of them is written.
+    The room's and the zones' names count too: the room can be fitted from photos or a plan before any
+    furniture is placed (#29)."""
     if s.spec.lang:
         return s.spec.lang
-    words = [s.spec.name, *(o.label or "" for o in s.spec.objects if not o.decor),
+    plan = s.spec.room.plan
+    words = [s.spec.name, s.spec.room.name, *(z.name or "" for z in (plan.zones if plan is not None else [])),
+             *(o.label or "" for o in s.spec.objects if not o.decor),
              *(r.text for r in s.spec.requirements), *(a.value for a in s.spec.assumptions if a.given)]
     if any(JA.search(w) for w in words):
         return "ja"
