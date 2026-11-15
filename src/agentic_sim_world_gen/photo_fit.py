@@ -189,6 +189,7 @@ SUSPECT_RMS_PX = 10.0  # above this rms the worst landmarks' objects are each fi
 SUSPECT_TRIES = 3  # ... the first few objects of the worst landmarks
 SUSPECT_GAIN = 0.75  # ... and one whose leaving out cuts the rms to this fraction is likely on something else
 SUSPECT_NEAR = 1.5  # ... when no other cuts it to within this factor (or 2 px) of the best
+MIN_OBS = 6  # a camera has 6 unknowns: fewer measurements leave it free (warned)
 PRIOR_PX = 10.0  # the priors above are written so that about 10 px is their 1-sigma (the depth scale's 15%)
 # What sets the room's scale, side by side. Each source's own error (share, about 1 sigma):
 CEILING_TYPICAL_M = (2.4, 2.7)  # wall heights of homes and offices: a fitted height outside says the scale is off
@@ -423,6 +424,11 @@ def _size_priors(req: FitRequest) -> list[tuple[str, float, float]]:
     return out
 
 
+def _n_obs(c: PhotoObs) -> int:
+    """A photo's measurements: 2 per point, 1 per line, 1 per surface pixel with a depth."""
+    return 2 * len(c.points) + len(c.lines) + sum(1 for o in c.surfaces if o.depth)
+
+
 def _ceiling_seen(req: FitRequest) -> bool:
     """Something at the ceiling height is seen: a ceiling corner or line, or a ceiling pixel with a depth."""
     return any(_sees(c, "ceiling") for c in req.photos.values())
@@ -519,10 +525,15 @@ class _Model:
     def _scale_seen(self) -> bool:
         """Whether a landmark of known height above the floor is seen: a ceiling corner or line, or a shared
         point with a fixed z > 0, or a depth (its scale per photo is loose, but not free). Without one, the photos
-        fit a room of any size."""
+        fit a room of any size. Only photos whose camera is held count: 6+ measurements, or a relative pose to
+        another photo. A photo with a ceiling corner and two lines (4) can sit anywhere, and took the scale from the
+        camera heights: the room came out 3x (#27)."""
         if _depth_seen(self.req):
             return True
-        for c in self.req.photos.values():
+        tied = {k for rp in self.req.relative for k in (rp.a, rp.b)}
+        for cid, c in self.req.photos.items():
+            if cid not in tied and _n_obs(c) < MIN_OBS:
+                continue
             if any(o.at.startswith("corner:") and o.at.endswith(":ceiling") for o in c.points):
                 return True
             if any(o.along.startswith("ceiling:") for o in c.lines):
@@ -1079,8 +1090,8 @@ def fit(req: FitRequest | dict, compare: bool = True) -> dict:
         if bare := sum(1 for o in c.surfaces if not o.depth):
             warnings.append(f"photo {cid}: {bare} surface pixels have no depth and were ignored "
                             "(give `depth`, or `image` with fit_photos(depth=true))")
-        nobs = 2 * len(c.points) + len(c.lines) + sum(1 for o in c.surfaces if o.depth)
-        if nobs < 6:
+        nobs = _n_obs(c)
+        if nobs < MIN_OBS:
             warnings.append(f"photo {cid}: only {nobs} measurements; a camera has 6 unknowns - add points / lines")
         if out := _beyond(pos, W, D):
             through, solid, floor_out = _sight(m, p, cid, out[0])
