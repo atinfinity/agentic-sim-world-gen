@@ -524,6 +524,7 @@ The worker closes the stage after each job and reloads the layers of that job's 
 - `view_fronts` (`front_views.py`): photographs each object from its assumed front. It opens a layer `front_views_stage.usda` with the other objects deactivated, so only the assets being photographed are loaded.
 - `compare_photo` (`render_view.py`): renders from the same viewpoint as a photo.
 - `nav_map(isaac=true)` (`nav_map.py`): makes a navigation map with Isaac Sim's Occupancy Map.
+- `front_views.py`, `render_view.py` and `render_path.py` do not shoot after a fixed number of frames. They shoot again every 20 frames and stop when two shots in a row look the same (`view.capture_settled`, at most 900 frames), so a model whose shaders are still compiling is not missing from the picture.
 
 Like check, all of these run with Isaac Sim's Python.
 

@@ -524,6 +524,7 @@ workerは仕事ごとにステージを閉じ、その仕事のフォルダの�
 - `view_fronts`（`front_views.py`）：各物を想定した正面から撮ります。撮らない物を非アクティブにしたレイヤー`front_views_stage.usda`を開くので、撮る物のアセットだけを読みます。
 - `compare_photo`（`render_view.py`）：写真と同じ視点で描きます。
 - `nav_map(isaac=true)`（`nav_map.py`）：Isaac SimのOccupancy Mapでナビ地図を作ります。
+- `front_views.py`・`render_view.py`・`render_path.py`は、決まったコマ数だけ待ってから撮るのではありません。20コマおきに撮り直し、2枚続けて同じ画になったら止めます（`view.capture_settled`、上限900コマ）。シェーダーのコンパイル中に撮って、モデルが抜けることを防ぎます。
 
 どれもcheckと同じく、Isaac SimのPythonで動かします。
 

@@ -59,7 +59,7 @@ app = SimulationApp({"headless": True, "width": W, "height": H})
 import omni.usd  # noqa: E402
 from omni.kit.viewport.utility import get_active_viewport  # noqa: E402
 from pxr import Gf, UsdGeom  # noqa: E402
-from view import capture, hide_guides, wait_frames  # noqa: E402
+from view import capture, capture_settled, hide_guides, wait_frames  # noqa: E402
 
 ctx = omni.usd.get_context()
 assert ctx.open_stage(args.usd), f"failed to open {args.usd}"
@@ -100,7 +100,8 @@ if fdir.exists():
     shutil.rmtree(fdir)
 fdir.mkdir(parents=True)
 place(frames[0])
-wait_frames(app, 120)  # textures stream in
+capture_settled(app, fdir / "settle.png", 120)  # textures stream in, shaders compile (#34)
+(fdir / "settle.png").unlink(missing_ok=True)
 for f in frames:
     place(f)
     wait_frames(app, args.settle)
