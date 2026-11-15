@@ -261,6 +261,7 @@ def room_sky(room) -> str | None:
     return sky_url(room.sky if room.sky is not None else LIGHTING[room.lighting].get("sky"))
 
 
+SITE_FIXTURES = "office"  # the ceiling lights of a room with a site whose preset has none (studio, daylight; #33)
 SITE_LIGHT = 0.5  # a room's site: its sky and sun at half the outdoor preset, else the sidewalk and road
 # burned out next to a room lit by its fixtures (Isaac Sim 6.1: paving 231 → 207, asphalt 143 → 95 of 255)
 
@@ -268,7 +269,8 @@ SITE_LIGHT = 0.5  # a room's site: its sky and sun at half the outdoor preset, e
 def build_lights(stage: Usd.Stage, room, root: str = "/World/Lights", base_dir: Path | None = None) -> list[str]:
     """Dome (with the sky image), sun and fixtures of the room's lighting preset. Returns the light prim paths.
     With Room.site the dome, sky and sun are the site's outdoor lighting at SITE_LIGHT (not scaled by the
-    room's lighting_scale, nor tinted by its light_kelvin) and the room keeps only its fixtures."""
+    room's lighting_scale, nor tinted by its light_kelvin) and the room keeps only its fixtures (SITE_FIXTURES
+    ceiling panels when its preset has none, #33)."""
     p = LIGHTING[room.lighting]
     k = room.lighting_scale
     prim = UsdGeom.Xform.Define(stage, root).GetPrim()
@@ -294,6 +296,11 @@ def build_lights(stage: Usd.Stage, room, root: str = "/World/Lights", base_dir: 
             UsdGeom.XformCommonAPI(sun).SetRotate(Gf.Vec3f(*sp.get("sun_angle", (45.0, 0.0, 30.0))))
             out.append(str(sun.GetPath()))
         p = {k2: v for k2, v in p.items() if k2 not in ("dome", "sun", "sky")}  # the room's fixtures only
+        if not p.get("fixture") and getattr(room, "fixtures", None) is None:
+            # studio / daylight have no fixtures: under a ceiling only the light through the windows was left and
+            # the room rendered black (#33); the office's ceiling panels light it
+            p = {k2: v for k2, v in LIGHTING[SITE_FIXTURES].items() if k2 not in ("dome", "sun", "sky", "note")}
+            prim.SetCustomDataByKey("agentic_sim_world_gen:fixtures_from", SITE_FIXTURES)
     if p.get("dome"):
         dome = UsdLux.DomeLight.Define(stage, f"{root}/Dome")
         if sky:

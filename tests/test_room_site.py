@@ -178,3 +178,21 @@ def test_compose(tmp_path):
     assert dome.GetIntensityAttr().Get() == pytest.approx(LIGHTING["sun"]["dome"] * SITE_LIGHT)
     fixtures = [p for p in stage.GetPrimAtPath("/World/Lights").GetChildren() if p.GetName() not in ("Dome", "Sun")]
     assert fixtures  # the room keeps its office lights
+
+
+@pytest.mark.parametrize("lighting", ["studio", "daylight"])
+def test_a_preset_without_fixtures_gets_ceiling_lights(tmp_path, lighting):
+    """#33: with a site the room drops its preset's dome and sun; studio / daylight had nothing else and the
+    room rendered black. The office's ceiling panels light it."""
+    pytest.importorskip("pxr")
+    from agentic_sim_world_gen.scene.looks import LIGHTING
+    from agentic_sim_world_gen.usd.compose import compose
+    from agentic_sim_world_gen.usd.look import SITE_FIXTURES
+
+    scene(tmp_path, [], ceiling=True, lighting=lighting)
+    stage = compose(service.load(tmp_path / "t"), tmp_path / "scene.usda")
+    lights = stage.GetPrimAtPath("/World/Lights")
+    fixtures = [p for p in lights.GetChildren() if p.GetName().startswith("Fixture_")]
+    assert fixtures and fixtures[0].GetTypeName() == "RectLight"
+    assert fixtures[0].GetAttribute("inputs:intensity").Get() == pytest.approx(LIGHTING[SITE_FIXTURES]["intensity"])
+    assert lights.GetCustomDataByKey("agentic_sim_world_gen:fixtures_from") == SITE_FIXTURES

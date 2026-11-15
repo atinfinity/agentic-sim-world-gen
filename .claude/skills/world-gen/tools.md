@@ -1806,7 +1806,7 @@ walls connect inside and outside.
 - `ground_margin`?: num — ground extends this far beyond the site [m]
 - `areas`?: [Area] — road / sidewalk / parking / grass ... (zones)
 - `buildings`?: [Building] — neighboring buildings (closed blocks)
-- `lighting`?: sun|overcast|dusk|street_night — the sky and sun outside (the room keeps its own lighting inside)
+- `lighting`?: sun|overcast|dusk|street_night — the sky and sun outside (the room keeps its own lighting inside: its preset's ceiling lights, or the office's panels when it has none - studio, daylight)
 - `sky`?: str — sky image (as Room.sky); default from the lighting
 
 ## Stairs
