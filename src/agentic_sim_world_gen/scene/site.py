@@ -192,7 +192,8 @@ class Site(BaseModel):
     areas: list[Area] = Field(default_factory=list, description="road / sidewalk / parking / grass ... (zones)")
     buildings: list[Building] = Field(default_factory=list, description="neighboring buildings (closed blocks)")
     lighting: Literal["sun", "overcast", "dusk", "street_night"] = Field(
-        default="sun", description="the sky and sun outside (the room keeps its own lighting inside)")
+        default="sun", description="the sky and sun outside (the room keeps its own lighting "
+        "inside: its preset's ceiling lights, or the office's panels when it has none - studio, daylight)")
     sky: str | None = Field(default=None, description="sky image (as Room.sky); default from the lighting")
 
     def bounds(self, footprint: tuple[float, float, float, float]) -> tuple[float, float, float, float]:
