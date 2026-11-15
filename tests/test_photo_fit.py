@@ -148,6 +148,31 @@ def test_scale_from_eye_height_without_ceiling():
     assert not any("eye_height" in w for w in service.fit_photos(_request())["warnings"])
 
 
+
+def test_a_photo_too_thin_to_hold_its_camera_does_not_set_the_scale(monkeypatch):
+    """#27: the only ceiling landmarks in a photo with 4 measurements (a corner and two lines, picked 120 px off)
+    took the scale from the camera heights, and the room came out 3x. That photo is now left out of the scale."""
+    eye = sum(p[2] for p, _, _ in CAMS.values()) / len(CAMS)
+    monkeypatch.setitem(CAMS, "c", ((1.2, 1.1, 1.7), (0.0, 0.0, 2.4), 70.0))
+    monkeypatch.setitem(FACING, "c", "southwest")
+    req = {**_no_ceiling(_request()), "eye_height": eye}
+    corner = (0.0, 0.0, H)
+    seen = [("point", "corner:sw:ceiling", corner), ("line", "ceiling:south", (0.6, 0.0, H)),
+            ("line", "ceiling:west", (0.0, 0.6, H))]
+    pts, lines = [], []
+    for kind, name, X in seen:
+        q = _proj("c", X)
+        assert q, name
+        q = [q[0] + 120, q[1] - 60]  # its pose is off (a wrong facing / turn)
+        (pts if kind == "point" else lines).append({"at" if kind == "point" else "along": name, "px": q})
+    req["photos"]["c"] = {"size": [1280, 960], "facing": "southwest", "points": pts, "lines": lines,
+                          "hfov_deg": 70.0}
+    assert not pf._Model(pf.FitRequest.model_validate(req)).scale_seen
+    r = service.fit_photos(req)
+    assert r["ok"] and abs(r["room"]["width"] - W) < 0.2 and abs(r["room"]["depth"] - D) < 0.2, r["room"]
+    tied = pf.FitRequest.model_validate({**req, "relative": [{**_relative("s", "ne"), "b": "c"}]})
+    assert pf._Model(tied).scale_seen  # tied to another photo by a relative pose: its ceiling counts
+
 def _axes(cid):
     """Camera axes (OpenCV: right, down, forward) in room coordinates: rows of room -> camera."""
     pos, la, _ = CAMS[cid]
