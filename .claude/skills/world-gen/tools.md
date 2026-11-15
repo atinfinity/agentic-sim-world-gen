@@ -147,7 +147,9 @@ together, about 3 rounds, then report what still differs.
 
 ## compose_scene
 
-Write scene.usda. Assets are referenced by URL; localize=True downloads them and references local copies.
+Write scene.usda. Assets are referenced by URL; localize=True downloads them and references local copies
+(a tinted asset is always fetched: its materials must be read to repaint them). `warnings`: tints that
+could not be painted (no material matched, asset not fetched) - fix the materials or say so in the report.
 With photos fitted (photo_fit.json in the scene) it stops while floor furniture is not placed by them
 (status photo_placement: misplaced, unlocated, one_point, located_unknown): locate 2-4 feet of each and
 fit_photos again. not_in_photos={id: why} only for an object no frame shows on the floor (kept; "" removes).

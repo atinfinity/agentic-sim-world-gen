@@ -157,6 +157,8 @@ def cmd_compose(a: argparse.Namespace) -> int:
     r = service.compose_scene(a.resolved, a.out, a.localize)
     if r["localized_assets"]:
         print(f"localized {r['localized_assets']} assets")
+    for w in r.get("warnings", []):
+        print(f"warning: {w}")
     print(f"usd: {r['usd']}")
     return 0
 

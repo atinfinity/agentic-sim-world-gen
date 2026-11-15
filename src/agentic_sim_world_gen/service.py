@@ -4550,6 +4550,18 @@ def _refs(o: ObjectSpec) -> set[str]:
     return out
 
 
+def _tint_warnings(stage) -> list[str]:
+    """The tints compose could not paint (customData agentic_sim_world_gen:tint with an error), as warnings (#31)."""
+    out = []
+    objs = stage.GetPrimAtPath("/World/Objects")
+    for p in objs.GetChildren() if objs else []:
+        for color, d in (p.GetCustomDataByKey("agentic_sim_world_gen:tint") or {}).items():
+            if err := d.get("error"):
+                pats = f" (materials {d['materials']})" if d.get("materials") else ""
+                out.append(f"tint {color} on {p.GetName()}{pats}: {err} - see describe_asset for the material names")
+    return out
+
+
 def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bool = False,
                   log: bool = True, not_in_photos: dict[str, str] | None = None) -> dict[str, Any]:
     """log=False: no history entry of its own (the preview page rewrites the USD after each edit) and no photo
@@ -4568,12 +4580,23 @@ def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bo
 
     # Isaac bundled assets follow ISAAC_ASSETS_ROOT at compose time too (local/Nucleus copy)
     uri_map = {a.uri: u for p in s.placements if (a := p.asset) and (u := rebase_uri(a))}
-    if localize:
-        from agentic_sim_world_gen.assets.localize import localize as _localize
+    warnings: list[str] = []
+    from agentic_sim_world_gen.assets.localize import localize as _localize, tinted_remote
 
+    if localize:
         uri_map.update(_localize(s))
+    elif tinted := tinted_remote(s):  # a tint needs the asset's materials: fetch those assets (#31)
+        try:
+            uri_map.update(_localize(s, only=tinted))
+        except ImportError:
+            warnings.append(f"tint on {', '.join(sorted(tinted))} not applied: the asset is a Hugging Face URL "
+                            "and huggingface_hub (extra `hf`) is not installed to fetch it")
+        except Exception as e:
+            warnings.append(f"tint on {', '.join(sorted(tinted))} not applied: could not fetch the asset "
+                            f"({type(e).__name__}: {str(e)[:200]})")
     out_path = Path(out) if out else path.parent / "scene.usda"
-    compose(s, out_path, uri_map=uri_map)
+    stage = compose(s, out_path, uri_map=uri_map)
+    warnings += _tint_warnings(stage)
     if out_path == path.parent / "scene.usda":
         from agentic_sim_world_gen.preview.page import mark
 
@@ -4584,6 +4607,8 @@ def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bo
         refresh(scene)  # the page shows the USD as up to date, the last step stays the edit
     st = status(path)
     res = {"usd": str(out_path), "localized_assets": len(uri_map), "issues": st["issues"]}
+    if warnings:
+        res["warnings"] = warnings
     if log and (h := st.get("photo_compare_hint")):
         res["next"] = h
     return res
