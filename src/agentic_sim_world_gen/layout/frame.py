@@ -2,9 +2,9 @@
 
 Front convention (checked in Isaac Sim 6.1 with 4-side renders of ~40 assets):
 an asset's front points to +X of its own Z-up frame. This holds for most SimReady, Isaac Props and
-third-party store assets; known exceptions are listed in KNOWN_FRONTS, a local folder can declare
-its own with agentic-sim-world-gen.json {"front": ...}, and ObjectSpec.front_offset_deg corrects a single object
-(e.g. 180 if it ends up backwards). Directions: 0 = +X, 90 = +Y, 180 = -X, 270 = -Y.
+third-party store assets; known exceptions are listed in KNOWN_FRONTS, ForgeCAD's assets face -Y, a local
+folder can declare its own with agentic-sim-world-gen.json {"front": ...}, and ObjectSpec.front_offset_deg corrects
+a single object (e.g. 180 if it ends up backwards). Directions: 0 = +X, 90 = +Y, 180 = -X, 270 = -Y.
 """
 
 from __future__ import annotations
@@ -34,6 +34,14 @@ KNOWN_FRONTS: dict[str, float] = {
 KNOWN_FRONT_PATTERNS: list[tuple[str, float]] = [
     (r"sm_rack_", 270.0),
 ]
+# ForgeCAD's SimReady assets (huggingface.co/datasets/ForgeCAD/simready-assets) face -Y: a dining chair's and an
+# office chair's backrest, a toilet's tank are at +Y and a kitchen base cabinet's countertop overhangs at -Y
+# (a classroom's dining chairs stood turned 90 degrees from their tables).
+FORGECAD_FRONT_DEG = 270.0
+
+
+def _forgecad(a: AssetRecord) -> bool:
+    return (a.author or "").strip().lower() == "forgecad" or "/forgecad/" in a.uri.lower()
 
 
 def _stem(uri: str) -> str:
@@ -54,6 +62,8 @@ def asset_front_deg(a: AssetRecord) -> float:
             return deg
     if (card := cards.of(a)) and card.get("front_deg") is not None:  # found by a look at the asset
         return float(card["front_deg"])
+    if _forgecad(a):
+        return FORGECAD_FRONT_DEG
     return DEFAULT_FRONT_DEG
 
 
