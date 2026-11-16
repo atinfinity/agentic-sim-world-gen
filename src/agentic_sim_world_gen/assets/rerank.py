@@ -18,7 +18,7 @@ WEAK = 1.0  # below this the head noun of no query was found in class/tags/capti
 # score of the best way a query names the asset, plus `modifier` per modifier word found, times `synonym` for
 # alt_queries. scripts/search_eval/choices.py --grid tries other values against the logged choices.
 WEIGHTS = {"phrase": 3.0, "compound": 2.75, "class": 2.5, "other_kind": 0.9, "tag": 1.5, "caption": 1.0,
-           "name": 0.5, "modifier": 0.25, "synonym": 0.9}
+           "name": 0.5, "modifier": 0.25, "shape": 0.5, "synonym": 0.9}
 
 
 def _sing(w: str) -> str:
@@ -107,6 +107,44 @@ _LOOKS = frozenset("""metal metallic steel stainless iron aluminum aluminium chr
     white black gray grey silver gold red blue green yellow orange pink purple brown beige cream ivory""".split())
 
 
+# the shape or build of a thing: "oval table" asks for a table, so a round table is one and a rectangular
+# desk is a worse stand-in. Each word asked for is matched by its group and counts against the opposite group.
+_SHAPE_GROUPS = {
+    "round": frozenset({"round", "circular", "oval", "elliptical", "ellipse", "ovoid"}),
+    "angular": frozenset({"rectangular", "rectangle", "square", "oblong", "boxy"}),
+    "soft": frozenset({"upholstered", "upholstery", "padded", "cushioned", "tufted", "fabric", "velvet", "plush",
+                       "leather"}),
+    "glazed": frozenset({"glass", "glazed", "glazing", "vitrine"}),
+}
+_SHAPE_OPPOSITE = {"round": "angular", "angular": "round"}
+_SHAPE_OF = {w: g for g, ws in _SHAPE_GROUPS.items() for w in ws}
+_SHAPES = frozenset(_SHAPE_OF)
+_NOT_KIND = _LOOKS | _SHAPES  # words that say how a thing looks, not what kind it is
+
+
+def _shape_score(mods: list[str], everything: set[str], whole: set[str]) -> tuple[float, list[str]]:
+    """Plus WEIGHTS["shape"] per shape word asked for that the asset has (or a word of its group), minus as much
+    when it names the opposite shape instead (a rectangular desk for an "oval table"), minus WEIGHTS["modifier"]
+    when it says neither, or both. A round / angular shape is the whole thing's: `whole` leaves out the caption
+    after its noun ("a rectangular table with round legs" is no round table); fabric or glass may be a part."""
+    s, why = 0.0, []
+    for g in dict.fromkeys(_SHAPE_OF[m] for m in mods if m in _SHAPE_OF):
+        asked = next(m for m in mods if _SHAPE_OF.get(m) == g)
+        opp = _SHAPE_OPPOSITE.get(g)
+        has = whole if opp else everything
+        said = sorted(_SHAPE_GROUPS[opp] & has) if opp else []
+        if _SHAPE_GROUPS[g] & has and not said:
+            s += WEIGHTS["shape"]
+            why.append(f"shape '{asked}'")
+        elif said and not _SHAPE_GROUPS[g] & has:
+            s -= WEIGHTS["shape"]
+            why.append(f"shape: {said[0]}, not {asked}")
+        else:  # nothing says which shape it is: a little below one that says the shape asked for
+            s -= WEIGHTS["modifier"]
+            why.append(f"shape '{asked}' not found")
+    return s, why
+
+
 def _other_kind(seq: list[str], head: str, mods: list[str]) -> bool:
     """`seq` names `head` with modifiers of its own, none of which the query has: for "dining table",
     "coffee table" is another kind of table, while plain "table" or "dining table" is not."""
@@ -118,7 +156,8 @@ def _other_kind(seq: list[str], head: str, mods: list[str]) -> bool:
         if own[j] in _AFTER_NOUN:
             own = own[j + 1 :]
             break
-    own = [w for w in own if w not in _LOOKS and not _measure(w)]  # a "wooden pallet" is no other kind of pallet
+    # a "wooden pallet" is no other kind of pallet, a "round table" no other kind of table
+    own = [w for w in own if w not in _NOT_KIND and not _measure(w)]
     return bool(own) and not set(own) & set(mods)
 
 
@@ -164,6 +203,7 @@ def score(rec: AssetRecord, query: str, alt_queries: list[str] | None = None) ->
     everything = set(cls) | set(cap) | set(name) | {w for t in tags for w in t}
     card = cards.of(rec) or {}
     everything |= {w for t in [*(card.get("colors") or []), *(card.get("materials") or [])] for w in words(t)}
+    whole = everything - set(cap) | set(_lead(cap))  # the caption's own noun phrase, not its parts
     # what a look at the asset said it is: its names, each with the noun last
     known = [noun_last(words(t), join=True) for t in [card.get("kind"), *(card.get("also") or [])] if t]
     known = [k for k in known if k]
@@ -173,7 +213,7 @@ def score(rec: AssetRecord, query: str, alt_queries: list[str] | None = None) ->
     # every modifier of the query and its synonyms: "floor lamp" / "standing lamp" both make a tag
     # "standing lamp" the same kind, while "table lamp" stays another kind
     all_mods = {w for t in [query, *(alt_queries or [])] for w in noun_last(words(t), join=True)[:-1]
-                if not _measure(w) and w not in _LOOKS}
+                if not _measure(w) and w not in _NOT_KIND}
     # heads asked for with modifiers: a bare synonym "lamp" next to "floor lamp" would let any lamp, bulb or
     # lantern in as a good match and hide that no floor lamp was found
     specific = {tw[-1] for tw in (noun_last(words(t), join=True) for t in [query, *(alt_queries or [])])
@@ -186,7 +226,7 @@ def score(rec: AssetRecord, query: str, alt_queries: list[str] | None = None) ->
         if not mods and head in specific:
             continue
         # "floor" in "floor lamp"; not "3seat" in "sofa 3 seat" nor "metal" in "metal locker"
-        kinds_asked = [m for m in mods if not _measure(m) and m not in _LOOKS]
+        kinds_asked = [m for m in mods if not _measure(m) and m not in _NOT_KIND]
         # The head noun must name the thing: class "desk lamp" or tag "desk chair" is not a desk.
         if len(tw) > 1 and (_names(cls, tw) or any(_names(t, tw) for t in tags)):
             s, why = W["phrase"], f"'{term}' in class/tags"
@@ -215,25 +255,33 @@ def score(rec: AssetRecord, query: str, alt_queries: list[str] | None = None) ->
             s, why = W["name"], f"'{head}' only in name or as a modifier"
         else:
             s, why = 0.0, ""
+        shape, shape_why = _shape_score(mods, everything, whole)
+        plain = [m for m in mods if m not in _SHAPES]
+        syn = W["synonym"] if i > 0 else 1.0  # synonyms count slightly less than the main query
+        used = s not in (0.0, W["other_kind"])
         if s != W["other_kind"]:  # another kind stays a substitute, whatever modifier words it also has
-            s += W["modifier"] * sum(m in everything for m in mods)
-        if i > 0:
-            s *= W["synonym"]  # synonyms count slightly less than the main query
+            s += W["modifier"] * sum(m in everything for m in plain)
+        s *= syn
+        if used:  # the shape ranks matches; it never makes one weak (a table of another shape is still a table)
+            s = max(s + shape * syn, WEAK) if s >= WEAK else s + shape * syn
         if known:  # the card wins over class, tags and caption, in both directions
             same = next((k for k in known if k[-1] == head), None)
             if same is None:
                 if s >= WEAK:  # labelled as the thing asked for, but the look says it is something else
-                    s, why = W["other_kind"], f"card: it is a {card['kind']}"
+                    s, why, used = W["other_kind"], f"card: it is a {card['kind']}", False
             elif kinds_asked and _other_kind(same, head, kinds_asked) and not any(_names(k, tw) for k in known):
                 if s >= WEAK:
-                    s, why = W["other_kind"], f"card: a {' '.join(same)}, another kind of {head}"
+                    s, why, used = W["other_kind"], f"card: a {' '.join(same)}, another kind of {head}", False
             else:  # the look says it is one: as good as a class that names it
                 s2 = W["phrase"] if len(tw) > 1 and any(_names(k, tw) for k in known) else W["class"]
-                s2 = (s2 + W["modifier"] * sum(m in everything for m in mods)) * (W["synonym"] if i > 0 else 1)
+                s2 = (s2 + W["modifier"] * sum(m in everything for m in plain)) * syn
+                s2 = max(s2 + shape * syn, WEAK)
                 if s2 > s:
-                    s, why = s2, f"card: a {' '.join(same)}"
+                    s, why, used = s2, f"card: a {' '.join(same)}", True
+                elif s == W["other_kind"]:
+                    used = False
         if s > best.score:
-            best = Match(round(s, 3), [why] if why else [])
+            best = Match(round(s, 3), ([why] + (shape_why if used else [])) if why else [])
     return best
 
 
