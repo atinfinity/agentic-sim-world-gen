@@ -107,7 +107,16 @@ TUNING: list[tuple[str, str, dict[str, Any]]] = [
     # 45-degree patterns: strips 4.4 cm wide at texture_scale 1 (the others 6.25 cm); 1.6 -> 7 cm wide
     # (herringbone / chevron strips 1.1 m long: the texture's strips are 16:1)
     (_WOOD_TILES, r"_(Herringbone|Chevron|Diagonal)$", {"texture_scale": [1.6, 1.6]}),
+    # "Painted White" brick is painted mid gray (paint_color 0.53 linear): a white painted block wall rendered
+    # beige-gray next to a white tile floor. 0.8 is white wall paint; the brick shape stays.
+    (r"/vMaterials_2/Masonry/Facade_Brick_Red_Clinker\.mdl$", r"_Painted_White$", {"paint_color": [0.8, 0.8, 0.8]}),
+    # white painted steel is 0.60 (light gray) for the same reason. Metal_Cast_Painted_White (metal_tint 0.69)
+    # is white enough.
+    (r"/vMaterials_2/Metal/Steel_Painted\.mdl$", r"_Painted_White$", {"paint_color": [0.8, 0.8, 0.8]}),
 ]
+# The index color (a thumbnail's mean) of a tuned look, scaled by the same paint ratio (0.8 / 0.53, 0.8 / 0.60):
+# search scores, candidates and the 2D preview show the color it renders with.
+TUNED_COLOR = {"Facade_Brick_Red_Clinker_Painted_White": "#bcbbbc", "Steel_Painted_White": "#bebcbe"}
 
 
 def tuning(mdl: str | None, name: str | None = None) -> dict[str, Any]:
@@ -130,7 +139,11 @@ def index_path(version: str = DEFAULT_VERSION) -> Path:
 @lru_cache(maxsize=4)
 def _load(path: str) -> tuple[dict[str, Any], ...]:
     with gzip.open(path, "rt", encoding="utf-8") as f:
-        return tuple(json.loads(line) for line in f if line.strip())
+        rows = tuple(json.loads(line) for line in f if line.strip())
+    for r in rows:
+        if r.get("name") in TUNED_COLOR:
+            r["color"] = TUNED_COLOR[r["name"]]
+    return rows
 
 
 def records(path: str | Path | None = None) -> tuple[dict[str, Any], ...]:
