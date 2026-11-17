@@ -42,7 +42,8 @@ tool).
    that will be shared. A sidecar `<stem>.source.json` next to the file fills url/title/author/license
    (see `examples/photos/`); then `inputs: [{"id": "photo", "path": "<file>"}]` is enough.
 2. **Look at it** with Read. List what is visible, left to right, near to far: walls, windows/doors,
-   furniture, large props. Skip small clutter (cushions, candles, cables) unless asked.
+   furniture, large props, and the **wall, floor, window and ceiling things** (see the last point of this
+   step). Skip small clutter (cushions, candles, cables, magazines) unless asked.
    - **First the rooms and floor levels.** Is it one room, or a front room opening onto another (an arch, a
      wide opening)? Is part of the floor higher (a step up into the back, a小上がり, a stage), or are there
      stairs? Count the risers you see (one riser ≈ 0.15-0.18 m) and give them as `levels` / `stairs` (see
@@ -56,6 +57,26 @@ tool).
      panels, a wainscot) is part of the room's look, not clutter. Give the walls separately in `create_scene`
      (`walls={"*": "paint_white", "N": {"preset": "paint_white", "color": [r, g, b]}}`, or words searched per
      wall) instead of making every wall the same.
+   - **The wall, floor, window and ceiling things** are easy to miss because they are neither furniture nor
+     clutter (a living room trial kept only its 9 pieces of furniture). List them too:
+     - on the walls: pictures, a clock, a mirror, wall shelves, a TV on the wall, a whiteboard / chalkboard;
+     - on the floor: rugs and mats (a large patch of another color in front of a sofa or under a table);
+     - at the windows: curtains or blinds (they also hide the gray void behind a window);
+     - on the ceiling: light fixtures, a fan; and plants on a windowsill or a shelf.
+
+     How to place them:
+     - a picture / clock / mirror: `layout: {against_wall: "<wall>", along: 0..1, wall_height: <m to its bottom>}`
+       ([interior.md](interior.md) "Ceiling lights, beams and posters"); a chalkboard / whiteboard the same way,
+       with query "chalkboard" / "whiteboard";
+     - a rug: an object with query "rug" on the floor (`position` or `in_front_of` the sofa, its size as
+       `min_size`, its color as `tint`). If no rug asset fits (the default sources have few floor rugs), leave it
+       out and name it in the report; an asset folder of your own (`local:<dir>`) can add them;
+     - curtains / blinds: `fill_windows(covers="curtain" | "blind")` puts one over every window; a window with no
+       fitting curtain asset is listed in `not_found`: name it in the report;
+     - ceiling lights: an office, classroom or shop with a ceiling gets its place's fixtures by default (interior.md
+       "Ceiling lights, beams and posters"); change the kind with `set_room(fixtures=...)` to match the photo.
+       Place lights as objects (`layout: {ceiling: true}`) only for ones the fixtures do not cover (a pendant over
+       a dining table, a fan).
 3. **Orient the room.** The camera stands near the **south** wall looking **north**: the far wall is
    north (y = depth), the left wall west (x = 0), the right wall east (x = width). Things behind the camera
    are unknown: leave that part of the room empty or make a sensible guess, and say so.
