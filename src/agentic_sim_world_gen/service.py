@@ -4850,14 +4850,17 @@ _OTHER_KIND = re.compile(r"display|monitor|television|\btv\b|computer|projector|
                          r"painting|mirror|fence|vehicle|\bcar\b|truck|signage")
 
 
-def remove_object(scene: str | Path, object_id: str | list[str]) -> dict[str, Any]:
-    """Remove one object or several (a list, one save). Decor resting on / beside a removed object goes too."""
+def remove_object(scene: str | Path, object_id: str | list[str], no_asset: bool = False) -> dict[str, Any]:
+    """Remove one object or several (a list, one save). Decor resting on / beside a removed object goes too.
+    no_asset=True: taken out because the sources have nothing fitting (the user chose やめる): the objects stay
+    in the record of missing assets (`removed`) instead of dropping out with them."""
     s = load(scene)
     ids = [object_id] if isinstance(object_id, str) else list(dict.fromkeys(object_id))
     if not ids:
         raise ValueError("no objects to remove")
     for i in ids:
         _placement(s, i)
+    gone_rows = [_missing_row(s, i, "removed") for i in ids] if no_asset else []
     gone = set(ids)
     while True:  # decor resting on / beside a removed object goes with it
         more = {o.id for o in s.spec.objects if o.decor and o.id not in gone and gone & _refs(o)}
@@ -4869,7 +4872,57 @@ def remove_object(scene: str | Path, object_id: str | list[str]) -> dict[str, An
     what = ids[0] if len(ids) == 1 else f"{len(ids)} 点（{'、'.join(ids[:5])}{' ほか' if len(ids) > 5 else ''}）"
     st = _save(s, _resolved_path(scene).parent, f"{what} を削除{extra}")
     st["removed"] = sorted(gone)
+    if gone_rows and missing.add(_resolved_path(scene).parent, s, gone_rows):
+        st["missing_recorded"] = [r["query"] for r in gone_rows]
     return st
+
+
+def _missing_row(s: ResolvedScene, object_id: str, why: str) -> dict[str, Any]:
+    o = s.obj(object_id)
+    p = next((p for p in s.placements if p.object_id == object_id), None)
+    row: dict[str, Any] = {"why": why, "query": o.query, "id": o.id}
+    if o.alt_queries:
+        row["alt"] = list(o.alt_queries)
+    if o.label:
+        row["label"] = o.label
+    if p is not None and p.asset is not None:
+        row["used"] = p.asset.name
+    return row
+
+
+def note_missing(scene: str | Path, query: str, note: str | None = None, object_id: str | None = None,
+                 alt_queries: list[str] | None = None) -> dict[str, Any]:
+    """Record an asset the sources lacked that no other record keeps: the object is placed with an asset
+    of the right kind but the wrong color / shape / size (「オレンジの椅子が無く灰色」), or it was never added.
+    query: what would have fit, in English ("orange office chair"); note: why, in a few words."""
+    s = load(scene)
+    if object_id is not None:
+        row = _missing_row(s, object_id, "noted")
+        row["query"] = query
+    else:
+        row = {"why": "noted", "query": query}
+    if alt_queries:
+        row["alt"] = list(alt_queries)
+    if note:
+        row["note"] = note
+    if not query.strip():
+        raise ValueError("query is empty")
+    ok = missing.add(_resolved_path(scene).parent, s, [row])
+    return {"recorded": row if ok else None,
+            "hint": None if ok else "not recorded: AGENTIC_SIM_WORLD_GEN_MISSING=0 or the cache folder is not writable"}
+
+
+def recheck_missing() -> dict[str, Any]:
+    """Search every query in the record of missing assets again with the sources of now; a query with a good
+    (not weak) match moves to `found` in `agentic-sim-world-gen missing`. Run it after assets were added to a source."""
+    def find(query: str, alts: list[str]) -> dict[str, Any] | None:
+        o = ObjectSpec(id="q", query=query, alt_queries=alts)
+        for c in _find_candidates(o, 8):
+            if not (c.get("match") or {}).get("weak") and c.get("source") != "generic":
+                return c
+        return None
+
+    return {**missing.recheck(find), "sources": getattr(get_provider(), "name", None)}
 
 
 def duplicate_object(scene: str | Path, object_id: str) -> dict[str, Any]:

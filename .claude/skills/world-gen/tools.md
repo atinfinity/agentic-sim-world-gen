@@ -601,6 +601,19 @@ compare.png). Use the robot's own size when the user names one.
 - `start`?: [num,num]
 - `isaac`?: bool
 
+## note_missing
+
+Record an asset that would have fit but no source has, when nothing else records it: the placed asset is the
+right kind in the wrong color / shape / size (query "orange office chair", note "only grey ones"; object_id
+of the placed one), or a thing you left out without adding it. Substitutes and objects removed with
+no_asset=true are recorded already. query in English; note: why, in a few words.
+
+- `scene_dir`: str
+- `query`: str
+- `note`?: str
+- `object_id`?: str
+- `alt_queries`?: [str]
+
 ## open_preview
 
 Open the scene's live preview page in the user's browser (served on local HTTP; it reloads
@@ -735,9 +748,12 @@ side on the preview (「配置案」). Ask the user which one, then choose_layou
 ## remove_object
 
 Remove an object, or several with a list of ids (one save). Decor on / beside it goes too.
+no_asset=true when it goes because no source has a fitting asset (the user chose やめる for a substitute):
+it stays in the record of missing assets that decides which assets to add.
 
 - `scene_dir`: str
 - `object_id`: str|[str]
+- `no_asset`?: bool
 
 ## research_object
 

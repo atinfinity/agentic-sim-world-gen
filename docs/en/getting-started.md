@@ -224,7 +224,8 @@ Besides text, you can build from floor plans, photos and videos.
 |---|---|---|
 | Repeated placement | `agentic-sim-world-gen resolve examples/warehouse_racks.json -o out/racks` (rows of racks + aisles) | [Layout](architecture.md#4-layout) (`set_array`) |
 | Outdoor | `agentic-sim-world-gen resolve examples/outdoor_yard.json -o out/yard` (road, sidewalk, buildings, sky) | [Data](architecture.md#2-data) |
-| See missing assets, most frequent first | `agentic-sim-world-gen missing` (substitutions, objects with no candidates and skipped small items across all scenes made on this machine) | [Asset search](architecture.md#3-asset-search) |
+| See missing assets, most frequent first | `agentic-sim-world-gen missing` (substitutions, objects with no candidates, skipped small items, objects removed for want of an asset and assets only reported, across all scenes made on this machine) | [Asset search](architecture.md#3-asset-search) |
+| Search the missing ones again after adding assets | `agentic-sim-world-gen missing --recheck` (searches every query with the sources of now and moves what it finds to a separate list) | [Asset search](architecture.md#3-asset-search) |
 | Your own USD folder | `AGENTIC_SIM_WORLD_GEN_SOURCES=+local:/data/usd`; list its contents with `agentic-sim-world-gen index /data/usd --list` | [Asset search](architecture.md#3-asset-search) |
 | Floor, walls, lighting | `room.floor: "wood_light"`, `room.lighting: "office"`, etc. (plain words such as "wood flooring, night lighting" work too) | [Composing the USD](architecture.md#6-composing-the-usd) |
 | Synthetic data | `agentic-sim-world-gen sdg out/study --frames 24 --coco` → RGB, bbox, segmentation, depth | [The Isaac Sim side](architecture.md#7-the-isaac-sim-side) |

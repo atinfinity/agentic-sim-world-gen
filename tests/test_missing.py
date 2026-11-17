@@ -87,3 +87,56 @@ def test_off_and_unwritable(fake, tmp_path, monkeypatch):
     (tmp_path / "file").write_text("")
     monkeypatch.setenv("AGENTIC_SIM_WORLD_GEN_CACHE", str(tmp_path / "file"))  # cannot make a folder there: the save still works
     assert service.move_object(tmp_path / "a", "desk", position=(1.1, 2.3))["objects"]
+
+
+def test_removed_for_want_of_an_asset_and_noted_stay(fake, tmp_path):
+    """An object taken out because nothing fits, and an asset only reported, stay in the record."""
+    lamp = {"id": "lamp", "query": "floor lamp", "alt_queries": ["standing lamp"], "position": [2.5, 0.5]}
+    d = tmp_path / "a"
+    service.create_scene(_spec(lamp), d)
+    st = service.remove_object(d, "lamp", no_asset=True)
+    assert st["missing_recorded"] == ["floor lamp"]
+    r = service.note_missing(d, "orange office chair", note="only grey ones", object_id="desk")
+    assert r["recorded"]["why"] == "noted"
+    service.move_object(d, "desk", position=(1.1, 2.3))  # later saves keep both
+    rows = {r["query"]: r for r in missing.summary()["rows"]}
+    assert rows["floor lamp"]["by"] == {"removed": 1} and rows["floor lamp"]["used"] == ["uv_robot"]
+    assert rows["orange office chair"]["by"] == {"noted": 1} and rows["orange office chair"]["notes"] == ["only grey ones"]
+    assert "無いので外した 1" in missing.text(missing.summary()) and "メモ：only grey ones" in missing.text(missing.summary())
+    data = json.loads(next(missing.folder().glob("*.json")).read_text())
+    assert next(r for r in data["rows"] if r["why"] == "removed")["alt"] == ["standing lamp"]
+
+    service.add_object(d, {**lamp, "id": "lamp"})  # put back under the same id: no longer removed
+    assert missing.summary()["rows"][0]["by"].get("removed") is None
+
+
+def test_recheck_moves_what_was_added_since(fake, tmp_path, monkeypatch, capsys):
+    """After assets were added to a source, recheck finds them and the summary moves them to `found`."""
+    service.create_scene(_spec({"id": "lamp", "query": "floor lamp", "position": [2.5, 0.5]},
+                               {"id": "hammock", "query": "hammock", "position": [1.8, 1.0]}), tmp_path / "a")
+    assert cli.main(["missing"]) == 0
+    assert "--recheck" in capsys.readouterr().out
+    monkeypatch.setitem(CATALOG, "floor lamp", [rec("floor_lamp_a", 0.4, 0.4, 1.6, "A floor lamp")])  # added
+    r = service.recheck_missing()
+    assert r["checked"] == 2 and [f["query"] for f in r["found"]] == ["floor lamp"] and r["still_missing"] == 1
+    s = missing.summary()
+    assert [x["query"] for x in s["rows"]] == ["hammock"] and "checked" in s["rows"][0]
+    assert s["found"][0]["found"]["asset"] == "floor_lamp_a"
+    assert cli.main(["missing"]) == 0
+    out = capsys.readouterr().out
+    assert "探し直して見つかった：1 種" in out and "floor lamp → floor_lamp_a" in out
+
+    service.create_scene(_spec({"id": "lamp", "query": "floor lamp", "position": [2.5, 0.5]}), tmp_path / "b")
+    # b got the new lamp: it is not missing there, and the query stays found
+    assert [x["query"] for x in missing.summary()["found"]] == ["floor lamp"]
+
+
+def test_missed_again_after_the_recheck_stays(fake, tmp_path):
+    """A scene that still lacked the asset after the recheck found it keeps the query in the main list."""
+    service.create_scene(_spec({"id": "lamp", "query": "floor lamp", "position": [2.5, 0.5]}), tmp_path / "a")
+    missing.recheck(lambda q, alts: {"name": "floor_lamp_a", "source": "local:x"})
+    f = next(missing.folder().glob("*.json"))
+    data = json.loads(f.read_text())
+    f.write_text(json.dumps({**data, "updated": "2999-01-01T00:00:00"}))
+    (row,) = missing.summary()["rows"]
+    assert row["found"]["asset"] == "floor_lamp_a" and "その後も足りなかった" in missing.text(missing.summary())

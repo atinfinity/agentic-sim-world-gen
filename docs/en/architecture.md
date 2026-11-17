@@ -290,6 +290,7 @@ flowchart TD
 5. **When nothing is found**: when everything is a substitute, the kind table (`assets/kinds.py`, MCP `kind_availability`) tells whether that kind exists in no source (`not_in_catalog`), so the search is not retried.
    When all are weak and a size was given, the strong matches dropped by size are listed in `Placement.size_misses` (a hint for widening the size).
    Missing objects are recorded per scene in `AGENTIC_SIM_WORLD_GEN_CACHE/missing/` on every save (`missing.py`). `agentic-sim-world-gen missing` lists them, most frequent first.
+   Objects removed for want of an asset (`remove_object(no_asset=true)`) and assets only reported (`note_missing`) stay too. After adding assets, `agentic-sim-world-gen missing --recheck` searches again and moves what it finds to a separate list (`missing-found.json`).
 6. **Final call**: Claude decides with `view_candidates` (returns thumbnail images). Metadata alone does not tell color, material or shape.
 
 Related files

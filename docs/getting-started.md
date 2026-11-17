@@ -240,7 +240,8 @@ AGENTIC_SIM_WORLD_GEN_DEPTH_DOWNLOAD=1 agentic-sim-world-gen fit-photos req.json
 | 手持ちのUSDフォルダ | `AGENTIC_SIM_WORLD_GEN_SOURCES=+local:/data/usd`、中身の確認は`agentic-sim-world-gen index /data/usd --list` | README「手持ちのUSDフォルダ」 |
 | 床・壁・照明 | `room.floor: "wood_light"`、`room.lighting: "office"`など（「床はフローリング、照明は夜」のように言葉でも可） | [USDの合成](architecture.md#6-usdの合成) |
 | 合成データ | `agentic-sim-world-gen sdg out/study --frames 24 --coco` → RGB・bbox・セグメンテーション・深度 | [Isaac Sim側](architecture.md#7-isaac-sim側) |
-| 足りなかったアセットを多い順に見る | `agentic-sim-world-gen missing`（この機械で作った全シーンの、代用した物・候補が無かった物・見送った小物） | [アセット検索](architecture.md#3-アセット検索) |
+| 足りなかったアセットを多い順に見る | `agentic-sim-world-gen missing`（この機械で作った全シーンの、代用した物・候補が無かった物・見送った小物・無いので外した物・報告だけの物） | [アセット検索](architecture.md#3-アセット検索) |
+| アセットを足した後に、足りなかった物を探し直す | `agentic-sim-world-gen missing --recheck`（今のアセット源で全部の検索語を探し直し、見つかった物を別の欄に移す） | [アセット検索](architecture.md#3-アセット検索) |
 
 ## 7. 出力
 

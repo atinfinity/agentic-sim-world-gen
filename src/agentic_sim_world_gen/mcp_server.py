@@ -852,9 +852,22 @@ def add_objects(scene_dir: str, objs: list[ObjectSpec], candidates: int = 6) -> 
 
 
 @mcp.tool()
-def remove_object(scene_dir: str, object_id: str | list[str]) -> dict[str, Any]:
-    """Remove an object, or several with a list of ids (one save). Decor on / beside it goes too."""
-    return service.reply(service.remove_object(scene_dir, object_id), object_id if isinstance(object_id, str) else None)
+def remove_object(scene_dir: str, object_id: str | list[str], no_asset: bool = False) -> dict[str, Any]:
+    """Remove an object, or several with a list of ids (one save). Decor on / beside it goes too.
+    no_asset=true when it goes because no source has a fitting asset (the user chose やめる for a substitute):
+    it stays in the record of missing assets that decides which assets to add."""
+    return service.reply(service.remove_object(scene_dir, object_id, no_asset),
+                         object_id if isinstance(object_id, str) else None)
+
+
+@mcp.tool()
+def note_missing(scene_dir: str, query: str, note: str | None = None, object_id: str | None = None,
+                 alt_queries: list[str] | None = None) -> dict[str, Any]:
+    """Record an asset that would have fit but no source has, when nothing else records it: the placed asset is the
+    right kind in the wrong color / shape / size (query "orange office chair", note "only grey ones"; object_id
+    of the placed one), or a thing you left out without adding it. Substitutes and objects removed with
+    no_asset=true are recorded already. query in English; note: why, in a few words."""
+    return service.note_missing(scene_dir, query, note, object_id, alt_queries)
 
 
 @mcp.tool()
