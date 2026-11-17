@@ -102,6 +102,9 @@ file adds what is specific to video frames.
    - Warning that the room's **scale** is loose (the floor and the ceiling are tied): the shape is right and
      only the overall size comes from the depth. Say the size is ± that much, and give the height
      (fit_height=false) if the user knows it.
+   - Warning "height: the fitted wall height ... is suspect" (`scale.height_suspect`): the room's size holds
+     without it, so a ceiling corner or line is on a soffit or a beam. Do not use that height: relabel the
+     ceiling in the listed frames, or fit again with fit_height=false and the real or a typical height.
    - Warning "nothing of known length is seen" (no ceiling seen with the height given, no shared point at a
      known height): the size comes from the depth and the camera height together, and a depth model can be off
      by 10–15 % in every frame (a rendered room came out 13 % big from the depth alone). Before fitting, ask the

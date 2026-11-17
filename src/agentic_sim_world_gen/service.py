@@ -5624,7 +5624,12 @@ def _apply_fit(scene: str | Path, req: Any, r: dict[str, Any]) -> dict[str, Any]
     else:
         data = s.spec.room.model_dump()
         data.update(width=room["width"], depth=room["depth"])
-        if room.get("height_fitted"):
+        suspect = room.get("height_fitted") and room.get("height_suspect")
+        if suspect:  # the ceiling's landmarks are likely misread: the room's size is used, its height not
+            warnings.append(f"apply: the fitted height {room['height']} m is suspect (see scale.height_suspect) - the "
+                            f"scene's {s.spec.room.height} m was kept; fit again with fit_height=false, or set_room(height="
+                            f"{room['height']}) if the ceiling really is that high")
+        elif room.get("height_fitted"):
             data["height"] = room["height"]
         elif abs(room["height"] - s.spec.room.height) > 0.01:
             warnings.append(f"apply: the fit used the height {room['height']} m but the scene's room is "
@@ -5640,7 +5645,7 @@ def _apply_fit(scene: str | Path, req: Any, r: dict[str, Any]) -> dict[str, Any]
         done["room"] = {"width": room["width"], "depth": room["depth"], "height": h,
                         "openings": [o["id"] for o in room["openings"]]}
         parts.append(f"部屋 {room['width']:.2f} × {room['depth']:.2f} m・天井 {h:.2f} m"
-                     + ("（高さも推定）" if room.get("height_fitted") else ""))
+                     + ("（高さも推定）" if room.get("height_fitted") and not suspect else ""))
         if room["openings"]:
             parts.append(f"開口 {len(room['openings'])}")
     inputs = {i.id: i for i in s.spec.inputs}

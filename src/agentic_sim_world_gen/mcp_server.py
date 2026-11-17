@@ -1185,7 +1185,10 @@ def fit_photos(request: FitRequest, out_dir: str | None = None, depth: bool = Fa
     The result's `scale` lists what sets the size: `sources` [{by: depth | door top | typical height |
     eye height | ceiling (typical) | height (given), scale, range, used}] where scale = how many times the fitted
     room that source alone asks for (1.0 = agrees), `median`, `pm` and `outlier` (the one source apart while the
-    others agree, also a "scale: ..." warning saying what to do). Aim for 6+
+    others agree, also a "scale: ..." warning saying what to do). When the fitted wall height is that outlier,
+    `height_suspect` {height_m, typical, photos} (and `room.height_suspect`, a "height: ..." warning) says the
+    ceiling's landmarks in those photos are likely misread (a soffit, a beam): apply keeps the scene's height;
+    check them, or fit again with fit_height=false and the real (or a typical) height. Aim for 6+
     measurements per photo and at least one landmark shared with another photo (a corner, an opening).
     `locate` turns pixels into floor positions afterwards (furniture feet at z=0, a table top at its height);
     give each its `object` (the scene object id) and the result's `objects` has each one's floor center, and

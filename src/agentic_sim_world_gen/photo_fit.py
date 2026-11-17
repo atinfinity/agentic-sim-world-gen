@@ -1310,7 +1310,8 @@ def fit(req: FitRequest | dict, compare: bool = True) -> dict:
         "ok": True,
         "rms_px": round(rms, 1),
         "room": {"width": round(W, 2), "depth": round(D, 2), "height": round(H, 2),
-                 "height_fitted": m.fit_H, "openings": openings},
+                 "height_fitted": m.fit_H, **({"height_suspect": True} if "height_suspect" in scale else {}),
+                 "openings": openings},
         "sigma_m": sigma,
         "cameras": cams,
         "points": points,
@@ -1393,12 +1394,32 @@ def _scale_evidence(m: _Model, req: FitRequest, p, cams: dict, unused: set[int],
                        "door top": "this door is not a typical one: give its `top`, or label its top again",
                        "typical height": "this point is not at its typical height: give its z",
                        "eye height": "the camera was not held at eye_height: give eye_height if known",
-                       "ceiling (typical)": "a high or low ceiling: give the height if known (fit_height=false)"}[s["by"]]
+                       "ceiling (typical)": "the fitted wall height is suspect (see the height warning)"}[s["by"]]
                 out["warnings"].append(
                     f"scale: {s['by']} asks for a room {s['scale']:.2f}x the fit while the others agree ("
                     + ", ".join(f"{o['by']} {o['scale']:.2f}" for o in others) + f") - {why}")
+                if s["by"] == "ceiling (typical)":
+                    out["height_suspect"] = _height_suspect(req, H)
+                    out["warnings"].append(out["height_suspect"]["hint"])
                 break
     return out
+
+
+def _height_suspect(req: FitRequest, H: float) -> dict[str, Any]:
+    """The fitted wall height when the typical wall height is the one source apart and the others agree on the
+    room's size: the floor plan's scale holds, the height alone came out wrong - the ceiling landmarks are most
+    likely misread (a soffit, a beam, a lower or raised part of the ceiling, a corner put on the wrong level).
+    fit_photos(apply) keeps the scene's height; the photos that saw the ceiling are listed to check."""
+    lo, hi = CEILING_TYPICAL_M
+    photos = [cid for cid, c in req.photos.items() if _sees(c, "ceiling")]
+    guess = lo if H < lo else hi
+    return {"height_m": round(H, 2), "typical": [lo, hi], "photos": photos,
+            "hint": (f"height: the fitted wall height {H:.2f} m is suspect - the room's size agrees without it, so the "
+                     f"ceiling's landmarks are likely misread (a soffit, a beam, a lower part of the ceiling, a corner on "
+                     f"the wrong level) in {', '.join(photos)}. Check them, or fit again with fit_height=false and "
+                     f"height = the real height if known (else about {guess} m); apply keeps the scene's height. A ceiling "
+                     f"that really is {H:.2f} m (a hall, a shop, a factory) is not told apart from the photos: then "
+                     f"set_room(height={H:.2f})")}
 
 
 LOCATE_SPREAD_M = 0.4  # the same point of an object seen in two photos farther apart than this is suspect
