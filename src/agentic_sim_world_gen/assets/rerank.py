@@ -17,8 +17,11 @@ from agentic_sim_world_gen.assets.record import AssetRecord
 WEAK = 1.0  # below this the head noun of no query was found in class/tags/caption
 # score of the best way a query names the asset, plus `modifier` per modifier word found, times `synonym` for
 # alt_queries. scripts/search_eval/choices.py --grid tries other values against the logged choices.
-WEIGHTS = {"phrase": 3.0, "compound": 2.75, "class": 2.5, "other_kind": 0.9, "tag": 1.5, "caption": 1.0,
+WEIGHTS = {"phrase": 3.0, "compound": 2.75, "class": 2.5, "other_kind": 0.9, "part": 0.6, "tag": 1.5, "caption": 1.0,
            "name": 0.5, "modifier": 0.25, "shape": 0.5, "synonym": 0.9}
+# nouns a tag uses for a part of the thing the class names: a refrigerator's tag "double door" or a
+# cabinet's "hinged doors" say what it has, so they lose to a real door (even of another kind) as a door
+PART_NOUNS = frozenset({"door", "drawer", "handle", "knob", "lid", "hinge", "caster"})
 
 
 def _sing(w: str) -> str:
@@ -255,11 +258,14 @@ def score(rec: AssetRecord, query: str, alt_queries: list[str] | None = None) ->
             s, why = W["name"], f"'{head}' only in name or as a modifier"
         else:
             s, why = 0.0, ""
+        if (head in PART_NOUNS and s in (W["phrase"], W["compound"], W["tag"]) and cls and not _names(cls, [head])
+                and not any(_names(k, [head]) for k in known or [])):
+            s, why = W["part"], f"'{head}' in tags is a part of a {' '.join(cls)}"  # the class names another thing
         shape, shape_why = _shape_score(mods, everything, whole)
         plain = [m for m in mods if m not in _SHAPES]
         syn = W["synonym"] if i > 0 else 1.0  # synonyms count slightly less than the main query
-        used = s not in (0.0, W["other_kind"])
-        if s != W["other_kind"]:  # another kind stays a substitute, whatever modifier words it also has
+        used = s not in (0.0, W["other_kind"], W["part"])
+        if s not in (W["other_kind"], W["part"]):  # another kind stays a substitute, whatever modifier words it also has
             s += W["modifier"] * sum(m in everything for m in plain)
         s *= syn
         if used:  # the shape ranks matches; it never makes one weak (a table of another shape is still a table)
