@@ -553,7 +553,23 @@ def _event(scene: str | Path, text: str, focus: str | None = None, busy: bool = 
 
 
 def _issues(s: ResolvedScene) -> list[dict[str, Any]]:
-    return [{"kind": i.kind, "objects": list(i.objects), "detail": i.detail} for i in solve(s) + check(s)]
+    out = [{"kind": i.kind, "objects": list(i.objects), "detail": i.detail} for i in solve(s) + check(s)]
+    return out + _window_void(s)
+
+
+def _window_void(s: ResolvedScene) -> list[dict[str, Any]]:
+    """Daylight through windows with nothing outside: the sun lights the room through a gray void, so the
+    renders look nothing like a room by a window. An issue, not only a hint: the agent left the hint alone."""
+    room = s.spec.room
+    if room.lighting != "daylight" or room.outdoor or room.site is not None:
+        return []
+    seen = [o.id for o in room.openings if o.kind == "window"]
+    if not seen or _assumed(s, WINDOW_VIEW_ITEMS):  # the windows are not seen / covered
+        return []
+    home = room.place in (None, "home") or (room.place or "").endswith(("cafe", "restaurant", "bakery"))
+    return [{"kind": "window_void", "objects": seen,
+             "detail": "lighting is daylight but nothing is outside the windows, so the sun shines through a gray "
+                       "void. " + _window_way_out(home) + ". Or set another lighting preset"}]
 
 
 def _decor_skipped_view(s: ResolvedScene) -> dict[str, Any]:
@@ -614,11 +630,17 @@ def _window_view(s: ResolvedScene) -> dict[str, Any]:
     home = room.place in (None, "home") or (room.place or "").endswith(("cafe", "restaurant", "bakery"))
     return {"window_view": {"openings": seen, "stops_finish": True},
             "window_view_hint": ("window_view: nothing is outside the room, so its windows show a gray void, and "
-                                 "finish() stops here. To show ground and sky, set_room(site=true) (asphalt and sun"
-                                 + ("; a house or a log cabin: site={\"ground\": \"grass\"}" if home else "")
-                                 + "). If no render shows the windows, or blinds / curtains cover them, record that "
-                                 "instead: set_assumptions([{item: \"window_view\", value: <why, in the user's "
-                                 "language>}])")}
+                                 "finish() stops here" + (" (with lighting daylight it is the issue window_void too)"
+                                                          if room.lighting == "daylight" else "")
+                                 + ". " + _window_way_out(home))}
+
+
+def _window_way_out(home: bool) -> str:
+    """What to do about windows onto nothing, the same in window_view_hint and the window_void issue."""
+    return ("To show ground and sky, set_room(site=true) (asphalt and sun"
+            + ("; a house or a log cabin: site={\"ground\": \"grass\"}" if home else "")
+            + "). If no render shows the windows, or blinds / curtains cover them, record that instead: "
+            "set_assumptions([{item: \"window_view\", value: <why, in the user's language>}])")
 
 
 WINDOW_VIEW_ITEMS = ("window_view", "窓の外")  # the assumption that the windows' outside is not seen
@@ -2464,7 +2486,7 @@ def _draft_look(d: Path, draft: bool = True, **check: Any) -> dict[str, Any]:
     Returns {usd, check} or {skipped: why}: open issues or layout options, a refused compose, no Isaac Sim."""
     st = status(d)
     if st["issues"]:
-        return {"skipped": f"{len(st['issues'])} layout issue(s): fix them first", "stopped": "issues"}
+        return {"skipped": f"{len(st['issues'])} issue(s): fix them first", "stopped": "issues"}
     if st.get("layout_options"):
         return {"skipped": "layout options are open: choose_layout first", "stopped": "layout_options"}
     out: dict[str, Any] = {}

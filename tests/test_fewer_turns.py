@@ -82,7 +82,7 @@ def test_no_draft_while_the_layout_has_issues_and_none_without_isaac(tmp_path):
     clash = {**SPEC, "objects": [{"id": "desk", "query": "desk", "position": [1.0, 1.0]},
                                  {"id": "chair", "query": "office chair", "position": [1.0, 1.0]}]}
     st = service.start_scene(clash, tmp_path / "c")
-    assert st["issues"] and st["started"]["draft"] == {"skipped": f"{len(st['issues'])} layout issue(s): fix them first",
+    assert st["issues"] and st["started"]["draft"] == {"skipped": f"{len(st['issues'])} issue(s): fix them first",
                                                        "stopped": "issues"}
     assert st["usd"] is None
     st = service.start_scene(SPEC, tmp_path / "t")  # no Isaac Sim here: the USD is written, no failed check logged
@@ -142,7 +142,7 @@ def test_finish_stops_at_issues_and_says_what_was_not_checked(tmp_path):
                                  {"id": "chair", "query": "office chair", "position": [1.0, 1.0]}]}
     service.start_scene(clash, tmp_path / "c", skip=["draft", "preview"])
     r = service.finish(tmp_path / "c")
-    assert not r["done"] and r["issues"] and "layout issue" in r["next"] and "check" not in r
+    assert not r["done"] and r["issues"] and "issue(s): fix them first" in r["next"] and "check" not in r
 
 
 def test_candidate_sheets(tmp_path, monkeypatch):

@@ -557,3 +557,21 @@ def test_stock_sdf_colliders_become_boxes(tmp_path, monkeypatch):
         assert layer.GetAttributeAtPath(f"{ref}/Lid/Mesh.physics:approximation").default == "boundingCube"
         assert layer.GetPrimAtPath(f"{ref}/Lid").instanceable is False
     assert not stage.GetPrimAtPath("/World/Objects/g").GetCustomDataByKey("agentic_sim_world_gen:box_colliders")
+
+
+def test_daylight_with_nothing_outside_the_windows_is_an_issue(tmp_path):
+    """Daylight with nothing outside the windows is an issue (window_void), gone with a site or the assumption
+    that the windows are not seen."""
+    st = make(tmp_path, [], openings=[{"kind": "window", "wall": "south", "offset": 2.0, "width": 1.2}])
+    assert st["window_view"]["openings"] == ["window_0"] and st["issues"] == []
+    service.set_room(tmp_path / "s", lighting="daylight")
+    void = [i for i in service.status(tmp_path / "s")["issues"] if i["kind"] == "window_void"]
+    assert void and void[0]["objects"] == ["window_0"] and "site=true" in void[0]["detail"]
+    assert 'item: "window_view"' in void[0]["detail"]  # the same way out as window_view_hint
+    assert "window_void" in service.status(tmp_path / "s")["window_view_hint"]
+    service.set_assumptions(tmp_path / "s", [{"item": "窓の外", "value": "ブラインドで隠れる"}])
+    st = service.status(tmp_path / "s")
+    assert "window_view" not in st and not [i for i in st["issues"] if i["kind"] == "window_void"]
+    service.set_assumptions(tmp_path / "s", [], remove=["窓の外"])
+    service.set_room(tmp_path / "s", site=True)
+    assert not [i for i in service.status(tmp_path / "s")["issues"] if i["kind"] == "window_void"]

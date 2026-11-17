@@ -62,6 +62,7 @@ door), keep the room as usual and add `room.site` instead of switching to `outdo
 5. Without a site, the outside of every window, glass door and open front is a plain gray void (status
    `window_view` says so; for a house or a log cabin: `site={"ground": "grass"}`). `finish` stops on it
    until there is a site or you record that no render shows the windows / they are covered:
-   `set_assumptions([{item: "window_view", value: <why>}])`. When the photos or the request
+   `set_assumptions([{item: "window_view", value: <why>}])`. With `lighting: daylight` it is also an
+   issue (`window_void`): fix it before you finish. When the photos or the request
    show the outside (a shop open to the street, a window onto a garden), add a site — even a small one
    (`{"ground": "grass", "lighting": "sun"}`) — so the openings show ground and sky.
