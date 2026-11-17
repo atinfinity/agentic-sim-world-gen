@@ -69,12 +69,14 @@ Instead of filling in defaults, there are three other ways to proceed.
 `create_scene` searches assets for each object and attaches candidates. The result is the **ResolvedScene**, saved as `scene.resolved.json` in the scene directory.
 Later tools (`set_layout`, `select_asset`, `set_room` …) all read this file, change it and save it. Every save (`service._save`) does the following.
 
-1. Re-solves the layout (`solve`).
-2. Fixes problems that have exactly one fix (`_auto_fix`). These are a narrow aisle (`narrow_aisle`), articulated chairs too close together (`too_close`) and a TV with no stand (`tips_over`).
+1. In an office, classroom, shop and the like under a ceiling, reviews the place's light fixtures (`_default_fixtures`; `Room.fixtures_from="place"`, set when a new scene has no fixtures chosen).
+   The fixtures sit on the same grid as the preset's bare lights. They are swapped when the place or lighting changes, and taken out when the ceiling goes or a ceiling light fixture is placed as an object. Chosen fixtures and `fixtures: false` are left alone.
+2. Re-solves the layout (`solve`).
+3. Fixes problems that have exactly one fix (`_auto_fix`). These are a narrow aisle (`narrow_aisle`), articulated chairs too close together (`too_close`) and a TV with no stand (`tips_over`).
    The server applies the fix the check attached to `Issue.fixes` to a copy of the scene and re-solves, and keeps the result only if the problem is gone and no new problem appears. It does not move objects the user placed or objects the current call moved.
    The fixes show up in the result's `auto_fixed`, in the "auto-fixed" assumptions and in the preview's change history.
-3. Runs the static checks and the usability checks (see [5. Checks](#5-checks)).
-4. Rewrites the preview.
+4. Runs the static checks and the usability checks (see [5. Checks](#5-checks)).
+5. Rewrites the preview.
 
 ### create_scene and finish
 

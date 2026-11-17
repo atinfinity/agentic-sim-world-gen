@@ -1358,7 +1358,7 @@ def render(scene: ResolvedScene, d: Path, issues: list[dict[str, Any]], event: d
 
 
 ITEM_JA = {"size": "部屋の寸法", "room size": "部屋の寸法", "place": "場所の種類", "floor": "床", "walls": "壁", "wall": "壁",
-           "lighting": "照明", "openings": "ドア・窓", "cameras": "写真のカメラ", "door": "ドア", "ceiling": "天井", "ceiling height": "天井高", "asset": "アセット", "count": "台数", "position": "位置",
+           "lighting": "照明", "openings": "ドア・窓", "cameras": "写真のカメラ", "door": "ドア", "ceiling": "天井", "ceiling height": "天井高", "照明器具": "照明器具", "light fixtures": "照明器具", "asset": "アセット", "count": "台数", "position": "位置",
            "facing": "向き", "orientation": "向き", "height": "高さ",
            # the plan_questions items
            "room kind": "部屋の種類", "style": "テイスト", "window": "窓", "people": "人数", "desk layout": "机の並べ方",

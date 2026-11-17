@@ -223,6 +223,33 @@ def ceiling_tint(room) -> tuple[float, float, float]:
     return kelvin_tint(room.light_kelvin or LIGHTING[room.lighting].get("kelvin") or k.get("kelvin") or 5000.0)
 
 
+# the kind of fixture a room of each place gets by default (an office, a classroom or a shop has fixtures you
+# can see in its ceiling; the preset's bare lights left a plain ceiling). Places not here (home, factory, warehouse,
+# plant_factory, home_center, garden_center, outdoor, other) keep the preset's lights: a home has one lamp per room,
+# a warehouse-like hall high-bays.
+LINE_PLACES = ("school", "lab", "station", "public", "datacenter", "shop", "convenience_store", "supermarket",
+               "drugstore", "hundred_yen_shop", "bookstore", "electronics_store", "variety_store", "greengrocer",
+               "toy_store", "pet_shop", "liquor_store", "bicycle_shop", "record_store", "sporting_goods_store",
+               "asian_grocery")
+DOWNLIGHT_PLACES = ("cafe", "restaurant", "apparel_store", "bakery", "florist", "shoe_store", "optician",
+                    "wagashi_shop", "cosmetics_store", "furniture_store")
+PLACE_KINDS: dict[str, str] = {"office": "panel", "hospital": "panel",
+                               **{p: "line" for p in LINE_PLACES}, **{p: "downlight" for p in DOWNLIGHT_PLACES}}
+DEFAULT_GRID = "office"  # the grid of a preset without ceiling lights (studio, daylight), as SITE_FIXTURES
+
+
+def place_default(room) -> Fixtures | None:
+    """The fixtures a room gets when nobody chose any: PLACE_KINDS[place] under a ceiling, indoors, on the
+    preset's grid (office 2.4 m, home 2.5 m; the office's for a preset without ceiling lights), so they stand where
+    its bare lights stood and the ceiling equipment placed between those points stays clear of them. The light per
+    floor area stays the preset's (plan), so the floor is as bright as before. None under high-bays (warehouse)."""
+    kind = PLACE_KINDS.get(room.place or "")
+    if kind is None or room.outdoor or not room.ceiling or room.lighting == "warehouse":
+        return None
+    p = LIGHTING.get(room.lighting, {})
+    return Fixtures(kind=kind, spacing=(p if p.get("fixture") and not p.get("pole") else LIGHTING[DEFAULT_GRID])["spacing"])
+
+
 def plan(room, points=None) -> list[dict[str, Any]]:
     """Fixtures of Room.fixtures: one dict per fixture with kind, x, y, ceiling (z of the underside it hangs
     from), light (shape, z, size, intensity, kelvin, yaw) and body (parts as boxes / cylinders in world

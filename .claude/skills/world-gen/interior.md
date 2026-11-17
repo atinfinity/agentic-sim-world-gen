@@ -73,7 +73,13 @@ ceiling equipment).
 ## Ceiling lights, beams and posters (「ダウンライト」「ペンダント照明」「梁が出ている」「壁にポスター」)
 
 - Fixtures with a body: `set_room(fixtures="downlight" | "pendant" | "line" | "panel")` or `{kind, spacing, size,
-  drop, axis, color}` replaces the preset's bare ceiling lights. `fixtures: false` goes back to the preset.
+  drop, axis, color}` replaces the preset's bare ceiling lights. `fixtures: false` goes back to the preset (and
+  keeps the place's default off).
+- By default a room with a ceiling gets its place's fixtures on the preset's grid: office / hospital
+  `panel`, school / lab / station / most shops `line`, café / restaurant / boutiques `downlight` (home, factory,
+  warehouse, home center: none). It is recorded as a guess (`照明器具`); say it, and `set_room(fixtures=...)` when
+  the user wants another kind or none. Light fixtures placed as objects (`layout.ceiling`, e.g. from a photo)
+  replace the default, so do not add both.
   The preset (`lighting`, `lighting_scale`) still sets how bright the floor is, so changing the kind keeps the
   brightness. `light_kelvin` overrides the kind's color temperature:
 

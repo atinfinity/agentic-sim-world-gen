@@ -90,6 +90,12 @@ class Room(BaseModel):
         "/ pendant / line / panel, spacing, size, drop (pendant cord / suspended line), axis, color} or just the kind; "
         "the light per floor area stays the preset's (agentic_sim_world_gen.scene.fixtures)",
     )
+    fixtures_from: Literal["place", "none"] | None = Field(
+        default=None,
+        description="who decided the fixtures, kept by the service: place = the place's default fixtures "
+        "(swapped / taken back when the place, the ceiling or the light objects change), none = fixtures false was "
+        "chosen (no default is added); unset = chosen fixtures, or nothing decided",
+    )
     ceiling_features: list[CeilingFeature] = Field(
         default_factory=list,
         description="boxes under the ceiling: beams {kind beam, axis x/y, at [m] or spacing, width, drop, surface / "
@@ -192,11 +198,19 @@ class Room(BaseModel):
                     data[k] = fields[k]
         return data
 
+    @model_validator(mode="before")
+    @classmethod
+    def _fixtures_off(cls, data: Any) -> Any:
+        if isinstance(data, dict) and "fixtures" in data:
+            if data["fixtures"] is False:  # fixtures false: the preset's bare lights, and no place default
+                data = {**data, "fixtures": None, "fixtures_from": "none"}
+            elif data["fixtures"] is not None and data.get("fixtures_from") == "none":
+                data = {**data, "fixtures_from": None}
+        return data
+
     @field_validator("fixtures", mode="before")
     @classmethod
     def _fixture_kind(cls, v):
-        if v is False:  # set_room(fixtures=false): back to the lighting preset's fixtures
-            return None
         return {"kind": v} if isinstance(v, str) else v
 
     @model_validator(mode="before")
