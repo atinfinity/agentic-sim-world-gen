@@ -140,7 +140,8 @@ that one). Compare the room size, what is where and the viewpoint; fix objects (
 select_asset), the room (set_room) or a camera (set_input), then compose_scene and compare again.
 Run compose_scene first. layout.svg shows every photo camera (position and field of view).
 `round` counts the comparisons and `hint` says what to do next: fix every difference of one round
-together, about 3 rounds, then report what still differs.
+together, about 3 rounds, then report what still differs. `measure` has the free widths each
+camera sees and what bounds them; the gaps of each line are in `measure_file` (or measure_photo).
 
 - `scene_dir`: str
 - `input_id`?: str
