@@ -315,3 +315,45 @@ def test_faces_are_counted(tmp_path: Path):
     _asset(lib / "toy" / "toy.usda", lib / "toy" / "payloads" / "geo.usda")
     (rec,) = build_index(lib, cache_dir=tmp_path / "cache")
     assert rec.polygons == 3
+
+
+def test_changed_payload_is_read_again(library: Path, tmp_path: Path):
+    """Exported assets are a small <slug>.usd that only names its payloads: re-exporting the payload leaves the
+    top file's mtime and size alone, so the cache must look at the dependencies too."""
+    import os
+
+    cache = tmp_path / "cache"
+    top = library / "Furniture" / "OfficeChair" / "office_chair_01.usda"
+    geo = library / "Furniture" / "OfficeChair" / "payloads" / "chair_geo.usdc"
+    build_index(library, cache_dir=cache)
+    st = top.stat()
+    _cube_layer(geo, (0.8, 0.5, 1.2))
+    os.utime(top, ns=(st.st_atime_ns, st.st_mtime_ns))
+    recs = _by_name(build_index(library, cache_dir=cache))
+    assert [round(v, 3) for v in recs["office_chair_01.usda"].size_m] == [0.8, 0.5, 1.2]
+
+
+def test_payload_added_later_is_read_again(tmp_path: Path):
+    """A payload written after the top file was indexed (the export was not finished) counts as a change."""
+    lib = tmp_path / "lib"
+    (lib / "toy" / "payloads").mkdir(parents=True)
+    _asset(lib / "toy" / "toy.usda", lib / "toy" / "payloads" / "geo.usda")
+    (rec,) = build_index(lib, cache_dir=tmp_path / "cache")
+    assert rec.size_m == (0.0, 0.0, 0.0)
+    _cube_layer(lib / "toy" / "payloads" / "geo.usda", (0.3, 0.2, 0.1))
+    (rec,) = build_index(lib, cache_dir=tmp_path / "cache")
+    assert [round(v, 3) for v in rec.size_m] == [0.3, 0.2, 0.1]
+
+
+def test_failed_open_is_not_cached(library: Path, tmp_path: Path):
+    """A file that did not open (info None) is read again next time instead of staying out of the index."""
+    import json
+
+    cache = tmp_path / "cache"
+    assert len(build_index(library, cache_dir=cache)) == 2
+    (cache_file,) = cache.glob("*.json")
+    c = json.loads(cache_file.read_text())
+    key = str(library.resolve() / "Furniture" / "OfficeChair" / "office_chair_01.usda")
+    c["files"][key]["info"] = None  # as if the open had failed the first time
+    cache_file.write_text(json.dumps(c))
+    assert "office_chair_01.usda" in _by_name(build_index(library, cache_dir=cache))
