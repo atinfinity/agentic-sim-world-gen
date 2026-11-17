@@ -112,6 +112,12 @@ def cmd_kinds(a: argparse.Namespace) -> int:
 def cmd_missing(a: argparse.Namespace) -> int:
     from agentic_sim_world_gen import missing
 
+    if a.recheck:
+        from agentic_sim_world_gen import service
+
+        r = service.recheck_missing()
+        if not a.json:
+            print(f"探し直した検索語：{r['checked']}（{r['sources']}）、見つかった：{len(r['found'])}")
     s = missing.summary(a.top, a.why)
     print(json.dumps(s, ensure_ascii=False, indent=2) if a.json else missing.text(s))
     return 0
@@ -440,7 +446,10 @@ def main(argv: list[str] | None = None) -> int:
 
     mi = sub.add_parser("missing", help="what the asset sources did not have, over every scene made here, most wanted first")
     mi.add_argument("--top", type=int, help="only the first N queries")
-    mi.add_argument("--why", choices=["not_in_catalog", "substitute", "none", "decor", "window"], help="only this kind")
+    mi.add_argument("--why", choices=["not_in_catalog", "substitute", "none", "decor", "window", "removed", "noted"],
+                    help="only this kind")
+    mi.add_argument("--recheck", action="store_true",
+                    help="search every query again with the sources of now (after adding assets)")
     mi.add_argument("--json", action="store_true")
     mi.set_defaults(fn=cmd_missing)
 

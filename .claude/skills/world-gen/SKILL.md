@@ -299,7 +299,7 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
        whiteboard; `catalog.table.built` is the date of SimReady Central's listing): **do not search again**.
        Ask the user once with `choices`: 代用 (the closest by `view_candidates`, called代用in the summary),
        手持ちのUSD (they set AGENTIC_SIM_WORLD_GEN_SOURCES=+local:<dir>, then `research_object`), orやめる
-       (`remove_object`). With「おまかせ」take the substitute and say so. `catalog.other_kinds` lists kinds with
+       (`remove_object(no_asset=true)`: it stays in the record of missing assets). With「おまかせ」take the substitute and say so. `catalog.other_kinds` lists kinds with
        the same noun that do exist (desk lamp for a floor lamp): good substitutes to offer.
      - The sources do have some (`catalog.counts` > 0): check `size_misses` and widen the bounds, or
        `research_object` once with the plain kind word; if that is still a substitute, stop and say代用.
@@ -432,7 +432,8 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
      (the current asset stays selected and in the list), then `view_candidates` and judge by the images
      (captions and tags miss colors and materials). If one clearly has the attribute, `select_asset` it and say
      so. If the result has `research.not_in_catalog`, the kind itself is missing: stop searching (no third
-     query) and ask代用 / 手持ちのUSD / やめる. If nothing has the attribute, say so plainly, show the closest
+     query) and ask代用 / 手持ちのUSD / やめる. If nothing has the attribute, say so plainly, record it with
+     `note_missing` (query with the attribute, `object_id` of the placed one, a few-word `note`), show the closest
      options (e.g. right shape but wrong color, or right material but a different kind of furniture) and let the
      user pick. The scene keeps the current asset until they answer; do not swap silently to something that only
      matches one word. Asset colors and materials cannot be changed here (only the room's floor / walls can).

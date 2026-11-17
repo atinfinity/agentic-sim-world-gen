@@ -291,6 +291,7 @@ flowchart TD
 5. **見つからない時**：全部が代用のときは、種類の表（`assets/kinds.py`、MCP `kind_availability`）を引いて、その種類がどのソースにも無いか（`not_in_catalog`）を返し、探し直しを止めます。
    全部weakでサイズの指定があるときは、サイズで落とした強い一致を`Placement.size_misses`に挙げます（指定を広げる手がかり）。
    足りなかった物は保存のたびにシーンごとに`AGENTIC_SIM_WORLD_GEN_CACHE/missing/`へ記録され（`missing.py`）、`agentic-sim-world-gen missing`で多い順に見られます。
+   無いので外した物（`remove_object(no_asset=true)`）と、報告だけの物（`note_missing`）も残ります。アセットを足したら`agentic-sim-world-gen missing --recheck`で探し直し、見つかった物は別の欄に移ります（`missing-found.json`）。
 6. **最後の判断**：Claudeが`view_candidates`（サムネイル画像を返す）で決めます。メタデータだけでは色・素材・形が分からないためです。
 
 関係するファイル
