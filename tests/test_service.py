@@ -186,6 +186,12 @@ def test_size_misses(fake, tmp_path, monkeypatch):
     assert [a["off"] for a in desk["size_misses"]["assets"]] == [{"long": "+38% over max 1.3 m"},
                                                                   {"long": "+8% over max 1.3 m"}]
     assert "size_misses" not in chair  # no size limits
+    b = service.brief(st)  # one line per object instead of two hints inside it
+    line = b["substitute"][0]
+    assert line["id"] == "desk" and line["nearest"] == ("desk_a 0.8×1.8×0.76 m (outside min/max_size: long +38% over max 1.3 m)"
+                                                  "; also desk_b")  # every size miss by name
+    assert "widen min_size/max_size" in line["try"] and "size_misses" not in b["objects"][0]
+    assert "hint" not in service.brief(st, "desk")["objects"][0]["size_misses"]
     st = service.research_object(tmp_path / "s", "desk", max_size=[1.9, 1.0, 0.85])
     assert st["objects"][0]["candidates"][0]["name"] == "desk_a" and "size_misses" not in st["objects"][0]
 
@@ -331,6 +337,31 @@ def test_reply_language(fake, tmp_path):
     assert "German" in service.language_hint("German") and "German" in service.language_hint("German", short=True)
 
 
+def test_reply_names_the_hints_already_shown(fake, tmp_path, monkeypatch):
+    """every hint went out again on every reply (window_view_hint 47 times in one run), after 5k characters
+    of usability warnings, and was read past. A hint seen word for word is named in open_hints near the top."""
+    d = tmp_path / "study"
+    room = {**SPEC["room"], "name": "書斎", "openings": [{"kind": "window", "wall": "N", "offset": 1.0, "width": 1.2}]}
+    full = service.reply(service.create_scene({**SPEC, "room": room}, d), full=True)
+    keys = list(full)
+    assert keys[:4] == ["reply_language", "reply_language_hint", "scene_dir", "issues"]
+    assert keys.index("window_view_hint") < keys.index("usability") and "圧縮" in full["reply_language_hint"]
+    r = service.reply(service.move_object(d, "chair", position=[1.2, 1.4]), "chair")
+    assert "window_view_hint" not in r and "window_view_hint" in r["open_hints"]
+    assert list(r)[:5] == ["reply_language", "reply_language_hint", "scene_dir", "issues", "open_hints"]
+    assert r["reply_language_hint"] == service.language_hint("ja", short=True)  # in full on the first result only
+    rows = [{"kind": "tight", "objects": ["chair"], "detail": f"warning {i}"} for i in range(8)]
+    monkeypatch.setattr(service, "_usability", lambda s: rows)
+    r = service.reply(service.status(d))
+    assert len(r["usability"]) == 5 and r["usability_more"].startswith("+3 more (tight 3)")
+    assert r["summary"]["usability"] == 8 and "window_view_hint" in r["open_hints"]
+    assert "usability" not in service.reply(service.status(d))  # unchanged: not sent again
+    assert len(service.reply(service.status(d), full=True)["usability"]) == 8  # get_scene lists them all
+    service.set_room(d, place="office")  # the hint's text changes with the place: sent in full again
+    r = service.reply(service.status(d))
+    assert "window_view_hint" in r and "window_view_hint" not in r.get("open_hints", [])
+
+
 def test_check_results_carry_reply_language(fake, tmp_path):
     """Results without the scene status (check_in_isaac, view_fronts, ...) repeat the language too."""
     d = tmp_path / "study"
@@ -444,8 +475,12 @@ def test_windows_with_nothing_outside(fake, tmp_path):
     assert "window_view" not in st
     room = {**SPEC["room"], "openings": [{"kind": "window", "wall": "N", "offset": 1.0, "width": 1.2}]}
     st = service.create_scene({**SPEC, "room": room}, d)
-    assert st["window_view"] == {"openings": ["window_0"]}
+    assert st["window_view"] == {"openings": ["window_0"], "stops_finish": True}
     assert "site=true" in st["window_view_hint"] and "grass" in st["window_view_hint"]
+    assert 'item: "window_view"' in st["window_view_hint"]  # the way out when the windows are not seen
+    service.set_assumptions(d, [{"item": "window_view", "value": "窓はカーテンで隠れる"}])
+    assert "window_view" not in service.status(d)
+    service.set_assumptions(d, [], remove=["window_view"])
     service.set_room(d, site=True)
     st = service.status(d)
     assert "window_view" not in st and service.load(d).spec.room.site is not None
@@ -516,3 +551,38 @@ def test_blind_over_a_wide_window():
               {"name": "jidou_01.usd", "class": "door"},
               {"name": "sm_blinds_window_4m_a01.usd", "caption": "Display of white window blinds"}):
         assert service._unfit_window_asset(Placement(object_id="b", candidates=[{**c, "match": ok}])) is None
+
+
+def test_reply_sends_the_tools_own_hint(fake, tmp_path):
+    """a tool's own `hint` / `next` is about this call: always sent, never only named."""
+    d = tmp_path / "s"
+    service.reply(service.create_scene(SPEC, d), full=True)
+    r1 = service.reply(service.set_assumptions(d, [{"item": "pink wall", "value": "ピンク"}]))
+    r2 = service.reply(service.set_assumptions(d, [{"item": "pink wall", "value": "ピンク"}]))
+    assert "hint" in r1 and r2.get("hint") == r1["hint"] and "hint" not in r2.get("open_hints", {})
+
+
+def test_reply_starts_over_in_a_new_server_process(fake, tmp_path, monkeypatch):
+    """.last_reply.json outlives the MCP server; a new process (a new session) gets every hint in full,
+    and a hint only named keeps its first sentence."""
+    d = tmp_path / "w"
+    room = {**SPEC["room"], "openings": [{"kind": "window", "wall": "N", "offset": 1.0, "width": 1.2}]}
+    service.reply(service.create_scene({**SPEC, "room": room}, d), full=True)
+    r = service.reply(service.move_object(d, "chair", position=[1.2, 1.4]), "chair")
+    assert r["open_hints"]["window_view_hint"].startswith("window_view")
+    assert len(r["open_hints"]["window_view_hint"]) <= service.REPLY_GIST
+    monkeypatch.setattr(service, "_PROCESS", "another")
+    r = service.reply(service.move_object(d, "chair", position=[1.3, 1.4]), "chair")
+    assert "window_view_hint" in r and "open_hints" not in r
+
+
+def test_window_view_assumption_wording(fake, tmp_path):
+    """「窓の外の景色」 and a row on one window count as the window_view assumption too."""
+    room = {**SPEC["room"], "openings": [{"id": "w1", "kind": "window", "wall": "N", "offset": 1.0, "width": 1.2}]}
+    for i, row in enumerate([{"item": "窓の外の景色", "value": "カーテンで隠れる"},
+                             {"item": "window_view", "object": "w1", "value": "隠れる"}]):
+        d = tmp_path / f"w{i}"
+        service.create_scene({**SPEC, "room": room}, d)
+        assert "window_view" in service.status(d)
+        service.set_assumptions(d, [row])
+        assert "window_view" not in service.status(d)

@@ -86,12 +86,15 @@ Candidates are re-ranked by how well class/tags/caption match; each has match.sc
 match.weak (true = probably not the requested thing). Use view_candidates to look at thumbnails
 before trusting the top pick for anything important or weak. Results list each object's selected `asset`
 and the other candidates in one line each (`others`); get_scene with object_id gives one object in full. Weak hits are dropped when a good match
-exists, so a short list is normal. If every candidate is weak, the object shows `substitute` (the
-catalog has no such object; report the substitute to the user). substitute.not_in_catalog = the kind table says
-no source has this kind at all: do not search again, ask the user once (substitute / own USD via local: / drop it;
-kind_availability answers the same before create_scene). It may also list size_misses:
-good matches that min_size/max_size dropped. Widen the limits with research_object when one would
-do rather than settling for a substitute (size bounds are loose ranges).
+exists, so a short list is normal. If every candidate is weak, the object is marked `substitute` (the
+catalog has no such object; report the substitute to the user) and the result's `substitute` list has one line
+{id, nearest, try} for it: try says what to do. not_in_catalog = the kind table says no source has this kind
+at all: do not search again, ask the user once (substitute / own USD via local: / drop it; kind_availability
+answers the same before create_scene). nearest may be a good match min_size/max_size dropped (size_misses in
+get_scene): widen the limits with research_object when it would do rather than settling for a substitute.
+Editing tools return only what changed since your last result: a hint you were already shown word for word is
+named in `open_hints` near the top ({key: its first sentence}) instead of sent again - it still stands; act on
+it or tell the user why not. A tool's own `hint` / `next` is always sent, and a new server process sends all again.
 Photos: look at the photo (Read), estimate the room and the objects from it (see the world-gen skill),
 and record it in spec.inputs [{id, kind: photo, path, url, title, author, license, camera}] - the
 source is required (sidecar <stem>.source.json fills url/title/author/license). camera = where the
@@ -954,7 +957,11 @@ def finish(scene_dir: str, draft: bool = False, steps: int = 240, gif: bool = Fa
     `next`); `done` when nothing is left. draft=true: only the USD and pictures without physics (a first draft
     after you fixed the layout issues create_scene reported).
 
-    Runs, in order: (1) layout issues or open layout options -> stops (`issues`); (2) compose_scene when
+    Runs, in order: (1) layout issues or open layout options -> stops (`issues`); then it stops on
+    `window_view` (windows onto a gray void: set_room(site=true), or set_assumptions item "window_view" when no
+    render shows the windows / they are covered) and on `compare` (photos not compared with the scene as it is,
+    while compare rounds are left, Isaac Sim's Python is here and compare_photo has not failed twice:
+    compose_scene + compare_photo, or set_assumptions item "photo_compare" when it cannot run); (2) compose_scene when
     scene.usda is not the scene as it is now (a refusal, e.g. photos not placed, stops with the reason);
     (3) check_in_isaac (live when the user's Isaac Sim is open; a check that already passed on the unchanged
     scene is reused) - needs_fix / failed stops with `check` (verdict, report.problems) and `next`: fix and call
@@ -962,7 +969,9 @@ def finish(scene_dir: str, draft: bool = False, steps: int = 240, gif: bool = Fa
     the ones not met or not measurable; none recorded: `requirements_hint`); (5) the licenses (`licenses`:
     objects per license, attribution lines, warnings; LICENSES.md written). No Isaac Sim on this machine: the
     check is `skipped`, the rest runs, and `unverified` says what to tell the user. steps / gif / orbit / force
-    are check_in_isaac's. Use the single tools only to redo one step."""
+    are check_in_isaac's. Use the single tools only to redo one step. At the end `report_must_include` lists
+    what the report to the user has to name: usability warnings (count, kinds), substitutes, decor_skipped,
+    windows_not_found, unlocated (furniture no photo placed)."""
     return service.with_language(scene_dir, service.finish(scene_dir, draft, steps, gif, orbit, force))
 
 

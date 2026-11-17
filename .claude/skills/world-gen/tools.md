@@ -285,7 +285,11 @@ check_in_isaac, check_request (re-measured) and license_report. Stops at the fir
 `next`); `done` when nothing is left. draft=true: only the USD and pictures without physics (a first draft
 after you fixed the layout issues create_scene reported).
 
-Runs, in order: (1) layout issues or open layout options -> stops (`issues`); (2) compose_scene when
+Runs, in order: (1) layout issues or open layout options -> stops (`issues`); then it stops on
+`window_view` (windows onto a gray void: set_room(site=true), or set_assumptions item "window_view" when no
+render shows the windows / they are covered) and on `compare` (photos not compared with the scene as it is,
+while compare rounds are left, Isaac Sim's Python is here and compare_photo has not failed twice:
+compose_scene + compare_photo, or set_assumptions item "photo_compare" when it cannot run); (2) compose_scene when
 scene.usda is not the scene as it is now (a refusal, e.g. photos not placed, stops with the reason);
 (3) check_in_isaac (live when the user's Isaac Sim is open; a check that already passed on the unchanged
 scene is reused) - needs_fix / failed stops with `check` (verdict, report.problems) and `next`: fix and call
@@ -293,7 +297,9 @@ finish again; (4) the recorded request items measured again (`requirements_summa
 the ones not met or not measurable; none recorded: `requirements_hint`); (5) the licenses (`licenses`:
 objects per license, attribution lines, warnings; LICENSES.md written). No Isaac Sim on this machine: the
 check is `skipped`, the rest runs, and `unverified` says what to tell the user. steps / gif / orbit / force
-are check_in_isaac's. Use the single tools only to redo one step.
+are check_in_isaac's. Use the single tools only to redo one step. At the end `report_must_include` lists
+what the report to the user has to name: usability warnings (count, kinds), substitutes, decor_skipped,
+windows_not_found, unlocated (furniture no photo placed).
 
 - `scene_dir`: str
 - `draft`?: bool

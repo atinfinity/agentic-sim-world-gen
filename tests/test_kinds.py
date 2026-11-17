@@ -147,6 +147,9 @@ def test_status_not_in_catalog(chairs_only):
     lamp = _obj(st, "lamp")["substitute"]
     assert "not_in_catalog" not in lamp and "simready-central 1" in lamp["hint"]
     assert "substitute" not in _obj(st, "chair")
+    lines = {x["id"]: x["try"] for x in service.brief(st)["substitute"]}  # one line each in the replies
+    assert "do not search again" in lines["board"] and "'floor lamp'" in lines["lamp"] and "chair" not in lines
+    assert _obj(service.brief(st), "board")["substitute"] == "not_in_catalog"
     r = service.research_object(chairs_only / "s", "board", query="marker board")
     assert "Do not search again" in r["research"]["not_in_catalog"]
     assert "substitute" in service.brief(r)["objects"][0]  # kept in the brief result

@@ -264,7 +264,7 @@ def test_compare_is_tracked(fake, tmp_path, monkeypatch):  # noqa: F811
     service.create_scene({**SPEC, "inputs": [{"id": "p", "path": str(tmp_path / "p.jpg"), "license": "CC0-1.0",
                                               "camera": {"position": [1, 0.3, 1.4], "look_at": [1, 2, 1]}}]}, d)
     st = service.status(d)
-    assert st["photo_compare"] == {"compared": False} and "compare_photo" in st["photo_compare_hint"]
+    assert st["photo_compare"] == {"compared": False, "stops_finish": True} and "compare_photo" in st["photo_compare_hint"]
     (d / "scene.usda").write_text("#usda 1.0\n")
 
     def fake_run(script, args, timeout_s):
@@ -293,7 +293,13 @@ def test_compare_is_tracked(fake, tmp_path, monkeypatch):  # noqa: F811
     r = service.compare_photo(d)
     assert r["round"] == 3 and "then report" in r["hint"]
     service.move_object(d, oid, position=[1.3, 1.5])
-    assert "the last one" in service.status(d)["photo_compare_hint"]
+    st = service.status(d)
+    assert "the last one" in st["photo_compare_hint"] and st["photo_compare"]["stops_finish"]  # round 4 is due
+    service.compare_photo(d)
+    service.move_object(d, oid, position=[1.4, 1.5])
+    st = service.status(d)  # the budget is used up: say so, do not stop finish
+    assert st["photo_compare"]["stale"] and "stops_finish" not in st["photo_compare"]
+    assert "finish() stops" not in st["photo_compare_hint"]
 
 
 def test_request_with_a_photo():

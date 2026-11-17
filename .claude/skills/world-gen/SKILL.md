@@ -44,9 +44,13 @@ Each tool call is a turn; the shop trials took 39–49 turns where 20–25 would
   `set_variants(["a", "b"], {...})`, not one call each. Put mugs, books and goods on a surface with `layout.on`
   (+ `offset`) inside the `add_objects` list, not one `set_layout` per item; for many identical things use `fill`.
 - **Editing tools answer with what changed**: the objects, decor lines and sections that changed since
-  your last agentic-sim-world-gen result, plus the issues, every hint and the `summary` counts; the rest is as before. Call
-  `get_scene` only when you need everything again. `reply_language` / `reply_language_hint` repeat the user's
-  language: follow it. The other scene tools (compose_scene, check_in_isaac, view_fronts, …) carry them too.
+  your last agentic-sim-world-gen result, plus the issues, new or changed hints and the `summary` counts; the rest
+  is as before. A hint you were already shown word for word is not sent again: its key and first sentence are in
+  **`open_hints`** near the top (a tool's own `hint` / `next` is always sent in full). It still stands - act on
+  it, or say in the report why not (`get_scene` shows its text again).
+  `usability` lists its first 5 warnings and `usability_more` the rest by kind. Call `get_scene` only when you
+  need everything again. `reply_language` / `reply_language_hint` repeat the user's language (in full on the
+  first result, one line after): follow it. The other scene tools (compose_scene, check_in_isaac, view_fronts, …) carry them too.
 - **Don't explore with the shell.** `search_assets` / `kind_availability` answer "is there an X"; the examples
   and the asset folders don't need `ls` / `cat`. If you must run Python, it is `python3` (there is no `python`).
 - **Fix automatic stock in place.** `density` stocks empty fixtures (`decor_*`). Wrong goods: `research_object`
@@ -288,8 +292,10 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
      (e.g. a 1.8 m desk with max 1.6). Keep size bounds loose (the table below is a range, not a target) and
      widen them before falling back to a substitute. Weak hits are dropped when a good match exists, so an
      object may have only one or two candidates.
-   - If an object shows `substitute`, no candidate is that kind of object. Read its `substitute.hint` first:
-     - `not_in_catalog: true` (the kind table says no source has this kind at all, e.g. a wheelchair or a
+   - If an object shows `substitute`, no candidate is that kind of object. The result's `substitute` list has one
+     line per such object, `{id, nearest, try}`: `try` is what to do (`get_scene(object_id)` has the
+     details: `substitute.catalog`, `size_misses`):
+     - `not_in_catalog` (the kind table says no source has this kind at all, e.g. a wheelchair or a
        whiteboard; `catalog.table.built` is the date of SimReady Central's listing): **do not search again**.
        Ask the user once with `choices`: 代用 (the closest by `view_candidates`, called代用in the summary),
        手持ちのUSD (they set AGENTIC_SIM_WORLD_GEN_SOURCES=+local:<dir>, then `research_object`), orやめる
@@ -440,8 +446,15 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
    when the user's Isaac Sim is open with `--enable isaacsim.code_editor.python_server` (failed objects get
    selected and a re-check takes seconds), else headless. It also shoots the room from 24 directions
    (`check_orbit/`, about 6 s more) so that the user can drag it around on the preview page.
-   `finish` stops at the first thing to fix (`stopped`: issues / compose / check, with `next`): fix that and call
-   `finish` again (a check that passed on an unchanged scene is not run twice). Without Isaac Sim the check is
+   `finish` stops at the first thing to fix (`stopped`: issues / window_view / compare / compose / check, with
+   `next`): fix that and call `finish` again (a check that passed on an unchanged scene is not run twice).
+   `window_view`: windows look out on a gray void - `set_room(site=true)`, or, when no render shows the
+   windows or blinds / curtains cover them, `set_assumptions([{item: "window_view", value: <why>}])`. `compare`:
+   the photos were not compared with the scene as it is - `compose_scene`, `compare_photo`, fix, finish again
+   (only while compare rounds are left and Isaac Sim's Python is here; after 2 failed compare_photo, or with
+   `set_assumptions([{item: "photo_compare", value: <why>}])` when it cannot run, finish goes on). When done, `report_must_include` lists what the
+   report has to name: `usability` (count, kinds), `substitutes`, `decor_skipped`, `windows_not_found`,
+   `unlocated` (furniture no photo placed). Name every one in step 8, with what you did or why it stays. Without Isaac Sim the check is
    `skipped`, and `unverified` says what to tell the user. Use `check_in_isaac` alone for a quick re-check of
    physics only (`orbit=0`) or a GIF (`gif=true`). Look at `check.png` (and `check.gif`) and the report lists:
    - `no_collider`: the asset has no collision (things fall through it) → `set_collider(object_id, "box")` adds a static
