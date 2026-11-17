@@ -342,7 +342,7 @@ flowchart TD
 - **店の陳列**：店（`shop`と`STORE_PLACES`の25種：コンビニ・スーパー・ドラッグストア・書店・パン屋・自転車店・家具店など）では、同じ仕組みで空いている什器に商品を`fill`で並べます。
   商品は店の種類ごとの表（`decor.PRODUCTS`。冷蔵ケースは`COLD_PRODUCTS`、フックは`HANG`）から選び、隣の什器とは違う商品から始めます。
   表に無い業種では、`Room.goods`（商品の英語の検索語）・`goods_words`（業種の語）を名乗る商品だけを並べます（`decor.fits_goods`）。店の広さ・入口・レジなどの既定は`plan_questions`の表（`questions.STORE_SIZES`）にあります。
-- **窓**：窓の開口は壁の穴でしかないので、`fill_windows`が窓のアセット`win_<id>`を足します。窓は開口に合わせて伸ばし（`fit_scale`）、店の幅1.8 m以上の窓はショーウィンドウにします。家ではカーテン`curtain_<id>`も足します（`covers`でブラインドにもできる）。
+- **窓**：窓の開口は壁の穴でしかないので、`fill_windows`が窓のアセット`win_<id>`を足します。窓は開口に合わせて伸ばし（`fit_scale`）、店の幅1.8 m以上の窓はショーウィンドウにします。家ではカーテン`curtain_<id>`、オフィス・学校・研究室・病院ではブラインド`blind_<id>`も足します（`covers="auto"`。`covers`で選び直せる）。
 
 `layout.svg`（上面図、矢印が正面）：
 

@@ -147,3 +147,18 @@ def test_one_point_is_listed(tmp_path):
     assert pp["one_point"] == ["desk"] and "diagonal" in pp["hint"]
     with pytest.raises(ValueError, match="one_point: desk"):
         service.compose_scene(d)
+
+
+def test_hung_things_need_no_feet():
+    """a blind over a window (covers) and a whiteboard on a wall (wall_height) hang; the photos cannot
+    show their feet, so compose must not ask for them."""
+    from agentic_sim_world_gen.scene.spec import ObjectSpec
+
+    blind = ObjectSpec(id="b", query="roller blind", covers="win_a")
+    board = ObjectSpec(id="w", query="whiteboard", layout={"against_wall": "west", "wall_height": 0.9})
+    table = ObjectSpec(id="t", query="table", layout={"against_wall": "west"})
+    assert not service._floor_furniture(blind) and not service._floor_furniture(board)
+    assert service._floor_furniture(table)
+    # wall_height 0: on the floor against the wall (a bottom flush with the floor), its feet show
+    low = ObjectSpec(id="l", query="cabinet", layout={"against_wall": "west", "wall_height": 0})
+    assert service._floor_furniture(low)

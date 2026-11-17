@@ -155,7 +155,8 @@ file adds what is specific to video frames.
    kind across the frames (two chairs are `chair1`, `chair2`: a handheld run left the second chair out).
    Locate each one in the fit_photos request (`locate`, [photos.md](photos.md) step 3) in the frames that show
    it best, then place them with place_from_photos and clear `photo_placement` before compose
-   ([photos.md](photos.md) step 5).
+   ([photos.md](photos.md) step 5). Fill the windows with what covers them in the frames:
+   `fill_windows(covers="blind" | "curtain" | None)`.
 6. compose_scene, then **compare_photo** renders every frame's camera in one run, one row per frame.
    A render that is all black or one flat face is a camera inside an object (set_input / compare_photo warn
    "camera of … is inside …"): move that object where the frames show it, not onto a camera. White furniture

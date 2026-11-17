@@ -161,8 +161,9 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
      an asset gets `win_<id>`, stretched to the opening (`fit_scale`): an aluminum sash, a floor-length one, a
      small frosted one for a bathroom / toilet, a casement for narrow ones, a fixed one in offices and shops, or
      a shop window for a shop's opening 1.8 m+ wide. At home it also gets a curtain `curtain_<id>` over
-     it (`covers`: hung on the room side, 0.1 m above the head and 0.2 m wider; `covers="blind"` for a roller
-     blind, `None` for none). Furniture under a window does not clash with the curtain. `opening_fit` = the
+     it, in an office / school / lab / hospital a blind `blind_<id>` (`covers="auto"`; hung on the room
+     side, 0.1 m above the head and 0.2 m wider, a blind cut down to the sill; `covers="curtain"` / `"blind"`
+     to choose, `None` for none). Furniture under a window does not clash with the curtain. `opening_fit` = the
      asset had to stretch past 0.75–1.33x, or a curtain is taller than the room (a long one raises its rail up
      to the ceiling): pick another candidate. Windows and curtains come from an asset folder
      (`local:`) if there is one. Without them, an opening whose best asset is no window / curtain (only weak matches, or one

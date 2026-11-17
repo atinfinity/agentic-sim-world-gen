@@ -141,7 +141,8 @@ tool).
 
    Only an object no photo shows on the floor goes in `compose_scene(not_in_photos={id: why})`; report those.
    Size ranges come from what you estimated (wide ranges: ±30%). Use the windows/doors in room.openings when
-   visible. Match the floor/wall looks and the lighting (e.g. herringbone parquet -> wood_light, white paint
+   visible, then `fill_windows` with what covers them in the photos: `covers="blind"` (slats, a roller),
+   `"curtain"`, or `None` (bare glass); the default follows the place. Match the floor/wall looks and the lighting (e.g. herringbone parquet -> wood_light, white paint
    -> paint_white, home lighting; warehouse -> concrete/epoxy + warehouse).
 6. **Camera** (`inputs[].camera`):
    - position = where the photographer stood (x, y inside the room, z = 1.0-1.6 m; lower if the floor fills
