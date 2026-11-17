@@ -120,6 +120,16 @@ def test_status_lists_unlocated_floor_furniture(tmp_path):
     assert "photo_placement" not in service.status(d)
 
 
+def test_wall_hung_equipment_is_not_floor_furniture(tmp_path):
+    """A radiator / air conditioner hung on the wall has no feet in the photos to locate."""
+    d = _scene(tmp_path, DESK)
+    service.set_layout(d, "wardrobe", {"against_wall": "west", "wall_height": 0.15})
+    assert "photo_placement" not in service.status(d)
+    assert not service._floor_furniture(service.ResolvedScene.load(d / "scene.resolved.json").obj("wardrobe"))
+    service.set_layout(d, "wardrobe", {"against_wall": "west", "wall_height": 0})  # 0 = standing on the floor
+    assert service.status(d)["photo_placement"]["unlocated"] == ["wardrobe"]
+
+
 def test_compose_waits_for_the_photos(tmp_path):
     d = _scene(tmp_path, (1.0, 2.8))  # the desk is misplaced and the wardrobe not located
     with pytest.raises(ValueError, match="misplaced: desk; unlocated: wardrobe"):

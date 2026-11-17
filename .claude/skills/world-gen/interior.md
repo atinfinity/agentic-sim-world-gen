@@ -104,6 +104,44 @@ ceiling equipment).
   It hangs flat on the wall above the腰壁 / 巾木. The picture comes from `set_screen` (or `{"Picture": "Blank"}`),
   as for signage. A row of posters: `array {count, spacing}` with the same layout.
 
+## Wall and ceiling equipment (「エアコン」「窓の下の暖房器」「壁のスピーカー」「天井の換気口」「コンセント」)
+
+Equipment fixed to the walls or the ceiling is neither furniture nor clutter, so it is easy to leave out (a
+classroom video lost its radiators under the windows, the wall speakers and the ceiling vents).
+**Place what is big enough to see in the render** (about 0.3 m or more): air conditioners, radiators / heaters,
+speakers, ceiling vents and diffusers, a wall clock, exit signs, a fire extinguisher. Skip outlets, switches,
+thermostats and smoke detectors unless the user asks or the world is for close-up work (a robot pressing a switch,
+synthetic data of these things).
+
+| 設備 | query (alt_queries) | usual size of the wall-mounted kind (long, short, height) | how to place | in the catalog (2026-11-16) |
+|---|---|---|---|---|
+| 壁掛けエアコン | "air conditioner" ("wall mounted air conditioner", "split air conditioner") | 0.8-1.0, 0.2-0.3, 0.25-0.35 | against_wall, wall_height 1.9-2.1 (0.1-0.3 m under the ceiling) | **none**: SimReady's are 2.5-4.5 m rooftop / precision units (`off_size` for "air conditioner"). A ceiling cassette and diffuser can come from an interior asset folder (`local:<dir>`, see "Interior finish pieces") |
+| ラジエーター・暖房器（窓の下） | "radiator" ("panel radiator", "wall heater") | 0.6-1.6, 0.06-0.15, 0.4-0.7 | against_wall, wall_height 0.1-0.15, along = under the window | **none**: car radiators (off_place in a home / office / school) and Poly Haven's stoves (off_size) |
+| 壁のスピーカー | "wall speaker" ("speaker", "loudspeaker") | 0.2-0.35, 0.15-0.25, 0.3-0.5 | against_wall, wall_height 2.0-2.2 | **none**: Poly Haven's megaphone and boombox only |
+| 天井の換気口・吹出し口 | "ceiling vent" ("air vent", "ceiling air diffuser") | 0.3-1.0 square, 0.05-0.1 | `layout.ceiling: true` | SimReady `extractor_ceiling_a01` (0.95 × 0.95 × 0.08): query "ceiling vent", which lists it first. "air vent" alone lists car parts (an armrest, a hood) and a smoke detector before it, with or without a place |
+| 壁の時計 | "wall clock" | 0.25-0.35 round | against_wall, wall_height 1.9-2.1 | SimReady, Poly Haven `wall_clock` |
+| 誘導灯 | "emergency exit sign" ("exit sign") | | wall_height 2.2 above the door | SimReady (hospital signs) |
+| 消火器 | "fire extinguisher" | | on the floor against_wall, or wall_height 0.6 | SimReady, Isaac |
+| 煙感知器・火災報知器 | "smoke detector" / "fire alarm" | ~0.12 | ceiling / wall_height 1.5 | SimReady, Poly Haven `fire_alarm` |
+| コンセント・スイッチ | "electrical outlet" / "light switch" | ~0.07 × 0.11 | wall_height 0.25 / 1.2 | SimReady (`sm_socket_*`) |
+
+- The sizes in the table are guides for the wall-mounted kind, not the server's defaults. Without min/max_size the
+  server uses wider typical ranges (`assets/sizes.py`: "air conditioner" up to 1.2 m long and 0.8 m high, also
+  covering a 0.95 m ceiling cassette; "radiator"; "vent"), so a rooftop unit or a Poly Haven stove is `off_size`
+  and goes last. Passing the table's values as min/max_size drops a ceiling cassette (0.95 m square): give limits
+  only for the kind you saw. For a data center's or a roof's big units, query "precision air conditioner" /
+  "rooftop air conditioner" (their own typical sizes).
+- Give the room's `place` (home, office, school ...): it sends car parts and other trades' assets after the room's
+  own (`match.off_place`).
+- Wall equipment hangs: `layout: {against_wall: "<wall>", along: 0..1, wall_height: <m to its bottom>}` (no rigid
+  body, nothing holds it up in physics). It is not floor furniture: do not locate it in fit_photos, and
+  `photo_placement` / place_from_photos leave it out. Read `along` off the frames (a radiator under a window:
+  the window's center along that wall).
+- **No asset of that shape** (a radiator, a wall air conditioner, a wall speaker): do not stand in something of
+  another shape or trade (a car radiator, a rooftop unit, a megaphone). Leave it out and name it in the report
+  (「窓の下のラジエーターは該当アセットが無いので置いていない」); the user's own USD can add it (`local:<dir>`).
+  Do not build boxes for it either.
+
 ## Steps, stairs and railings (「奥が一段高い」「小上がり」「階段がある」「ステージ」)
 
 - `set_room(levels=[{id, rect [x0,y0,x1,y1] | polygon, height, floor / color, rail ["south", ...]}])`: a solid raised

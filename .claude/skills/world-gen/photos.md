@@ -144,6 +144,10 @@ tool).
    visible, then `fill_windows` with what covers them in the photos: `covers="blind"` (slats, a roller),
    `"curtain"`, or `None` (bare glass); the default follows the place. Match the floor/wall looks and the lighting (e.g. herringbone parquet -> wood_light, white paint
    -> paint_white, home lighting; warehouse -> concrete/epoxy + warehouse).
+   **Wall and ceiling equipment** you see (an air conditioner, radiators under the windows, wall speakers, ceiling
+   vents, a clock, exit signs) is listed and placed too when it is about 0.3 m or bigger: hang it by wall,
+   `along` and `wall_height` (or `ceiling: true`), not from located feet. See [interior.md](interior.md) "Wall and
+   ceiling equipment" for the queries, heights and which have no asset (name those in the report).
 6. **Camera** (`inputs[].camera`):
    - position = where the photographer stood (x, y inside the room, z = 1.0-1.6 m; lower if the floor fills
      much of the frame and the horizon line sits high);

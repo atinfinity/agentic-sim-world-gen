@@ -79,6 +79,16 @@ TYPICAL: dict[str, tuple[Vec3, Vec3]] = {
     "waste bin": ((0.2, 0.15, 0.25), (0.7, 0.7, 1.1)),
     "garbage can": ((0.2, 0.15, 0.25), (0.7, 0.7, 1.1)),
     "fire extinguisher": ((0.12, 0.08, 0.3), (0.35, 0.25, 0.9)),
+    # wall and ceiling equipment: SimReady's "air conditioner"s are 2.5-4.5 m rooftop / precision units; a
+    # room's unit, radiator or vent is this size. The big units have their own kinds (the longest tail decides)
+    "air conditioner": ((0.5, 0.15, 0.2), (1.2, 1.0, 0.8)),  # wall split, window unit, ceiling cassette
+    "air conditioner unit": ((0.5, 0.15, 0.2), (1.2, 1.0, 0.8)),
+    "air conditioning unit": ((0.5, 0.15, 0.2), (1.2, 1.0, 0.8)),
+    "floor standing air conditioner": ((0.4, 0.2, 1.5), (1.2, 0.8, 2.2)),
+    "rooftop air conditioner": ((1.5, 0.8, 1.0), (4.0, 2.4, 4.5)),
+    "precision air conditioner": ((0.8, 0.6, 1.8), (4.0, 2.4, 4.5)),  # data center CRAC / CRAH
+    "radiator": ((0.4, 0.05, 0.3), (2.0, 0.3, 1.0)),
+    "vent": ((0.15, 0.02, 0.02), (1.0, 1.0, 0.4)),  # wall grille, ceiling diffuser / extractor
     # warehouse, outdoor
     "warehouse rack": ((1.5, 0.8, 1.8), (3.0, 1.2, 6.0)),
     "pallet rack": ((1.5, 0.8, 1.8), (3.0, 1.2, 6.0)),

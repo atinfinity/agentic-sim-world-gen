@@ -66,7 +66,7 @@ Read only what the request needs (each is a few thousand tokens):
 | signage screens, posters, POPs, an image on a screen | [pictures.md](pictures.md) |
 | a floor plan (JSON / DXF / IFC / image / PDF) | [plans.md](plans.md) |
 | an outdoor site, or the street / parking / garden outside a room | [outdoor.md](outdoor.md) |
-| partitions, raised floors, ceiling fixtures, beams, posters on walls, steps / stairs, columns, part of the floor | [interior.md](interior.md) |
+| partitions, raised floors, ceiling fixtures, beams, posters on walls, wall / ceiling equipment (air conditioners, radiators, speakers, vents, outlets), steps / stairs, columns, part of the floor | [interior.md](interior.md) |
 | training data (SDG), variations, a mobile robot's map | [data.md](data.md) |
 | an option a tool's summary does not show | `tool_help("<tool>")` (not tools.md) |
 
