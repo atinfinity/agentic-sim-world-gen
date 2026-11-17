@@ -90,7 +90,9 @@ flowchart TD
 flowchart TD
     f["finish"] --> iss{"配置のissuesや<br/>未選択の配置案がある？"}
     iss -->|"ある"| s1["stopped=issues / layout_options"]
-    iss -->|"無い"| comp["compose_scene<br/>（scene.usdaが古いときだけ）"]
+    iss -->|"無い"| gate{"窓の外が灰色（siteもwindow_viewの仮定も無い）？<br/>写真と比べていない（比較の回数が残りIsaac Simがある）？"}
+    gate -->|"はい"| s0["stopped=window_view / compare"]
+    gate -->|"いいえ"| comp["compose_scene<br/>（scene.usdaが古いときだけ）"]
     comp -->|"失敗"| s2["stopped=compose"]
     comp --> isaac{"Isaac Simがある？"}
     isaac -->|"無い"| lic
@@ -99,8 +101,15 @@ flowchart TD
     chk -->|"draft=true"| dr["叩き台の撮影だけで終わる"]
     chk -->|"passed"| req["check_request<br/>指示の項目を測り直す"]
     req --> lic["license_report<br/>ライセンスの一覧"]
-    lic --> done["done（unmetの項目が無ければtrue）<br/>Isaac Simが無ければunverifiedに物理を挙げる"]
+    lic --> done["done（unmetの項目が無ければtrue）<br/>Isaac Simが無ければunverifiedに物理を挙げる<br/>report_must_includeに報告で触れること"]
 ```
+
+編集ツールの結果（`service.reply`）は、前回の結果から変わったところだけを返します。
+ステータスのヒント（`*_hint`・`*_next`・`substitute`）も同じで、前回と同じ文面なら本文を送らず、上の方の`open_hints`にキーと最初の一文を並べます。
+ツール自身の`hint` / `next`は毎回送ります。前回の結果を別のサーバープロセスが返していたら（新しいセッション）、全部を全文で送ります。
+並びは言語→`issues`→`open_hints`→新しいヒント→残り（`usability`は先頭5件と`usability_more`）。
+読み流されたヒントのうち、窓の外と写真の比較は`finish`で止め（`stopped`）、報告に要るもの（usabilityの件数・種類、代用、見送った小物、
+アセットの無い窓・カーテン、写真で位置の分からない家具）は`finish`の`report_must_include`に挙げます。
 
 関係するファイル
 - [src/agentic_sim_world_gen/service.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/service.py)：CLIとMCP共通の操作（`create_scene`・`start_scene`・`_save`・`compose_scene`・`check_in_isaac`・`finish`など）

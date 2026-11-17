@@ -609,12 +609,26 @@ def _window_view(s: ResolvedScene) -> dict[str, Any]:
     seen = [o.id for o in room.openings if o.kind == "window" or o.style == "auto_sliding"]
     if not seen:
         return {}
+    if _assumed(s, WINDOW_VIEW_ITEMS):
+        return {}  # the agent recorded that the windows are not seen / covered
     home = room.place in (None, "home") or (room.place or "").endswith(("cafe", "restaurant", "bakery"))
-    return {"window_view": {"openings": seen},
-            "window_view_hint": ("window_view: nothing is outside the room, so its windows show a gray void. "
-                                 "To show ground and sky, set_room(site=true) (asphalt and sun"
+    return {"window_view": {"openings": seen, "stops_finish": True},
+            "window_view_hint": ("window_view: nothing is outside the room, so its windows show a gray void, and "
+                                 "finish() stops here. To show ground and sky, set_room(site=true) (asphalt and sun"
                                  + ("; a house or a log cabin: site={\"ground\": \"grass\"}" if home else "")
-                                 + "); leave it if the windows are not seen")}
+                                 + "). If no render shows the windows, or blinds / curtains cover them, record that "
+                                 "instead: set_assumptions([{item: \"window_view\", value: <why, in the user's "
+                                 "language>}])")}
+
+
+WINDOW_VIEW_ITEMS = ("window_view", "窓の外")  # the assumption that the windows' outside is not seen
+PHOTO_COMPARE_ITEMS = ("photo_compare", "写真との比較")  # the assumption that the photos cannot be compared
+
+
+def _assumed(s: ResolvedScene, items: tuple[str, ...]) -> bool:
+    """Whether an assumption row (of the room or of any object) starts with one of these items: 「窓の外の景色」
+    counts as 窓の外, window_view_w1 as window_view."""
+    return any(a.item.strip().lower().startswith(items) for a in s.spec.assumptions)
 
 
 SHOP_HINTS = {
@@ -911,11 +925,8 @@ def status(scene: str | Path) -> dict[str, Any]:
         if p.substitute:
             objects[-1]["substitute"] = _substitute_view(o, p)
         if p.size_misses:
-            objects[-1]["size_misses"] = {
-                "hint": "all candidates are weak, but these good matches fall outside min_size/max_size "
-                "(off: which limit and by how much); widen the limits with research_object if one would do",
-                "assets": p.size_misses,
-            }
+            # good matches min_size/max_size dropped (off: which limit, by how much); what to do: `substitute`
+            objects[-1]["size_misses"] = {"assets": p.size_misses}
     d = path.parent
     usd = d / "scene.usda"
     from agentic_sim_world_gen.inputs import missing_source
@@ -1762,6 +1773,47 @@ def _one_line(c: dict[str, Any]) -> str:
     return f"[{c['index']}] {c['name']} {size} m{score}{' weak' if m.get('weak') else ''}{off}"
 
 
+def _substitute_line(o: dict[str, Any]) -> dict[str, Any] | None:
+    """One line per object whose candidates are all weak: {id, nearest, try}. The substitute's hint and the
+    size_misses hint were two paragraphs inside the object, sent again on every move of it (15 times in a trial)."""
+    sub, miss = o.get("substitute"), (o.get("size_misses") or {}).get("assets") or []
+    if not sub and not miss:
+        return None
+    sub = sub if isinstance(sub, dict) else {}
+    cat = sub.get("catalog") or {}
+    kind = cat.get("kind") or o.get("query")
+    cands = o.get("candidates") or []
+    if miss:
+        m = miss[0]
+        off = ", ".join(f"{k} {v}" for k, v in (m.get("off") or {}).items())
+        size = "×".join(f"{v:g}" for v in m.get("size_m") or [])
+        nearest = f"{m['name']} {size} m (outside min/max_size: {off})"
+        if len(miss) > 1:
+            nearest += "; also " + ", ".join(x["name"] for x in miss[1:])
+    elif o.get("selected") is not None and cands:
+        nearest = cands[o["selected"]].get("name")
+    else:
+        nearest = None
+    if sub.get("not_in_catalog"):
+        do = (f"no source has a '{kind}' at all: do not search again; ask the user once - 代用 (the nearest) / "
+              "their own USD (local:<dir> in WORLDGEN_SOURCES) / drop it (remove_object)")
+    elif miss:
+        do = "widen min_size/max_size with research_object if the nearest would do, else keep the asset and call it 代用"
+    elif any((cat.get("counts") or {}).values()):
+        do = f"research_object once with the plain kind word '{kind}', else keep the asset and call it 代用"
+    else:
+        do = "research_object once with other synonyms, else keep the asset and tell the user it is a 代用"
+    return {"id": o["id"], "nearest": nearest, "try": do}
+
+
+def _without_sub_hints(o: dict[str, Any]) -> dict[str, Any]:
+    """A focus object in full, without the substitute / size_misses paragraphs (the `substitute` line says it)."""
+    if not any(isinstance(o.get(k), dict) and "hint" in o[k] for k in ("substitute", "size_misses")):
+        return o
+    return {k: ({kk: vv for kk, vv in v.items() if kk != "hint"} if k in ("substitute", "size_misses")
+                and isinstance(v, dict) else v) for k, v in o.items()}
+
+
 def brief(st: dict[str, Any], focus: str | list[str] | None = None) -> dict[str, Any]:
     """The status made small enough for an MCP result in a big scene (a konbini with 39 objects and 6 candidates
     each is ~56k characters in full). Each object keeps its selected asset (short caption) and the other
@@ -1771,15 +1823,18 @@ def brief(st: dict[str, Any], focus: str | list[str] | None = None) -> dict[str,
         return st
     focus = {focus} if isinstance(focus, str) else set(focus or ())
     objs, decor = [], {}
+    subs = [line for o in st["objects"] if not o.get("decor") and (line := _substitute_line(o))]
     for o in st["objects"]:
         if o["id"] in focus:
-            objs.append(o)
+            objs.append(_without_sub_hints(o))
             continue
         cands = o.get("candidates") or []
         if o.get("decor"):  # stock and table things in one line each
             decor[o["id"]] = _decor_line(o, cands[o["selected"]] if o.get("selected") is not None and cands else None)
             continue
-        b = {k: v for k, v in o.items() if k != "candidates" and v is not None}
+        b = {k: v for k, v in o.items() if k not in ("candidates", "size_misses") and v is not None}
+        if isinstance(b.get("substitute"), dict):  # what to do is in the `substitute` line, not the object
+            b["substitute"] = "not_in_catalog" if b["substitute"].get("not_in_catalog") else True
         if b.get("z") == 0:
             b.pop("z")
         if b.get("array"):
@@ -1799,6 +1854,8 @@ def brief(st: dict[str, Any], focus: str | list[str] | None = None) -> dict[str,
     if st.get("assumptions"):  # the options are the preview's choices for 「違う」, not for the agent
         more["assumptions"] = [{k: v for k, v in a.items() if k != "options" and v not in (None, [], "")}
                                if isinstance(a, dict) else a for a in st["assumptions"]]
+    if subs:
+        more["substitute"] = subs
     return {**st, **more, "objects": objs, **({"decor": decor} if decor else {}),
             "brief": "objects show the selected asset and other candidates in one line each, decor objects one line "
             "each; get_scene(scene_dir, object_id) or view_candidates for one object in full"}
@@ -1822,23 +1879,66 @@ def _decor_line(o: dict[str, Any], c: dict[str, Any] | None) -> str:
 
 REPLY_STATE = ".last_reply.json"  # what the agent last saw of each object / key
 REPLY_KEEP = ("scene_dir", "issues", "usd", "reply_language", "brief")
+REPLY_USABILITY = 5  # usability warnings listed in an editing tool's result; get_scene lists them all
+REPLY_GIST = 90  # characters of each open_hints entry
 
 
 def _digest(v: Any) -> str:
     return hashlib.sha1(json.dumps(v, sort_keys=True, ensure_ascii=False, default=str).encode()).hexdigest()[:12]
 
 
+def _is_hint(k: str) -> bool:
+    """A key that tells the agent what to do: *_hint, *next and the substitute lines."""
+    return k.endswith(("hint", "next")) or k == "substitute"
+
+
+def _standing_hint(k: str) -> bool:
+    """A hint from the scene's status, which stands until the scene changes, so it can go by name. The
+    tool's own `hint` / `next` are about this call and always sent."""
+    return _is_hint(k) and k not in ("hint", "next")
+
+
+def _gist(v: Any) -> str:
+    """A shown hint in a few words: its first sentence, or the ids of a substitute list, so open_hints keeps
+    its meaning after the conversation was compacted."""
+    if isinstance(v, list):
+        return ", ".join(str(x.get("id", x)) if isinstance(x, dict) else str(x) for x in v)[:REPLY_GIST]
+    first = re.split(r"[.;:](?:\s|$)", str(v), maxsplit=1)[0].strip()
+    return first if len(first) <= REPLY_GIST else first[:REPLY_GIST - 1] + "…"
+
+
+# this MCP server process: a hint shown to an earlier session (another process) is sent in full again
+_PROCESS = f"{os.getpid()}:{os.urandom(4).hex()}"
+
+
 def _lang_first(r: dict[str, Any]) -> dict[str, Any]:
-    """The language keys before the rest of a result."""
-    head = {k: r[k] for k in ("reply_language", "reply_language_hint") if k in r}
-    return {**head, **{k: v for k, v in r.items() if k not in head}} if head else r
+    """The order of a result: the language, the issues, the open hints' names and the hints, then the
+    rest. The hints came after 5k characters of usability warnings and were the ones the agent left alone."""
+    head = [k for k in ("reply_language", "reply_language_hint", "scene_dir", "issues", "open_hints") if k in r]
+    order = head + [k for k in r if k not in head and _is_hint(k)]
+    return {**{k: r[k] for k in order}, **{k: v for k, v in r.items() if k not in order}}
+
+
+def _usability_short(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """The first REPLY_USABILITY warnings and what the rest are (18 warnings were 5k characters a reply)."""
+    if len(rows) <= REPLY_USABILITY:
+        return {"usability": rows}
+    kinds: dict[str, int] = {}
+    for r in rows[REPLY_USABILITY:]:
+        kinds[r.get("kind", "?")] = kinds.get(r.get("kind", "?"), 0) + 1
+    return {"usability": rows[:REPLY_USABILITY],
+            "usability_more": f"+{len(rows) - REPLY_USABILITY} more ({', '.join(f'{k} {n}' for k, n in kinds.items())}"
+                              "): get_scene(scene_dir) lists them all"}
 
 
 def reply(st: dict[str, Any], focus: str | list[str] | None = None, full: bool = False) -> dict[str, Any]:
     """The result of an editing tool: only what changed since the agent's last result for this scene
-    (objects, decor lines and status sections, by content), the focus objects in full, the issues, every hint
-    and a summary of counts. Full status costs 12-16k characters per call in a shop and kept compacting the
-    conversation. full=True (create_scene, get_scene) returns everything; both remember what was shown."""
+    (objects, decor lines, status sections and hints, by content), the focus objects in full, the issues and a
+    summary of counts. Full status costs 12-16k characters per call in a shop and kept compacting the
+    conversation. full=True (create_scene, get_scene) returns everything; both remember what was shown.
+    A hint the agent already saw word for word is not sent again (window_view_hint went out 47 times in one
+    run and was never acted on): its name goes in `open_hints` near the top, a new or changed hint in full. The
+    language reminder is in full on the first result, short after; usability lists its first REPLY_USABILITY."""
     b = _lang_first(brief(st, focus))
     if "objects" not in b or not b.get("scene_dir"):
         return b
@@ -1846,7 +1946,7 @@ def reply(st: dict[str, Any], focus: str | list[str] | None = None, full: bool =
     short = brief(st) if focus else b  # digests of the short form: a focus object is not "changed" next time
     now = {"objects": {o["id"]: _digest(o) for o in short["objects"]},
            "decor": {k: _digest(v) for k, v in (short.get("decor") or {}).items()},
-           "keys": {k: _digest(v) for k, v in b.items() if k not in ("objects", "decor")}}
+           "keys": {k: _digest(v) for k, v in b.items() if k not in ("objects", "decor")}, "process": _PROCESS}
     try:
         last = json.loads((d / REPLY_STATE).read_text())
     except (OSError, ValueError):
@@ -1855,19 +1955,28 @@ def reply(st: dict[str, Any], focus: str | list[str] | None = None, full: bool =
         (d / REPLY_STATE).write_text(json.dumps(now))
     except OSError:
         pass
-    if full or not isinstance(last, dict):
-        return b
+    if full or not isinstance(last, dict) or last.get("process") != _PROCESS:
+        return b  # a new server process is a new session: it has seen nothing yet
     focus = {focus} if isinstance(focus, str) else set(focus or ())
     out: dict[str, Any] = {}
-    same = []
+    same, open_hints = [], {}
     for k, v in b.items():
         if k in ("objects", "decor"):
             continue
-        if (k in REPLY_KEEP or k.endswith(("hint", "next")) or not isinstance(v, (dict, list))
-                or now["keys"][k] != last.get("keys", {}).get(k)):
+        if k == "reply_language_hint" and b.get("reply_language"):
+            out[k] = language_hint(b["reply_language"], short=True)  # in full on the first result only
+        elif k in REPLY_KEEP or now["keys"][k] != last.get("keys", {}).get(k):
+            out[k] = v
+        elif _standing_hint(k):
+            open_hints[k] = _gist(v)
+        elif not isinstance(v, (dict, list)):
             out[k] = v
         else:
             same.append(k)
+    if open_hints:
+        out["open_hints"] = open_hints
+    if isinstance(out.get("usability"), list):
+        out.update(_usability_short(out["usability"]))
     seen, seen_decor = last.get("objects", {}), last.get("decor", {})
     out["objects"] = [o for o in b["objects"]
                       if o["id"] in focus or seen.get(o["id"]) != now["objects"].get(o["id"])]
@@ -1883,9 +1992,11 @@ def reply(st: dict[str, Any], focus: str | list[str] | None = None, full: bool =
                       "usability": len(b.get("usability") or []),
                       "unchanged": n_obj + n_decor - len(shown & (set(now["objects"]) | set(now["decor"]))),
                       "unchanged_sections": same}
-    out["brief"] = ("only what changed since your last agentic-sim-world-gen result for this scene (objects, decor lines, "
-                    "sections); the rest is as before. get_scene(scene_dir) for everything")
-    return out
+    out["brief"] = ("only what changed since your last agentic-sim-world-gen result (objects, decor lines, sections, "
+                    "hints); the rest is as before. get_scene(scene_dir) for everything"
+                    + ("; open_hints: still standing, shown before - act on them or tell the user why not"
+                       if open_hints else ""))
+    return _lang_first(out)
 
 
 JA = re.compile(r"[\u3040-\u30ff\u4e00-\u9fff]")
@@ -2422,12 +2533,16 @@ def finish(scene: str | Path, draft: bool = False, steps: int = 240, gif: bool =
            force: bool = False) -> dict[str, Any]:
     """The closing steps in one call: write the USD if it is behind the scene, run the Isaac Sim check,
     measure the recorded request items again and report the licenses. Stops at the first thing that needs a fix
-    (`stopped`: issues / layout_options / compose / check) and says what in `next`. draft=True: only the USD and
-    the pictures without physics (the first draft after fixing the layout).
-    Without Isaac Sim the check is `skipped` and the rest still runs (`unverified`)."""
+    (`stopped`: issues / layout_options / window_view / compare / compose / check) and says what in `next`.
+    draft=True: only the USD and the pictures without physics (the first draft after fixing the layout).
+    Without Isaac Sim the check is `skipped` and the rest still runs (`unverified`). Done, it lists what the
+    report must name (`report_must_include`)."""
     d = _resolved_path(scene).parent
     out: dict[str, Any] = {"scene_dir": str(d), "done": False}
-    last = status(d).get("last_check") or {}
+    st0 = status(d)
+    last = st0.get("last_check") or {}
+    if not draft and not st0["issues"] and not st0.get("layout_options") and (gate := _finish_gate(st0)):
+        return {**out, **gate}
     if not draft and last.get("verdict") == "passed" and not last.get("stale") and _usd_fresh(d):
         look: dict[str, Any] = {"usd": str(d / "scene.usda"), "check": {"verdict": "passed", "reused": "the scene has "
                                 "not changed since the last check"}}
@@ -2462,10 +2577,74 @@ def finish(scene: str | Path, draft: bool = False, steps: int = 240, gif: bool =
         out["unverified"] = ["physics (no Isaac Sim on this machine): say so, do not call the scene checked"]
     unmet = [r for r in out.get("requirements_open", []) if r["status"] == "unmet"]
     out["done"] = not unmet
+    if must := _report_must_include(d):
+        out["report_must_include"] = must
     out["next"] = (f"{len(unmet)} request item(s) not met (requirements_open): fix them and finish again, or tell "
                    "the user why not" if unmet else
                    "report to the user: what was made, the substitutes, the licenses (warnings first)"
-                   + (", and that physics was not checked" if "unverified" in out else ""))
+                   + (", and that physics was not checked" if "unverified" in out else "")
+                   + ("; name every item of report_must_include in the report" if must else ""))
+    return out
+
+
+def _finish_gate(st: dict[str, Any]) -> dict[str, Any] | None:
+    """What finish stops on besides issues: hints the agent read past to the end of a run. Windows onto a
+    gray void with no site and no recorded window_view assumption; photos not compared with the scene as it is,
+    while the compare budget lasts and Isaac Sim is at hand."""
+    if (st.get("window_view") or {}).get("stops_finish"):
+        return {"stopped": "window_view", "window_view": st["window_view"], "next": st["window_view_hint"]}
+    pc = st.get("photo_compare") or {}
+    if pc.get("stops_finish") and isaac_python() is not None:  # a live connection cannot render the photos
+        return {"stopped": "compare", "photo_compare": pc,
+                "next": (st.get("photo_compare_hint") or "") + ". Then finish again"}
+    return None
+
+
+def _empty_windows(s: ResolvedScene) -> list[str]:
+    """The window openings with no window asset in them, and the ones with no curtain / blind where the scene has
+    covers (a home, or another window got one). Read from the spec, not from the not-found log: the log can
+    be off (WORLDGEN_MISSING=0) or kept in another machine's cache."""
+    from agentic_sim_world_gen.layout.room import RoomGeometry
+
+    have_win = {o.opening for o in s.spec.objects if o.opening}
+    have_cover = {o.covers for o in s.spec.objects if o.covers}
+    covered = s.spec.room.place in (None, "home") or bool(have_cover)
+    out = []
+    for w in RoomGeometry(s.spec.room).walls:
+        for op in w.openings:
+            if op.kind != "window":
+                continue
+            if op.id not in have_win:
+                out.append(f"window ({op.id})")
+            if covered and op.id not in have_cover and cover_query(op, w.height, "curtain"):
+                out.append(f"curtain / blind ({op.id})")
+    return out
+
+
+def _report_must_include(d: Path) -> dict[str, Any]:
+    """What the final report has to name (a run left 18 usability warnings and its report said nothing of
+    them): the usability warnings by kind, the substitutes (decor too), the decor left out, the window openings
+    left empty and the floor furniture no photo located."""
+    full = status(d)
+    st = brief(full)
+    out: dict[str, Any] = {}
+    if u := st.get("usability"):
+        kinds: dict[str, int] = {}
+        for r in u:
+            kinds[r["kind"]] = kinds.get(r["kind"], 0) + 1
+        out["usability"] = {"count": len(u), "kinds": kinds}
+    subs = [f"{x['id']}: {x['nearest']}" if x.get("nearest") else x["id"] for x in st.get("substitute") or []]
+    for o in full.get("objects") or []:  # a weak match among the decor is a substitute too
+        if o.get("decor") and o.get("substitute") and o.get("selected") is not None and o.get("candidates"):
+            subs.append(f"{o['id']}: {o['candidates'][o['selected']].get('name')}")
+    if subs:
+        out["substitutes"] = subs
+    if rows := st.get("decor_skipped"):
+        out["decor_skipped"] = [f"{r['label']} ({r['reason']})" for r in rows]
+    if win := _empty_windows(load(d)):
+        out["windows_not_found"] = win
+    if unlocated := (st.get("photo_placement") or {}).get("unlocated"):
+        out["unlocated"] = unlocated
     return out
 
 
@@ -3330,9 +3509,9 @@ def _photo_placement(s: ResolvedScene, d: Path) -> dict[str, Any]:
                        "more feet / corners (a diagonal one) in the frames, fit again and place_from_photos")
         return out
     if not miss and not unknown:
-        out["hint"] = ("unlocated: these stand on the floor but no fit_photos locate has their object id - add 2-4 "
-                       "feet / corners of each in the frames that show them (another object of the same kind seen "
-                       "in the frames gets its own id), fit again and place_from_photos")
+        # a work order here was read past; finish lists them in report_must_include, compose_scene says how
+        out["hint"] = ("unlocated: no photo locates these floor pieces (placed by a guess): report these to the user"
+                       + ("; one_point: add more feet of these" if one_point else ""))
         return out
     out["hint"] = ("the photos (fit_photos locate with object) put these elsewhere: place_from_photos moves each "
                    "to its located feet (the asset's footprint fitted to them) instead of a relation guess"
@@ -3340,7 +3519,7 @@ def _photo_placement(s: ResolvedScene, d: Path) -> dict[str, Any]:
                       else "")
                    + ("; located_unknown: no object has that id - add it or fix the locate's object" if unknown
                       else "")
-                   + ("; unlocated: floor furniture with no locate - locate it too" if unlocated else "")
+                   + ("; unlocated: no photo locates these - report these" if unlocated else "")
                    + ("; one_point: add more feet of these" if one_point else ""))
     return out
 
@@ -5247,7 +5426,7 @@ def compare_photo(scene: str | Path, input_id: str | None = None, timeout_s: int
         return {"ok": False, "error": f"no input {input_id or ''} with a camera; set one with set_input"}
     missing = [i.id for i in photos if not i.path or not Path(i.path).exists()]
     if missing:
-        return {"ok": False, "error": f"photo file of input {missing} not found"}
+        return _compare_failed(d, {"ok": False, "error": f"photo file of input {missing} not found"})
     usd = d / "scene.usda"
     if not usd.exists():
         return {"ok": False, "error": f"{usd} not found; run compose_scene first"}
@@ -5266,7 +5445,7 @@ def compare_photo(scene: str | Path, input_id: str | None = None, timeout_s: int
     proc, err = _run_isaac(RENDER_VIEW_SCRIPT, [str(usd), "--jobs", str(jf), "--compare", str(sheet)],
                            timeout_s + 60 * (len(jobs) - 1))
     if proc is None:
-        return err
+        return _compare_failed(d, err)
     result: dict[str, Any] = {"ok": proc.returncode == 0 and sheet.exists(), "returncode": proc.returncode,
                               **_isaac_mode(), "inputs": [i.id for i in photos],
                               "cameras": {i.id: i.camera.model_dump() for i in photos}}
@@ -5287,10 +5466,27 @@ def compare_photo(scene: str | Path, input_id: str | None = None, timeout_s: int
                 result["measure"][i.id] = {k: m[k] for k in ("camera", "across", "arrays_in_view", "notes")}
     else:
         result.update(_isaac_failure(proc))
+        _compare_failed(d, result)
     return result
 
 
 COMPARE_JSON = "compare.json"
+COMPARE_FAILURES = 2  # failed compare_photo calls after which finish no longer waits for one
+
+
+def _compare_failed(d: Path, result: dict[str, Any]) -> dict[str, Any]:
+    """Count a compare_photo that made no comparison (finish must not wait forever for one that cannot run)."""
+    f = d / COMPARE_JSON
+    try:
+        old = json.loads(f.read_text())
+    except (OSError, ValueError):
+        old = {}
+    old["failed"] = int(old.get("failed", 0)) + 1
+    try:
+        f.write_text(json.dumps(old, indent=1))
+    except OSError:
+        pass
+    return result
 COMPARE_ROUNDS = 3  # compare_photo rounds to aim for (a photo trial took 80 turns of small fixes)
 
 
@@ -5339,9 +5535,19 @@ def _compare_state(s: ResolvedScene, d: Path) -> dict[str, Any]:
     try:
         rec = json.loads((d / COMPARE_JSON).read_text())
     except (OSError, ValueError):
-        return {"photo_compare": {"compared": False},
+        rec = {}
+    # finish waits for a comparison only when one can be made: the photo files are here, compare_photo has
+    # not failed COMPARE_FAILURES times, and no assumption says the photos cannot be compared
+    gate = (all(i.path and Path(i.path).exists() for i in photos) and int(rec.get("failed", 0)) < COMPARE_FAILURES
+            and not _assumed(s, PHOTO_COMPARE_ITEMS))
+    stop = ("finish() stops here while Isaac Sim is at hand; if compare_photo cannot run, set_assumptions([{item: "
+            "\"photo_compare\", value: <why>}])")
+    if "made_from" not in rec:
+        return {"photo_compare": {"compared": False, **({"stops_finish": True} if gate else {}),
+                                  **({"failed": rec["failed"]} if rec.get("failed") else {})},
                 "photo_compare_hint": "the scene has never been compared with the photo(s): compose_scene, then "
-                                      "compare_photo and fix what differs before reporting"}
+                                      "compare_photo and fix what differs before reporting"
+                                      + (f" ({stop})" if gate else "")}
     from agentic_sim_world_gen.preview.page import scene_hash
 
     out: dict[str, Any] = {"compared": True, "rounds": int(rec.get("rounds", 1))}
@@ -5364,6 +5570,9 @@ def _compare_state(s: ResolvedScene, d: Path) -> dict[str, Any]:
         if out["rounds"] >= COMPARE_ROUNDS:
             hint += (f" (round {out['rounds'] + 1}: the last one - then report what still differs instead of fixing "
                      "small offsets)")
+        if out["rounds"] <= COMPARE_ROUNDS and gate:  # the hint alone was read past; the last round included
+            out["stops_finish"] = True
+            hint += "; " + stop
     return {"photo_compare": out, **({"photo_compare_hint": hint} if hint else {})}
 
 

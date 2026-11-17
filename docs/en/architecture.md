@@ -90,7 +90,9 @@ Steps that are usually called one after another are bundled into one call (the i
 flowchart TD
     f["finish"] --> iss{"Layout issues or<br/>an unchosen layout option?"}
     iss -->|"Yes"| s1["stopped=issues / layout_options"]
-    iss -->|"No"| comp["compose_scene<br/>(only when scene.usda is stale)"]
+    iss -->|"No"| gate{"windows onto gray (no site, no window_view assumption)?<br/>not compared with the photo (rounds left and Isaac Sim at hand)?"}
+    gate -->|"Yes"| s0["stopped=window_view / compare"]
+    gate -->|"No"| comp["compose_scene<br/>(only when scene.usda is stale)"]
     comp -->|"Fails"| s2["stopped=compose"]
     comp --> isaac{"Isaac Sim available?"}
     isaac -->|"No"| lic
@@ -99,8 +101,14 @@ flowchart TD
     chk -->|"draft=true"| dr["Ends after capturing the draft"]
     chk -->|"passed"| req["check_request<br/>re-measure the request items"]
     req --> lic["license_report<br/>license list"]
-    lic --> done["done (true if no unmet items)<br/>without Isaac Sim, physics is listed in unverified"]
+    lic --> done["done (true if no unmet items)<br/>without Isaac Sim, physics is listed in unverified<br/>report_must_include: what the report must name"]
 ```
+
+An editing tool's result (`service.reply`) has only what changed since the previous result.
+The status hints (`*_hint`, `*_next`, `substitute`) work the same way: one with the same text as before is not sent again; its key and first sentence go in `open_hints` near the top.
+The tool's own `hint` / `next` is always sent. If the previous result came from another server process (a new session), everything is sent in full.
+The order is the language, `issues`, `open_hints`, new hints, then the rest (`usability` lists its first 5 and `usability_more`).
+Of the hints that get read past, windows onto nothing and the photo comparison stop `finish` (`stopped`), and what the report needs (the usability count and kinds, substitutes, skipped small items, windows / curtains with no asset, furniture the photos could not locate) is listed in `finish`'s `report_must_include`.
 
 Related files
 - [src/agentic_sim_world_gen/service.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/service.py): operations shared by the CLI and MCP (`create_scene`, `start_scene`, `_save`, `compose_scene`, `check_in_isaac`, `finish`, etc.)

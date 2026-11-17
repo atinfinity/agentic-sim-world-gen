@@ -115,7 +115,7 @@ def test_fit_warns_on_one_point():
 def test_status_lists_unlocated_floor_furniture(tmp_path):
     d = _scene(tmp_path, DESK)  # the wardrobe stands on the floor but nothing locates it
     pp = service.status(d)["photo_placement"]
-    assert pp["unlocated"] == ["wardrobe"] and "misplaced" not in pp and "own id" in pp["hint"]
+    assert pp["unlocated"] == ["wardrobe"] and "misplaced" not in pp and "report these" in pp["hint"]
     service.set_layout(d, "wardrobe", {"on": "desk"})  # on something: not floor furniture
     assert "photo_placement" not in service.status(d)
 

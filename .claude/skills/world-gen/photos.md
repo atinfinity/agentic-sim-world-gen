@@ -6,7 +6,10 @@ Part of the world-gen skill ([SKILL.md](SKILL.md)); read it when the request nee
 
 Looking at the photo with Read is not enough. Record it with `set_input` (with its camera), and after every
 compose compare it with `compare_photo` until the scene matches. Status `photo_compare_hint` says when that
-comparison is missing or out of date, and `compose_scene` returns it as `next`.
+comparison is missing or out of date, and `compose_scene` returns it as `next`. `finish` stops on it
+(`stopped: compare`) while compare rounds are left and Isaac Sim's Python is at hand. When compare_photo
+cannot run (it failed twice, or the photo files are not on this machine) finish goes on; to say so yourself:
+`set_assumptions([{item: "photo_compare", value: <why>}])`.
 **The photo's camera is where the photo was taken.** When the user says「レジを手前に」, move the register, not
 the camera. Change the camera only to match the photo's view (horizon, landmarks). Objects the photo shows near
 the camera (e.g. a counter it was taken from behind) stay there.
@@ -161,6 +164,7 @@ tool).
    | `one_point` | rests on one located point | add 1-3 more feet / corners (a diagonal one), fit again, place_from_photos |
 
    Only an object no photo shows on the floor goes in `compose_scene(not_in_photos={id: why})`; report those.
+   Any still `unlocated` at the end are in finish's `report_must_include`: name them in the report.
    Size ranges come from what you estimated (wide ranges: ±30%). Use the windows/doors in room.openings when
    visible, then `fill_windows` with what covers them in the photos: `covers="blind"` (slats, a roller),
    `"curtain"`, or `None` (bare glass); the default follows the place. Match the floor/wall looks and the lighting (e.g. herringbone parquet -> wood_light, white paint

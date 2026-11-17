@@ -1368,7 +1368,8 @@ ITEM_JA = {"size": "部屋の寸法", "room size": "部屋の寸法", "place": "
            # the purpose and its defaults
            "purpose": "用途", "density": "小物の量", "robot": "ロボット", "sdg": "合成データ", "targets": "検出したい物",
            # remembered preferences
-           "lighting_scale": "明るさ", "gap": "隙間", "spacing": "間隔"}
+           "lighting_scale": "明るさ", "gap": "隙間", "spacing": "間隔",
+           "window_view": "窓の外"}  # the windows' outside is not seen
 
 
 def item_ja(item: str) -> str:

@@ -81,8 +81,10 @@ def record(scene_dir: str | Path, scene: Any, status: dict[str, Any],
         old = _read(path) or {}
         if windows is None:
             win = [r for r in old.get("rows") or [] if r.get("why") == "window"]
-            open_ids = {o.opening or o.covers for o in scene.spec.objects}  # filled since: no longer missing
-            win = [r for r in win if r.get("opening") not in open_ids]
+            # filled since: no longer missing. By role: a window found does not fill the missing curtain
+            filled = {("win", o.opening) for o in scene.spec.objects if o.opening} | \
+                     {("cover", o.covers) for o in scene.spec.objects if o.covers}
+            win = [r for r in win if (_role(r), r.get("opening")) not in filled]
         else:
             win = [{"why": "window", "query": w["query"], "id": w["id"],
                     **({"opening": w["opening"]} if w.get("opening") else {}),
@@ -100,11 +102,25 @@ def record(scene_dir: str | Path, scene: Any, status: dict[str, Any],
         log.warning("missing assets not recorded: %s", e)
 
 
+def _role(row: dict[str, Any]) -> str:
+    """win_<opening> is the window, curtain_ / blind_<opening> its cover (fill_windows' ids)."""
+    return "win" if str(row.get("id", "")).startswith("win_") else "cover"
+
+
 def _read(path: Path) -> dict[str, Any] | None:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return None
+
+
+def windows(scene_dir: str | Path) -> list[dict[str, Any]]:
+    """The scene's window / curtain openings fill_windows found no asset for (its recorded `window` rows).
+    Empty when nothing is recorded or the recording is off."""
+    if not enabled():
+        return []
+    data = _read(_file(Path(scene_dir))) or {}
+    return [r for r in data.get("rows") or [] if r.get("why") == "window"]
 
 
 def _key(query: str) -> str:

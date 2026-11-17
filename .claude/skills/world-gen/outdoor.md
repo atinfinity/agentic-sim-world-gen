@@ -60,6 +60,8 @@ door), keep the room as usual and add `room.site` instead of switching to `outdo
 4. check / look_views frame the room and the things outside, plus an `exterior` view from
    the street. The preview's top view starts on the room alone (「敷地まで表示」shows the whole site).
 5. Without a site, the outside of every window, glass door and open front is a plain gray void (status
-   `window_view` says so; for a house or a log cabin: `site={"ground": "grass"}`). When the photos or the request
+   `window_view` says so; for a house or a log cabin: `site={"ground": "grass"}`). `finish` stops on it
+   until there is a site or you record that no render shows the windows / they are covered:
+   `set_assumptions([{item: "window_view", value: <why>}])`. When the photos or the request
    show the outside (a shop open to the street, a window onto a garden), add a site — even a small one
    (`{"ground": "grass", "lighting": "sun"}`) — so the openings show ground and sky.
