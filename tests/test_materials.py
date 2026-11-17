@@ -235,3 +235,38 @@ def test_create_scene_takes_words(tmp_path):
     with pytest.raises(ValueError):  # a broken surface object still fails
         service.create_scene({"name": "x", "room": {"width": 4, "depth": 3, "floor": {"preset": "nope"}},
                               "objects": []}, tmp_path / "x")
+
+
+def test_tuning_painted_white_brick_is_white(tmp_path):
+    """vMaterials' "Painted White" clinker brick is painted 0.53 gray; a white painted block wall came out
+    beige-gray. Only that look gets white paint; the other painted looks keep their colors."""
+    brick = materials.S3_ROOT + "/Materials/vMaterials_2/Masonry/Facade_Brick_Red_Clinker.mdl"
+    assert materials.tuning(brick, "Facade_Brick_Red_Clinker_Painted_White") == {"paint_color": [0.8, 0.8, 0.8]}
+    assert materials.tuning(brick, "Facade_Brick_Red_Clinker_Painted_Yellow") == {}
+    steel = materials.S3_ROOT + "/Materials/vMaterials_2/Metal/Steel_Painted.mdl"
+    assert materials.tuning(steel, "Steel_Painted_White") == {"paint_color": [0.8, 0.8, 0.8]}
+    # the index color follows, for search and the previews
+    p = tmp_path / "mdl.jsonl.gz"
+    with gzip.open(p, "wt") as f:
+        for n in ("Facade_Brick_Red_Clinker_Painted_White", "Facade_Brick_Red_Clinker_Painted_Yellow"):
+            f.write(json.dumps({"id": n, "name": n, "color": "#9c9b9c"}) + "\n")
+    assert [r["color"] for r in materials.records(p)] == ["#bcbbbc", "#9c9b9c"]
+
+
+def test_compose_writes_white_paint(tmp_path):
+    """compose writes the tuned paint as an MDL color input; the surface's own mdl_inputs still win."""
+    pytest.importorskip("pxr")
+    from pxr import Gf, Sdf, UsdShade
+
+    from agentic_sim_world_gen.usd.compose import compose
+    from tests.test_looks import _scene
+
+    brick = "https://example.com/Materials/vMaterials_2/Masonry/Facade_Brick_Red_Clinker.mdl"
+    name = "Facade_Brick_Red_Clinker_Painted_White"
+    stage = compose(_scene(walls={"preset": "paint_white", "mdl": brick, "mdl_name": name}), tmp_path / "a.usda")
+    paint = UsdShade.Shader(stage.GetPrimAtPath("/World/Room/Looks/Wall/MDL")).GetInput("paint_color")
+    assert paint.GetTypeName() == Sdf.ValueTypeNames.Color3f and paint.Get() == Gf.Vec3f(0.8, 0.8, 0.8)
+    own = {"preset": "paint_white", "mdl": brick, "mdl_name": name, "mdl_inputs": {"paint_color": [0.9, 0.9, 0.9]}}
+    stage = compose(_scene(walls=own), tmp_path / "b.usda")
+    paint = UsdShade.Shader(stage.GetPrimAtPath("/World/Room/Looks/Wall/MDL")).GetInput("paint_color")
+    assert paint.Get() == Gf.Vec3f(0.9, 0.9, 0.9)
