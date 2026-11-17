@@ -302,3 +302,41 @@ def test_leather_is_upholstered():
     leather = rec("a", "chair", ["armchair"], "A black leather armchair.")
     wood = rec("w", "chair", ["chair"], "A wooden chair.")
     assert rerank([wood, leather], "upholstered chair")[0][0].name == "a"
+
+
+FRIDGE = rec("sm_refrigerator_a01", "refrigerator", ["double door", "solid doors"], "A double-door refrigerator.",
+             size=(0.9, 0.7, 1.8))
+DOOR = rec("interior_door", "interior door", ["interior door", "hinged door"], "White flush interior door.",
+           size=(0.9, 0.05, 2.1))
+GATE = rec("sm_structure_wall_entrance", "entrance", ["roll-up door"],
+           "Industrial roll-up entrance door in reinforced wall section", size=(4.8, 12.0, 11.1))
+
+
+def test_a_door_tag_on_a_refrigerator_is_a_part():
+    """A door leaf search listed only refrigerators: their tag "double door" says what they have."""
+    (r1, m1), (r2, m2) = rerank([FRIDGE, DOOR], "double door", ["door"])
+    assert r1.name == "interior_door" and m2.weak and m2.score < m1.score
+    assert "part of a refrigerator" in m2.matched[0]
+    (_, m), = rerank([rec("door", "door", ["door"])], "door")  # a door is still a door
+    assert not m.weak
+
+
+def test_a_good_match_too_tall_for_the_room_hides_no_substitute(tmp_path):
+    """An 11 m wall entrance (a good match by its caption) was the only door leaf kept for a 2.4 m room."""
+
+    class Doors:
+        name = "fake"
+
+        def search(self, q, limit=10, size=None):
+            return [GATE, FRIDGE, DOOR]
+
+    service.set_provider(Doors())
+    try:
+        st = service.create_scene(
+            {"name": "s", "room": {"width": 3, "depth": 3, "height": 2.4},
+             "objects": [{"id": "d", "query": "double door", "alt_queries": ["door"], "position": [1, 1]}]},
+            tmp_path / "s")
+        names = [c["name"] for c in st["objects"][0]["candidates"]]
+        assert names[0] == "interior_door" and names[-1] == "sm_structure_wall_entrance"
+    finally:
+        service.set_provider(None)

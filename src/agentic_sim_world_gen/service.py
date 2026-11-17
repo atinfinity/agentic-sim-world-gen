@@ -245,12 +245,14 @@ def _find_candidates(o: ObjectSpec, n: int, place: str | None = None,
                 seen[r.id] = (rank, qi, r)
     pool = [r for _, _, r in sorted(seen.values(), key=lambda x: (x[0], x[1]))]
     ranked = rerank(pool, o.query, o.alt_queries)
-    if any(not m.weak for _, m in ranked):
+    tall = {r.id for r, _ in ranked if room_h is not None and _bottom(o) + r.size_m[2] * _stretch(o, r) > room_h + 0.01}
+    # a good match that does not fit under the ceiling hides no substitute: an 11 m "roll-up entrance door" in a
+    # wall section was the only door leaf left for a 2.1 m opening
+    if any(not m.weak and r.id not in tall for r, m in ranked):
         ranked = [(r, m) for r, m in ranked if not m.weak]
     queries = [o.query, *o.alt_queries]
     kind = kind_of(o.query, o.alt_queries) if o.min_size is None and o.max_size is None else None
     ranked = [(r, m, off_place(r, place, queries), off_size(r, kind)) for r, m in ranked]
-    tall = {r.id for r, *_ in ranked if room_h is not None and _bottom(o) + r.size_m[2] * _stretch(o, r) > room_h + 0.01}
     # stable: keeps the match order otherwise. The wrong size goes last: a lit screen can be turned off and a
     # hospital bed is still a bed, but a pasta box is no cardboard box at all. A picture for another place
     # only costs PICTURE_PENALTY of the match score: it can be blanked, so it loses to an about-as-good asset
