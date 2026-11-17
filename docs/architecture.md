@@ -333,6 +333,7 @@ flowchart TD
 - **solve**：`layout`の関係（`against_wall`・`in_front_of`・`next_to`・`on`・`facing`・`center`・`gap`）から位置・向き・高さを決めます。「机を先に、椅子を後に」という解く順は`_order`が決めます。
   保存のたびに解き直すので、アセットを差し替えてサイズが変わっても配置が追従します。`move_object`で手で動かした物は`layout`が消え、座標のままになります。
 - **正面の規約**：アセットの正面は+Xです（Isaac Sim 6.1で、約40点を4方向から描いて確認）。
+  ForgeCADのアセット（作者または入手先がForgeCAD）は-Y向きです（`FORGECAD_FRONT_DEG`＝270。椅子の背もたれやトイレのタンクが+Y側にある）。
   例外は`KNOWN_FRONTS`・`KNOWN_FRONT_PATTERNS`に、手持ちのフォルダならagentic-sim-world-gen.jsonの`front`に、物ごとなら`front_offset_deg`に書きます。手で向きを決めるときは`facing_deg`（0＝東＝+X、90＝北＝+Y）。
 - **繰り返し**：`array`はブロック全体を1つの物として置き、検証・プレビュー・USDではユニット（`<id>.r<row>c<col>`）に展開します。
 - **陳列**：`fill`は、什器のジオメトリから見つけた棚板（`assets/shelves.py`）に商品を並べます。
