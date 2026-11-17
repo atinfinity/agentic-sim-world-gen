@@ -1295,7 +1295,8 @@ def compare_photo(scene_dir: str, input_id: str | None = None) -> list[Any]:
     select_asset), the room (set_room) or a camera (set_input), then compose_scene and compare again.
     Run compose_scene first. layout.svg shows every photo camera (position and field of view).
     `round` counts the comparisons and `hint` says what to do next: fix every difference of one round
-    together, about 3 rounds, then report what still differs."""
+    together, about 3 rounds, then report what still differs. `measure` has the free widths each
+    camera sees and what bounds them; the gaps of each line are in `measure_file` (or measure_photo)."""
     r = service.compare_photo(scene_dir, input_id)
     if not r.get("ok"):
         return [json.dumps(service.with_language(scene_dir, r), ensure_ascii=False)]

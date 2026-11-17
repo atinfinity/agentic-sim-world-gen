@@ -1825,9 +1825,10 @@ def brief(st: dict[str, Any], focus: str | list[str] | None = None) -> dict[str,
     objs, decor = [], {}
     subs = [line for o in st["objects"] if not o.get("decor") and (line := _substitute_line(o))]
     for o in st["objects"]:
-        if o["id"] in focus:
+        if o["id"] in focus and len(focus) == 1:
             objs.append(_without_sub_hints(o))
             continue
+        many = o["id"] in focus  # add_objects of 15 objects in full was 25k characters
         cands = o.get("candidates") or []
         if o.get("decor"):  # stock and table things in one line each
             decor[o["id"]] = _decor_line(o, cands[o["selected"]] if o.get("selected") is not None and cands else None)
@@ -1847,7 +1848,14 @@ def brief(st: dict[str, Any], focus: str | list[str] | None = None) -> dict[str,
             cap = cap[:BRIEF_CAPTION] + "…" if len(cap) > BRIEF_CAPTION else cap
             b["asset"] = _one_line(c) + (f" {c['license']}" if c.get("license") else "") + (f" — {cap}" if cap else "")
         others = [_one_line(c) for c in cands if c["index"] != o.get("selected")]
-        if others:
+        if many:
+            if others:
+                b["others"] = others
+            if miss := o.get("size_misses"):
+                rows = miss.get("assets", []) if isinstance(miss, dict) else miss
+                b["size_misses"] = [_one_line({**c, "index": "-"}) + " " + ", ".join(
+                    f"{k} {v}" for k, v in (c.get("off") or {}).items()) for c in rows[:BRIEF_OTHERS]]
+        elif others:
             b["others"] = others[:BRIEF_OTHERS] + ([f"+{len(others) - BRIEF_OTHERS} more"] if len(others) > BRIEF_OTHERS else [])
         objs.append(b)
     more = {}
@@ -1878,7 +1886,7 @@ def _decor_line(o: dict[str, Any], c: dict[str, Any] | None) -> str:
 
 
 REPLY_STATE = ".last_reply.json"  # what the agent last saw of each object / key
-REPLY_KEEP = ("scene_dir", "issues", "usd", "reply_language", "brief")
+REPLY_KEEP = ("scene_dir", "usd", "reply_language")
 REPLY_USABILITY = 5  # usability warnings listed in an editing tool's result; get_scene lists them all
 REPLY_GIST = 90  # characters of each open_hints entry
 
@@ -1919,6 +1927,36 @@ def _lang_first(r: dict[str, Any]) -> dict[str, Any]:
     return {**{k: r[k] for k in order}, **{k: v for k, v in r.items() if k not in order}}
 
 
+def _issues_short(rows: Any) -> Any:
+    """Issues the agent saw in the last result, one short line each without the advice; get_scene has them
+    in full."""
+    if not isinstance(rows, list):
+        return rows
+    return [f"{r.get('kind')}: {', '.join(map(str, r.get('objects') or []))} (as before)" if isinstance(r, dict) else r
+            for r in rows]
+
+
+def _surfaces_short(found: Any) -> Any:
+    """surface_candidates with one line per candidate (8 materials with keywords and URLs were 3k characters a
+    target); view_surface_candidates shows them."""
+    if not isinstance(found, dict):
+        return found
+    out = {}
+    for target, v in found.items():
+        if not isinstance(v, dict):
+            out[target] = v
+            continue
+        rows = []
+        for c in v.get("candidates") or []:
+            m = c.get("match") or {}
+            lic = c.get("license") or ""
+            rows.append(f"[{c.get('index')}] {c.get('id')}" + (f" {c['color']}" if c.get("color") else "")
+                        + (f" {lic}" if lic else "") + (f" score {m['score']:g}" if m.get("score") is not None else "")
+                        + (" weak" if m.get("weak") else ""))
+        out[target] = {**{k: x for k, x in v.items() if k not in ("candidates", "alt_queries") or x}, "candidates": rows}
+    return out
+
+
 def _usability_short(rows: list[dict[str, Any]]) -> dict[str, Any]:
     """The first REPLY_USABILITY warnings and what the rest are (18 warnings were 5k characters a reply)."""
     if len(rows) <= REPLY_USABILITY:
@@ -1940,6 +1978,8 @@ def reply(st: dict[str, Any], focus: str | list[str] | None = None, full: bool =
     run and was never acted on): its name goes in `open_hints` near the top, a new or changed hint in full. The
     language reminder is in full on the first result, short after; usability lists its first REPLY_USABILITY."""
     b = _lang_first(brief(st, focus))
+    if "surface_candidates" in b:
+        b["surface_candidates"] = _surfaces_short(b["surface_candidates"])
     if "objects" not in b or not b.get("scene_dir"):
         return b
     d = Path(b["scene_dir"])
@@ -1965,6 +2005,10 @@ def reply(st: dict[str, Any], focus: str | list[str] | None = None, full: bool =
             continue
         if k == "reply_language_hint" and b.get("reply_language"):
             out[k] = language_hint(b["reply_language"], short=True)  # in full on the first result only
+        elif k == "issues" and now["keys"][k] == last.get("keys", {}).get(k):
+            out[k] = _issues_short(v)  # the same issues word for word on every edit
+        elif k == "brief" and now["keys"][k] == last.get("keys", {}).get(k):
+            continue
         elif k in REPLY_KEEP or now["keys"][k] != last.get("keys", {}).get(k):
             out[k] = v
         elif _standing_hint(k):
@@ -1992,10 +2036,18 @@ def reply(st: dict[str, Any], focus: str | list[str] | None = None, full: bool =
                       "usability": len(b.get("usability") or []),
                       "unchanged": n_obj + n_decor - len(shown & (set(now["objects"]) | set(now["decor"]))),
                       "unchanged_sections": same}
-    out["brief"] = ("only what changed since your last agentic-sim-world-gen result (objects, decor lines, sections, "
-                    "hints); the rest is as before. get_scene(scene_dir) for everything"
-                    + ("; open_hints: still standing, shown before - act on them or tell the user why not"
-                       if open_hints else ""))
+    told = "only what changed since your last agentic-sim-world-gen result (objects, decor lines, sections, " \
+           "hints); the rest is as before. get_scene(scene_dir) for everything"
+    hints = "open_hints: still standing, shown before - act on them or tell the user why not"
+    # the same 230 characters on every edit; said once per scene and server process (and with open_hints)
+    if not last.get("told"):
+        out["brief"] = told + ("; " + hints if open_hints else "")
+    elif open_hints:
+        out["brief"] = hints
+    try:
+        (d / REPLY_STATE).write_text(json.dumps({**now, "told": True}))
+    except OSError:
+        pass
     return _lang_first(out)
 
 
@@ -5459,11 +5511,23 @@ def compare_photo(scene: str | Path, input_id: str | None = None, timeout_s: int
         result.update(renders={i.id: j["out"] for i, j in zip(photos, jobs)}, image=str(sheet))
         if len(photos) == 1:
             result["render"] = jobs[0]["out"]
-        result["measure"] = {}
+        full_m: dict[str, Any] = {}
         for i in photos:  # sizes to compare, not only colors
             m = measure_photo(d, i.id)
             if m.get("ok"):
-                result["measure"][i.id] = {k: m[k] for k in ("camera", "across", "arrays_in_view", "notes")}
+                full_m[i.id] = {k: m[k] for k in ("camera", "across", "arrays_in_view", "notes")}
+        result["measure"] = {k: _measure_short(v) for k, v in full_m.items()}
+        same = [n for n in (next(iter(result["measure"].values()))["notes"] if result["measure"] else [])
+                if len(result["measure"]) > 1 and all(n in v["notes"] for v in result["measure"].values())]
+        if any(v.get("arrays_in_view") for v in result["measure"].values()):
+            same.append("arrays_in_view: compare the units in view with the units you count in the photo")
+        if same:  # the same advice under each of 8 photos: once
+            result["measure_notes"] = same
+            for v in result["measure"].values():
+                v["notes"] = [n for n in v["notes"] if n not in same]
+        if full_m:  # the gaps of every line were 24k characters a call; they stay in the file
+            (d / COMPARE_MEASURE).write_text(json.dumps(full_m, ensure_ascii=False, indent=1))
+            result["measure_file"] = str(d / COMPARE_MEASURE)
     else:
         result.update(_isaac_failure(proc))
         _compare_failed(d, result)
@@ -5471,6 +5535,25 @@ def compare_photo(scene: str | Path, input_id: str | None = None, timeout_s: int
 
 
 COMPARE_JSON = "compare.json"
+COMPARE_MEASURE = "compare_measure.json"  # compare_photo's measure with every gap
+
+
+_UNITS_NOTE = re.compile(r"^\S+: \d+ of \d+ units in view")
+
+
+def _measure_short(m: dict[str, Any]) -> dict[str, Any]:
+    """compare_photo's measure of one photo without the gap lists (1.7k characters a photo, 8 photos a call):
+    the free width at the camera and on each line ahead and what bounds it. measure_photo(input_id) or
+    measure_file has the gaps."""
+    def line(r: dict[str, Any]) -> dict[str, Any]:
+        return {k: v for k, v in r.items() if k != "gaps"}
+
+    cam = {k: v for k, v in (m.get("camera") or {}).items() if k not in ("position", "hfov_deg")}  # in `cameras`
+    if isinstance(cam.get("stands"), dict):
+        cam["stands"] = line(cam["stands"])
+    notes = [n for n in m.get("notes") or [] if not (isinstance(n, str) and _UNITS_NOTE.match(n))]  # arrays_in_view
+    return {**m, "camera": cam, "across": [line(r) for r in m.get("across") or []], "notes": notes}
+
 COMPARE_FAILURES = 2  # failed compare_photo calls after which finish no longer waits for one
 
 

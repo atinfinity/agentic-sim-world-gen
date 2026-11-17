@@ -586,3 +586,55 @@ def test_window_view_assumption_wording(fake, tmp_path):
         assert "window_view" in service.status(d)
         service.set_assumptions(d, [row])
         assert "window_view" not in service.status(d)
+
+
+def test_reply_is_short_on_repeated_edits(fake, tmp_path):
+    """each edit sent the same issues with their advice and the same brief again (3-4.5k characters a call,
+    50 edits in a 46-minute run, 4 compactions). Unchanged issues go as one short line each, the brief once."""
+    d = tmp_path / "study"
+    service.reply(service.create_scene(SPEC, d), full=True)
+    rows = [{"kind": "overlap", "objects": ["desk", "chair"], "detail": "penetration 0.44 m: move one of them"}]
+    import agentic_sim_world_gen.service as svc
+
+    st = svc.status(d)
+    r1 = service.reply({**st, "issues": rows})
+    assert r1["issues"] == rows and "only what changed" in r1["brief"]  # new issues in full; the brief once after the full result
+    r2 = service.reply({**svc.status(d), "issues": rows})
+    assert r2["issues"] == ["overlap: desk, chair (as before)"] and "only what changed" not in r2.get("brief", "")
+    assert r2["summary"]["issues"] == 1
+    assert service.reply({**svc.status(d), "issues": []})["issues"] == []  # a change is sent as it is
+
+
+def test_several_focus_objects_are_one_line_per_candidate(fake, tmp_path):
+    """add_objects of 15 objects returned every candidate with its match and size misses (25k characters).
+    With several new objects each candidate is one line; one object (add_object, get_scene) stays in full."""
+    d = tmp_path / "study"
+    st = service.create_scene(SPEC, d)
+    ids = [o["id"] for o in st["objects"]][:2]
+    b = service.brief(st, ids)
+    for o in (x for x in b["objects"] if x["id"] in ids):
+        assert "candidates" not in o and all(isinstance(c, str) for c in o.get("others", []))
+    one = service.brief(st, ids[0])
+    assert "candidates" in next(o for o in one["objects"] if o["id"] == ids[0])
+
+
+def test_surface_candidates_are_one_line_each():
+    found = {"floor": {"query": "beige linoleum", "alt_queries": [], "selected": 1, "candidates": [
+        {"index": 0, "id": "PolyHaven/wood_table_001", "license": "CC0-1.0", "keywords": ["wood"] * 12,
+         "url": "https://polyhaven.com/a/wood_table_001", "match": {"score": 0.6, "matched": ["linoleum"]}},
+        {"index": 1, "id": "Base/Carpet/Carpet_Beige", "color": "#b9af9f", "license": "NVIDIA-Omniverse-Materials",
+         "match": {"score": 0.4, "weak": True}}]}}
+    s = service._surfaces_short(found)["floor"]
+    assert s["candidates"] == ["[0] PolyHaven/wood_table_001 CC0-1.0 score 0.6",
+                               "[1] Base/Carpet/Carpet_Beige #b9af9f NVIDIA-Omniverse-Materials score 0.4 weak"]
+    assert s["selected"] == 1 and s["query"] == "beige linoleum" and "alt_queries" not in s
+
+
+def test_compare_measure_leaves_the_gaps_to_the_file():
+    m = {"camera": {"position": [1, 2, 1.5], "stands": {"width": 1.45, "left_by": "a", "right_by": "b",
+                                                        "gaps": [{"from": -1, "to": 0, "width": 1}]}},
+         "across": [{"ahead_m": 1.0, "width": 1.45, "left_by": "a", "right_by": "b", "gaps": [{"width": 1}]}],
+         "arrays_in_view": {"desks": "3 of 12 units"}, "notes": ["n"]}
+    s = service._measure_short(m)
+    assert "gaps" not in s["camera"]["stands"] and "gaps" not in s["across"][0]
+    assert s["camera"]["stands"]["width"] == 1.45 and s["notes"] == ["n"] and "gaps" in m["across"][0]
