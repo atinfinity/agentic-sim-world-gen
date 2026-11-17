@@ -4263,7 +4263,8 @@ def set_tint(scene: str | Path, object_id: str, tint: list[dict[str, Any]] | dic
     """New colors for this object's materials: "#rrggbb" repaints the asset's main color (the largest painted
     area and every material of that color), {color, materials: [name or pattern]} repaints those materials;
     a list applies in order. None (or []) goes back to the asset's own colors. Material names are in
-    describe_asset / the USD; the result (which materials changed) is the object's customData agentic_sim_world_gen:tint."""
+    describe_asset / the USD; the result (which materials changed) is the object's customData agentic_sim_world_gen:tint, and
+    compose_scene's `tints` for a main-color tint."""
     s = load(scene)
     _placement(s, object_id)
     o = s.obj(object_id)
@@ -4931,6 +4932,20 @@ def _tint_warnings(stage) -> list[str]:
     return out
 
 
+def _tint_report(stage) -> list[dict[str, Any]]:
+    """The tints that guessed the main color (no `materials`): what was painted, its share of the asset's surface
+    and the next largest materials, so the agent can see a wrong pick and name one (a desk's metal frame,
+    a chair's plastic, a cabinet's chrome were painted and the agent read the unchanged look as "no color")."""
+    out = []
+    objs = stage.GetPrimAtPath("/World/Objects")
+    for p in objs.GetChildren() if objs else []:
+        for color, d in (p.GetCustomDataByKey("agentic_sim_world_gen:tint") or {}).items():
+            if "others" in d and "error" not in d:
+                out.append({"object": p.GetName(), "color": color, "painted": d.get("materials"),
+                            "share": d.get("share"), "others": d["others"]})
+    return out
+
+
 def _screen_warnings(stage) -> list[str]:
     """The screen images compose could not show (customData agentic_sim_world_gen:screen with an error), as warnings."""
     out = []
@@ -4981,6 +4996,7 @@ def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bo
     out_path = Path(out) if out else path.parent / "scene.usda"
     stage = compose(s, out_path, uri_map=uri_map)
     warnings += _tint_warnings(stage) + _screen_warnings(stage)
+    tints = _tint_report(stage)
     if out_path == path.parent / "scene.usda":
         from agentic_sim_world_gen.preview.page import mark
 
@@ -4993,6 +5009,11 @@ def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bo
     res = {"usd": str(out_path), "localized_assets": len(uri_map), "issues": st["issues"]}
     if warnings:
         res["warnings"] = warnings
+    if tints:
+        res["tints"] = tints
+        res["tints_hint"] = ("a tint without materials painted the main color it guessed (painted, its share of "
+                             "the surface): if that is not the part the user meant, set_tint again with "
+                             "materials=[one of others]")
     if log and (h := st.get("photo_compare_hint")):
         res["next"] = h
     return res

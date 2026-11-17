@@ -9,12 +9,16 @@ with Tint.texture = false the color and normal textures are dropped for a flat c
 
 from __future__ import annotations
 
+import re
 from fnmatch import fnmatchcase
 from typing import Any
 
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade
 
 METAL = 0.5  # metallic at or above this is bare metal: not the "main color" a tint without materials paints
+# A metal by its name: SimReady's m_opaque__metal__chrome_a01 has its metallic in an ORM texture, no value
+METAL_NAME = re.compile(r"(^|_)(metal|chrome|steel|alumin(i)?um|brass|copper|iron)(_|$)", re.I)
+OTHERS = 3  # materials listed next to the main color a tint painted, to pick another with `materials`
 
 
 def linear(hex_: str) -> Gf.Vec3f:
@@ -100,40 +104,67 @@ def describe(material: Usd.Prim) -> dict[str, Any]:
             metal = _value(sh, "base_metalness") if metal is None else metal
             tw = _value(sh, "transmission_weight")
             glass = glass or (tw is not None and tw > 0)
-    return {"color": color, "metal": (metal or 0.0) >= METAL, "glass": glass}
+    return {"color": color, "metal": (metal or 0.0) >= METAL or bool(METAL_NAME.search(material.GetName())),
+            "glass": glass}
 
 
-def materials_by_area(root: Usd.Prim) -> dict[str, tuple[Usd.Prim, float]]:
-    """Material name -> (material prim, surface area it covers, from the parts' bounding boxes) under root."""
-    cache = UsdGeom.BBoxCache(Usd.TimeCode.Default(), [UsdGeom.Tokens.default_, UsdGeom.Tokens.render])
-    out: dict[str, tuple[Usd.Prim, float]] = {}
+def _face_area(points, counts, indices, faces) -> float:
+    """Surface area of these faces of a mesh (fan triangles), in the mesh's own units."""
+    starts, at = [], 0
+    for c in counts:
+        starts.append(at)
+        at += c
+    area = 0.0
+    for f in faces:
+        s, c = starts[f], counts[f]
+        if s + c > len(indices):
+            continue
+        v0 = points[indices[s]]
+        for k in range(1, c - 1):
+            a, b = points[indices[s + k]] - v0, points[indices[s + k + 1]] - v0
+            area += (a ^ b).GetLength() / 2
+    return area
+
+
+def materials_by_area(root: Usd.Prim) -> dict[str, tuple[list[Usd.Prim], float]]:
+    """Material name -> (every material prim of that name, surface area it covers) under root. SimReady parts
+    (a cabinet's body, drawers, doors) each carry their own copy of a material, and all of them are painted (one of 7 was). The area is the faces' own (a chair's 13 small plastic parts had more bounding-box area than
+    its fabric seat and back), scaled by the part's transform."""
+    xc = UsdGeom.XformCache(Usd.TimeCode.Default())
+    out: dict[str, tuple[list[Usd.Prim], float]] = {}
     for p in Usd.PrimRange(root):
         if not p.IsA(UsdGeom.Mesh):
             continue
-        r = cache.ComputeWorldBound(p).ComputeAlignedRange()
-        if r.IsEmpty():
+        mesh = UsdGeom.Mesh(p)
+        pts = [Gf.Vec3d(v) for v in mesh.GetPointsAttr().Get() or []]
+        counts = list(mesh.GetFaceVertexCountsAttr().Get() or [])
+        indices = list(mesh.GetFaceVertexIndicesAttr().Get() or [])
+        if not pts or not counts:
             continue
-        a, b, c = r.GetSize()
-        area = 2 * (a * b + b * c + c * a)
-        faces = len(UsdGeom.Mesh(p).GetFaceVertexCountsAttr().Get() or []) or 1
-        parts = [(s.GetPrim(), len(s.GetIndicesAttr().Get() or [])) for s in UsdGeom.Subset.GetAllGeomSubsets(UsdGeom.Mesh(p))]
-        rest = max(faces - sum(n for _, n in parts), 0)
-        for prim, n in [(p, rest), *parts]:
-            if n <= 0:
+        m3 = xc.GetLocalToWorldTransform(p).ExtractRotationMatrix()
+        scale = abs(m3.GetDeterminant()) ** (2 / 3)  # area scale of a (nearly) uniform scale
+        parts = [(s.GetPrim(), [i for i in s.GetIndicesAttr().Get() or [] if 0 <= i < len(counts)])
+                 for s in UsdGeom.Subset.GetAllGeomSubsets(mesh)]
+        used = {i for _, ii in parts for i in ii}
+        rest = [i for i in range(len(counts)) if i not in used]
+        for prim, faces in [(p, rest), *parts]:
+            if not faces:
                 continue
             m = UsdShade.MaterialBindingAPI(prim).ComputeBoundMaterial()[0]
             if not m:
                 continue
             name = m.GetPrim().GetName()
-            prev = out.get(name, (m.GetPrim(), 0.0))
-            out[name] = (prev[0], prev[1] + area * n / faces)
+            prims, area = out.get(name, ([], 0.0))
+            if m.GetPrim() not in prims:
+                prims = [*prims, m.GetPrim()]
+            out[name] = (prims, area + _face_area(pts, counts, indices, faces) * scale)
     return out
 
 
-def main_color(found: dict[str, tuple[Usd.Prim, float]], skip: set[str]) -> list[str]:
+def main_color(found: dict[str, tuple[list[Usd.Prim], float]], skip: set[str]) -> list[str]:
     """The materials of the asset's main color: group the painted (not glass, not metal, not screen) materials by
     color and take the group with the largest area. Falls back to metal when nothing is painted."""
-    info = {n: describe(m) for n, (m, _) in found.items() if n not in skip}
+    info = {n: describe(ms[0]) for n, (ms, _) in found.items() if n not in skip}
     for allow_metal in (False, True):
         groups: dict[Any, list[str]] = {}
         area: dict[Any, float] = {}
@@ -251,8 +282,7 @@ def apply_tint(stage: Usd.Stage, prim_paths: list[str], asset, o) -> list[dict[s
             continue
         rgb = linear(t.color)
         inputs = 0
-        for n in names:
-            m = found[n][0]
+        for m in (m for n in names for m in found[n][0]):
             path = m.GetPath()
             if not path.HasPrefix(roots[0].GetPath()):  # bound outside the asset: shared, paint once
                 inputs += len(paint(m, rgb, t.texture))
@@ -262,5 +292,11 @@ def apply_tint(stage: Usd.Stage, prim_paths: list[str], asset, o) -> list[dict[s
                 q = stage.GetPrimAtPath(r.GetPath().AppendPath(rel))
                 if q:
                     inputs += len(paint(q, rgb, t.texture))
-        done.append({"color": t.color, "materials": names, "inputs": inputs, **({} if t.texture else {"texture": False})})
+        row = {"color": t.color, "materials": names, "inputs": inputs, **({} if t.texture else {"texture": False})}
+        if t.materials is None:  # the main color was a guess: the next largest, to pick with `materials`
+            total = sum(a for _, a in found.values()) or 1.0
+            rest = sorted(((a, n) for n, (_, a) in found.items() if n not in names), reverse=True)[:OTHERS]
+            row["others"] = [f"{n} {a / total:.0%}" for a, n in rest]
+            row["share"] = f"{sum(found[n][1] for n in names) / total:.0%}"
+        done.append(row)
     return done

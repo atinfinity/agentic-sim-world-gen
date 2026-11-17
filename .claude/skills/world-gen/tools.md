@@ -1114,7 +1114,8 @@ tint: "#rrggbb" = the asset's main color (largest painted area, glass / bare met
 material of that same color); {"color": "#rrggbb", "materials": ["Tray*Mat", ...]} = those materials (names or
 fnmatch patterns); a list applies in order. A textured material is multiplied by the color (it can only get
 darker); add "texture": false to drop its texture and paint it flat (a printed sign made plain white). null goes back to
-the asset's colors. After compose_scene, the object's customData agentic_sim_world_gen:tint lists the materials changed.
+the asset's colors. compose_scene returns `tints`: for a "#rrggbb" tint, the materials it painted, their share of
+the surface and the next largest (`others`); if the painted part is not the one meant, name one in `materials`.
 
 - `scene_dir`: str
 - `object_id`: str
