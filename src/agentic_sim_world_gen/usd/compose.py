@@ -539,12 +539,36 @@ def _stock_sdf(uri: str | None) -> list[dict]:
 
 def _add_screen(stage: Usd.Stage, paths: list[str], a, o, scene_dir: Path) -> None:
     """ObjectSpec.screen: the image on the asset's screens (agentic_sim_world_gen.usd.screen); the result as customData."""
-    if o.screen is None or not a.screens:
+    if o.screen is None:
         return
-    from agentic_sim_world_gen.usd.screen import apply_screen
+    from agentic_sim_world_gen.usd.screen import apply_screen, detect_screens, find_material, screen_faces
 
+    top = stage.GetPrimAtPath(f"/World/Objects/{o.id}")
+    detected = not a.screens
+    if detected:  # no screen declared: a material that emits a texture is one
+        import dataclasses
+
+        first = stage.GetPrimAtPath(f"{paths[0]}/{ASSET_CHILD}")
+        found = detect_screens(first) if first and first.IsValid() else []
+        if not found:
+            top.SetCustomDataByKey("agentic_sim_world_gen:screen", {
+                "error": "the asset declares no screen and no material emits a local texture (asset not fetched, "
+                         "or no lit screen)"})
+            return
+        if len(found) > 1 and isinstance(o.screen.image, str):  # the screen, not a lit logo / LED
+            area = {s["material"]: sum(f.size_m[0] * f.size_m[1] for f in screen_faces(stage, first, m))
+                    for s in found if (m := find_material(first, s["material"]))}
+            found = [max(found, key=lambda s: area.get(s["material"], 0.0))]
+        a = dataclasses.replace(a, screens=found)
     done = apply_screen(stage, paths, a, o, scene_dir)
+    # a dict image naming materials the asset does not have: validate tells for a declared asset (bad_screen),
+    # compose for a found one
+    names = {x["material"] for x in a.screens}
+    unknown = sorted(set(o.screen.images(sorted(names))) - names) if detected else []
+    err = {"error": f"no screen found for {', '.join(unknown)} (found: {', '.join(sorted(names))})"} if unknown else {}
     if not done:
+        if err:
+            top.SetCustomDataByKey("agentic_sim_world_gen:screen", err)
         return
     from agentic_sim_world_gen.inputs import screen_source
 
@@ -552,8 +576,8 @@ def _add_screen(stage: Usd.Stage, paths: list[str], a, o, scene_dir: Path) -> No
     for d in done:
         src = screen_source(o.screen, d["image"]) if d.get("image") else {}
         screens[d["material"]] = {k: str(v) for k, v in {**d, **src}.items() if k != "material" and v is not None}
-    stage.GetPrimAtPath(f"/World/Objects/{o.id}").SetCustomDataByKey(
-        "agentic_sim_world_gen:screen", {"fit": o.screen.fit, "screens": screens})
+    top.SetCustomDataByKey("agentic_sim_world_gen:screen", {"fit": o.screen.fit, "screens": screens,
+                                                            **({"detected": True} if detected else {}), **err})
 
 
 def build_inputs(stage: Usd.Stage, scene: ResolvedScene, root: str = "/World/Cameras") -> None:

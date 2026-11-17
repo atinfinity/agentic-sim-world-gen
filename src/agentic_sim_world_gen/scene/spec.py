@@ -509,6 +509,10 @@ class Screen(BaseModel):
             return {m: self.image for m in materials}
         return dict(self.image)
 
+    def files(self) -> set[str]:
+        """Every image file shown (for the credits): also when the asset's screens are found only in compose."""
+        return {self.image} if isinstance(self.image, str) else set(self.image.values())
+
 
 class Tint(BaseModel):
     """A new color for some of the asset's materials (a red rack where the asset is white).

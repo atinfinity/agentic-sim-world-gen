@@ -529,13 +529,16 @@ def set_variants(scene_dir: str, object_id: str | list[str], variants: dict[str,
 
 @mcp.tool()
 def set_screen(scene_dir: str, object_id: str, screen: dict[str, Any] | None) -> dict[str, Any]:
-    """Show an image on a signage's screens or a poster's printed picture (only assets listing "screens"):
+    """Show an image on a signage's screens, a TV's screen or a poster's printed picture (assets listing "screens", or a
+    TV / monitor whose material lights up a texture):
     screen {image: "<file>" | {"<material>": "<file>"}, fit contain|cover|stretch, background, url, title, author,
     license} (source recorded in LICENSES.md; <stem>.source.json fills the rest). Keep Screen On / Picture Default.
     null = the asset's own picture.
 
     Show an image on this signage's screens (or a poster's / board's printed picture) instead of the asset's own
-    picture (a café ad in a factory looks wrong). Only assets whose candidate summary lists "screens" support it. screen: {"image": "<file>" (every
+    picture (a café ad in a factory looks wrong). Assets whose candidate summary lists "screens" support it, and so
+    does an asset that lists none but has a material lighting up a texture (a TV from SimReady Central): compose
+    finds that screen (a Hugging Face asset is fetched first, like a tint) and warns if it finds none. screen: {"image": "<file>" (every
     screen) or {"<screen material>": "<file>"}, "fit": "contain" (default, background around) | "cover" (crop) |
     "stretch", "background": "#000000", "url", "title", "author", "license"}: the image's source, recorded in
     LICENSES.md; fields left out are read from <stem>.source.json next to the image. The Screen variant must stay

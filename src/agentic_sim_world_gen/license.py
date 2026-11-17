@@ -155,7 +155,7 @@ def report(scene: ResolvedScene) -> dict[str, Any]:
         o = scene.obj(p.object_id)
         if o.screen is None or p.asset is None:
             continue
-        for f in sorted(set(o.screen.images([x["material"] for x in p.asset.screens]).values())):
+        for f in sorted(o.screen.files()):
             src = screen_source(o.screen, f)
             lic = normalize(src["license"])
             name, _, _ = KNOWN.get(lic, (lic, True, ""))

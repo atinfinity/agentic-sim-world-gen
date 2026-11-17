@@ -3934,8 +3934,11 @@ def set_screen(scene: str | Path, object_id: str, screen: Screen | dict[str, Any
     sc = screen if isinstance(screen, Screen) else Screen.model_validate(screen)
     a = p.asset
     names = [x["material"] for x in a.screens] if a is not None else []
-    if a is not None and not names:
-        raise ValueError(f"'{object_id}' ({a.name}) has no screen or picture whose image can be replaced")
+    if a is not None and not names:  # none declared: a material lighting up a texture is one
+        from agentic_sim_world_gen.usd.screen import found_screens
+
+        if found_screens(a) == []:
+            raise ValueError(f"'{object_id}' ({a.name}) has no screen or picture whose image can be replaced")
     base = Path.cwd()
 
     def absolute(f: str) -> str:
@@ -4603,6 +4606,20 @@ def _tint_warnings(stage) -> list[str]:
     return out
 
 
+def _screen_warnings(stage) -> list[str]:
+    """The screen images compose could not show (customData agentic_sim_world_gen:screen with an error), as warnings."""
+    out = []
+    objs = stage.GetPrimAtPath("/World/Objects")
+    for p in objs.GetChildren() if objs else []:
+        d = p.GetCustomDataByKey("agentic_sim_world_gen:screen") or {}
+        if err := d.get("error"):
+            out.append(f"screen on {p.GetName()}: {err}")
+        for mat, x in (d.get("screens") or {}).items():
+            if err := x.get("error"):
+                out.append(f"screen on {p.GetName()} ({mat}): {err}")
+    return out
+
+
 def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bool = False,
                   log: bool = True, not_in_photos: dict[str, str] | None = None) -> dict[str, Any]:
     """log=False: no history entry of its own (the preview page rewrites the USD after each edit) and no photo
@@ -4622,22 +4639,23 @@ def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bo
     # Isaac bundled assets follow ISAAC_ASSETS_ROOT at compose time too (local/Nucleus copy)
     uri_map = {a.uri: u for p in s.placements if (a := p.asset) and (u := rebase_uri(a))}
     warnings: list[str] = []
-    from agentic_sim_world_gen.assets.localize import localize as _localize, tinted_remote
+    from agentic_sim_world_gen.assets.localize import localize as _localize, screened_remote, tinted_remote
 
     if localize:
         uri_map.update(_localize(s))
-    elif tinted := tinted_remote(s):  # a tint needs the asset's materials: fetch those assets (#31)
+    elif tinted := tinted_remote(s) | screened_remote(s):  # a tint / a found screen needs the materials (#31)
+        what = "tint" if not screened_remote(s) else "screen" if not tinted_remote(s) else "tint / screen"
         try:
             uri_map.update(_localize(s, only=tinted))
         except ImportError:
-            warnings.append(f"tint on {', '.join(sorted(tinted))} not applied: the asset is a Hugging Face URL "
+            warnings.append(f"{what} on {', '.join(sorted(tinted))} not applied: the asset is a Hugging Face URL "
                             "and huggingface_hub (extra `hf`) is not installed to fetch it")
         except Exception as e:
-            warnings.append(f"tint on {', '.join(sorted(tinted))} not applied: could not fetch the asset "
+            warnings.append(f"{what} on {', '.join(sorted(tinted))} not applied: could not fetch the asset "
                             f"({type(e).__name__}: {str(e)[:200]})")
     out_path = Path(out) if out else path.parent / "scene.usda"
     stage = compose(s, out_path, uri_map=uri_map)
-    warnings += _tint_warnings(stage)
+    warnings += _tint_warnings(stage) + _screen_warnings(stage)
     if out_path == path.parent / "scene.usda":
         from agentic_sim_world_gen.preview.page import mark
 
