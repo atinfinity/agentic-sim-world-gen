@@ -1169,6 +1169,7 @@ ISSUE_KINDS = {
     "tv_distance": "テレビとソファの距離", "register_hidden": "入口からレジが見えない", "blocks_window": "窓をふさぐ",
     "empty_floor": "売り場が空いている", "wide_aisle": "通路が広すぎる", "photo_aisle": "通路幅が写真と違う",
     "empty_shelves": "棚が空いている", "in_photo_view": "写真に無い物が視野をふさぐ",
+    "window_void": "窓の外が何も無い（昼光）",
 }
 _DETAILS = [  # (English detail pattern, Japanese); the first match wins
     (r"not in photo (\S+) but covers (\d+%) of its view: .*", r"写真 \1 の視野の \2（カメラの後ろか横へ、写っているなら seen_in に）"),
