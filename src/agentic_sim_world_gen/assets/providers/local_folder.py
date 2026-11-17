@@ -40,8 +40,9 @@ Blank variant is plain; places lists the Room.place values its own picture suits
 cafés and restaurants, since built-in signage pictures are ads). Collection stages (a catalog that references every asset) are
 not listed themselves.
 
-The scan result is cached per file (mtime, size) in ~/.cache/agentic-sim-world-gen/local/, so only changed
-files are read again.
+The scan result is cached per file (mtime, size) in ~/.cache/agentic-sim-world-gen/local/, together with the
+(mtime, size) of every USD file it references (payloads of payloads too), so only changed files and
+files whose payloads changed are read again. A file that did not open is tried again every time.
 """
 
 from __future__ import annotations
@@ -68,8 +69,9 @@ SIDECAR = "asset.json"
 _TOOL_STAMP = re.compile(r"^[A-Za-z][\w .-]* v?\d+(\.\d+)+$")  # "Blender v4.4.0": who wrote the file, not what it is
 _AXES = {"+x": 0.0, "x": 0.0, "+y": 90.0, "y": 90.0, "-x": 180.0, "-y": 270.0}
 LICENSE_FILES = re.compile(r"^(license|licence|copying)(\.(txt|md))?$", re.I)
-CACHE_VERSION = 7  # 2: remote references fetched for the bbox; 3: tool-stamp captions dropped; 4: variant sets;
-# 5: asset.json `picture` read into screens; 6: the picture's text / lang / audience; 7: polygons
+CACHE_VERSION = 8  # 2: remote references fetched for the bbox; 3: tool-stamp captions dropped; 4: variant sets;
+# 5: asset.json `picture` read into screens; 6: the picture's text / lang / audience; 7: polygons;
+# 8: `stamps` of every file the entry depends on, and failed opens read again
 
 
 def default_cache_dir() -> Path:
@@ -104,6 +106,39 @@ def _deps(path: Path) -> list[str]:
             continue
         out.append(os.path.normpath(layer.ComputeAbsolutePath(d)))
     return sorted(set(out))
+
+
+def _stamp(path: str) -> list[float] | None:
+    """(mtime, size) of a file, or None when it does not exist."""
+    try:
+        st = os.stat(path)
+    except OSError:
+        return None
+    return [st.st_mtime, st.st_size]
+
+
+def _stamps(deps: list[str]) -> dict[str, list[float] | None]:
+    """(mtime, size) of every USD file under `deps`, through payloads of payloads: an exported asset is a
+    small <slug>.usd naming its payloads, so re-exporting it changes them but not always the top file."""
+    out: dict[str, list[float] | None] = {}
+    todo = list(deps)
+    while todo:
+        d = todo.pop()
+        if d in out:
+            continue
+        out[d] = _stamp(d)
+        if out[d] is not None and len(out) < 1000:
+            todo += _deps(Path(d))
+    return out
+
+
+def _fresh(old: dict[str, Any] | None, st: os.stat_result) -> bool:
+    """Whether a cached entry still holds: same file, same dependencies, and it opened last time."""
+    if not old or old["mtime"] != st.st_mtime or old["size"] != st.st_size or "stamps" not in old:
+        return False
+    if old["scanned"] and old["info"] is None:
+        return False  # did not open last time (a half-written export?): try again rather than drop it for good
+    return all(_stamp(d) == s for d, s in old["stamps"].items())
 
 
 def _semantic_class(prim) -> str | None:
@@ -344,10 +379,12 @@ def build_index(root: str | Path, cache_dir: str | Path | None = None, rebuild: 
         st = f.stat()
         key = str(f)
         old = cache.get(key)
-        if old and old["mtime"] == st.st_mtime and old["size"] == st.st_size:
+        if _fresh(old, st):
             entries[key] = old
         else:
-            entries[key] = {"mtime": st.st_mtime, "size": st.st_size, "deps": _deps(f), "info": None, "scanned": False}
+            deps = _deps(f)
+            entries[key] = {"mtime": st.st_mtime, "size": st.st_size, "deps": deps, "stamps": _stamps(deps),
+                            "info": None, "scanned": False}
 
     referenced: set[str] = set()
     collections: set[str] = set()
