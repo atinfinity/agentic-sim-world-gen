@@ -268,3 +268,52 @@ def test_tint_standard_surface():
     assert {"/M/Surface.base_color", "/M/Surface.normal"} <= set(changed)
     assert not sh.GetInput("base_color").HasConnectedSource() and not sh.GetInput("normal").HasConnectedSource()
     assert sh.GetInput("base_color").Get() == red and not stage.GetPrimAtPath(f"/M/Surface_{TINT_NODE}")
+
+
+def _simready_like(stage):
+    """/x/Asset like a SimReady cabinet: every part has its own VisualMaterials copy of the white plastic
+    and the chrome (metal by name only, its metallic in a texture), and a thin diagonal strip whose bounding box
+    is far larger than its surface."""
+    root = UsdGeom.Xform.Define(stage, "/x/Asset").GetPrim()
+    for i, (size, at) in enumerate([((0.4, 0.4, 1.0), (0, 0, 0)), ((0.38, 0.02, 0.3), (0.01, -0.02, 0.6)),
+                                     ((0.38, 0.02, 0.3), (0.01, -0.02, 0.2))]):
+        part = f"/x/Asset/Geometry/part_{i}"
+        white = _material(stage, f"{part}/VisualMaterials/m_opaque__plastic__white_a01", WHITE)
+        chrome = _material(stage, f"{part}/VisualMaterials/m_opaque__metal__chrome_a01", None, texture="c.png")
+        _box(stage, f"{part}/Body", size, at, white)
+        _box(stage, f"{part}/Handle", (0.1, 0.01, 0.02), (0.15, at[1] - 0.01, at[2] + size[2] / 2), chrome)
+    gray = _material(stage, "/x/Asset/Geometry/strip/VisualMaterials/m_opaque__plastic__gray_a01",
+                     Gf.Vec3f(0.3, 0.3, 0.3))
+    strip = UsdGeom.Mesh.Define(stage, "/x/Asset/Geometry/strip/Strip")
+    strip.CreatePointsAttr([(0, 0, 0), (2, 2, 2), (2, 2, 2.01)])  # bbox 2 x 2 x 2, surface ~0.01 m2
+    strip.CreateFaceVertexCountsAttr([3])
+    strip.CreateFaceVertexIndicesAttr([0, 1, 2])
+    UsdShade.MaterialBindingAPI.Apply(strip.GetPrim()).Bind(gray)
+    return root
+
+
+def test_main_color_counts_surface_and_skips_metal_by_name():
+    """The chrome (metal by name) and a strip with a big bounding box do not win the main color."""
+    from agentic_sim_world_gen.usd.tint import main_color, materials_by_area
+
+    stage = Usd.Stage.CreateInMemory()
+    found = materials_by_area(_simready_like(stage))
+    assert [len(found[n][0]) for n in sorted(found)] == [3, 1, 3]  # chrome, gray, white: every copy kept
+    assert found["m_opaque__plastic__gray_a01"][1] < 0.02  # its faces, not its 24 m2 bounding box
+    assert main_color(found, set()) == ["m_opaque__plastic__white_a01"]
+
+
+def test_main_color_paints_every_copy_and_lists_the_others():
+    """The cabinet's drawers kept their color (one copy of 7 was painted); the result names the others."""
+    from agentic_sim_world_gen.usd.tint import apply_tint
+
+    stage = Usd.Stage.CreateInMemory()
+    _simready_like(stage)
+    o = ObjectSpec.model_validate({"id": "x", "query": "cabinet", "tint": "#e0a030"})
+    (done,) = apply_tint(stage, ["/x"], None, o)
+    assert done["materials"] == ["m_opaque__plastic__white_a01"] and done["share"].endswith("%")
+    assert done["others"][0].startswith("m_opaque__metal__chrome_a01 ")
+    for i in range(3):
+        sh = UsdShade.Shader(stage.GetPrimAtPath(
+            f"/x/Asset/Geometry/part_{i}/VisualMaterials/m_opaque__plastic__white_a01/MDL"))
+        assert sh.GetInput("diffuse_color_constant").Get() == linear("#e0a030")
