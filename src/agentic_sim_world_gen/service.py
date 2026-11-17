@@ -5298,11 +5298,13 @@ def _round_hint(n: int) -> str:
     """What to do after compare round n."""
     if n < COMPARE_ROUNDS:
         return (f"compare round {n} of about {COMPARE_ROUNDS}: list every difference you see in this comparison (framing, "
-                "widths - use measure / floor_pairs -, rows and their unit counts, big objects, wall / floor colors, light) "
+                "widths - use measure / floor_pairs -, rows and their unit counts, big objects, what hangs on the walls or lies "
+                "on the floor - pictures, a clock, rugs, curtains, light fixtures -, wall / floor colors, light) "
                 "and fix them all before the next compare_photo, in as few calls as you can (add_objects, one set_room); "
                 "do not compare after each small fix")
     return (f"compare round {n}: the layout and proportions are what count now. Fix only what is clearly wrong (a wrong "
-            "wall or floor color, a big object missing or in the wrong place, a width off by 20 %+), compare once more if "
+            "wall or floor color, a big object, rug, curtain or picture missing or in the wrong place, a width off by 20 %+), "
+            "compare once more if "
             "you did, then report and list the small differences that remain instead of fixing them one by one")
 
 

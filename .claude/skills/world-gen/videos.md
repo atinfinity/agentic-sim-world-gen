@@ -153,6 +153,10 @@ file adds what is specific to video frames.
 5. **One object per real thing, placed where the frames show it.** A door, window, sofa or shelf seen in
    several frames is placed once. **Before adding objects, list the furniture of every frame** and count each
    kind across the frames (two chairs are `chair1`, `chair2`: a handheld run left the second chair out).
+   The list also has the wall, floor, window and ceiling things ([photos.md](photos.md) step 2: pictures, a
+   clock, rugs, curtains, light fixtures, plants on a sill): a living room video kept only its 9 pieces of
+   furniture, with no rug, curtains or pictures. They are not located in fit_photos unless they stand
+   on the floor; hang them by wall and `along`.
    Locate each one in the fit_photos request (`locate`, [photos.md](photos.md) step 3) in the frames that show
    it best, then place them with place_from_photos and clear `photo_placement` before compose
    ([photos.md](photos.md) step 5). Fill the windows with what covers them in the frames:
