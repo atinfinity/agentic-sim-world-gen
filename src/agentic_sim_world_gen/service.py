@@ -3382,7 +3382,8 @@ def _photo_gate(s: ResolvedScene, d: Path) -> str | None:
 
 def _floor_furniture(o: ObjectSpec) -> bool:
     """An object standing on the floor on its own: not decor, a door / window piece, on something, hung from the
-    ceiling or on a wall (z above the floor without a layout)."""
+    ceiling or on a wall (layout.wall_height, or z above the floor without a layout). A radiator or an air
+    conditioner hung on the wall has no feet in the photos to locate."""
     if o.decor or o.opening is not None or o.covers is not None:  # a curtain / blind hangs at its window
         return False
     if o.layout is not None and (o.layout.on or o.layout.ceiling or (o.layout.wall_height or 0) > 0.05):

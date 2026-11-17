@@ -157,6 +157,9 @@ file adds what is specific to video frames.
    it best, then place them with place_from_photos and clear `photo_placement` before compose
    ([photos.md](photos.md) step 5). Fill the windows with what covers them in the frames:
    `fill_windows(covers="blind" | "curtain" | None)`.
+   Wall and ceiling equipment the frames show (an air conditioner, radiators under the windows, wall speakers,
+   ceiling vents: [interior.md](interior.md) "Wall and ceiling equipment") is hung by wall and `along`, not
+   located; the ones with no asset are named in the report.
 6. compose_scene, then **compare_photo** renders every frame's camera in one run, one row per frame.
    A render that is all black or one flat face is a camera inside an object (set_input / compare_photo warn
    "camera of … is inside …"): move that object where the frames show it, not onto a camera. White furniture

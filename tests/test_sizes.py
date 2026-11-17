@@ -105,3 +105,32 @@ def test_preview_badge(fake, tmp_path):
                           "objects": [{"id": "box", "query": "cardboard box"}]}, d)
     html = (d / page.PAGE).read_text()
     assert html.count("寸法違い?") == 1 and "cardboard box の標準サイズ外：long 0.12 m under 0.15 m" in html
+
+
+def test_wall_equipment_sizes():
+    """SimReady's "air conditioner"s are rooftop units and its "air vent"s car hoods; a room's are smaller."""
+    assert sizes.kind_of("wall mounted air conditioner") == "air conditioner"
+    assert sizes.kind_of("ceiling cassette air conditioner") == "air conditioner"
+    assert sizes.kind_of("air conditioning unit") == "air conditioning unit"
+    assert sizes.kind_of("rooftop air conditioner") == "rooftop air conditioner"
+    assert sizes.kind_of("precision air conditioner") == "precision air conditioner"
+    assert sizes.kind_of("air vent") == sizes.kind_of("ceiling vent") == "vent"
+    assert sizes.kind_of("panel radiator") == "radiator"
+    rooftop = rec("CW181DCHA1SAEX", 3.103, 1.238, 3.761, "air conditioner")
+    split = rec("split_ac", 0.8, 0.22, 0.29, "air conditioner")
+    assert set(sizes.off_size(rooftop, "air conditioner")) == {"long", "height"}
+    assert sizes.off_size(split, "air conditioner") is None
+    assert sizes.off_size(split, "air conditioning unit") is None
+    for big in (rooftop, rec("CW415H1TA1S9BT", 3.654, 1.58, 4.301), rec("DA265DP3AWDR16", 3.056, 2.157, 4.47),
+                rec("CW084DC1A1SDQS", 2.52, 0.929, 2.768)):  # SimReady's: the big kinds keep them
+        assert sizes.off_size(big, "rooftop air conditioner") is None
+        assert sizes.off_size(big, "precision air conditioner") is None
+    assert sizes.off_size(rec("tower_ac", 0.6, 0.35, 1.8), "floor standing air conditioner") is None
+    assert sizes.off_size(rec("cassette", 0.95, 0.95, 0.3, "air conditioner"), "air conditioner") is None
+    hood = rec("bodyPart_hood_c01", 1.552, 1.276, 0.314, "air vent")
+    assert "long" in sizes.off_size(hood, "vent")
+    assert sizes.off_size(rec("extractor_ceiling_a01", 0.945, 0.945, 0.081, "ceiling vent"), "vent") is None
+    assert sizes.off_size(rec("wall_grille", 0.3, 0.03, 0.15, "air vent"), "vent") is None
+    stove = rec("electric_stove", 0.648, 0.503, 0.859, "heater")  # Poly Haven's heater: not a radiator's shape
+    assert "short" in sizes.off_size(stove, "radiator")
+    assert sizes.off_size(rec("panel_radiator", 1.0, 0.1, 0.6, "radiator"), "radiator") is None
