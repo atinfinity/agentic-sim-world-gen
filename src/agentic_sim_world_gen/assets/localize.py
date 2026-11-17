@@ -53,6 +53,14 @@ def localize(scene: ResolvedScene, cache_dir: str | Path | None = None,
     return out
 
 
+def screened_remote(scene: ResolvedScene) -> set[str]:
+    """Objects with a screen image whose asset declares no screen and is a Hugging Face URL: compose finds the
+    screen in the asset's materials, so the asset must be local like a tinted one."""
+    shown = {o.id for o in scene.spec.objects if o.screen is not None}
+    return {p.object_id for p in scene.placements
+            if p.object_id in shown and p.asset is not None and not p.asset.screens and parse_hf_url(p.asset.uri)}
+
+
 def tinted_remote(scene: ResolvedScene) -> set[str]:
     """Objects with a tint whose asset is a Hugging Face URL: the composing pxr cannot open https, so their
     materials are not there to repaint unless the asset is local (#31)."""

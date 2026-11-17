@@ -467,11 +467,22 @@ def _screen_content(o, a, place: str | None) -> list[Issue]:
 
 
 def _screen_issues(o, a) -> list[Issue]:
-    """ObjectSpec.screen: the asset must declare screens, the images must exist, and the screen must be on."""
-    if not a.screens:
-        return [Issue("no_screen", (o.id,), f"{a.name} declares no screen or picture whose image can be "
-                      "replaced (asset.json `screen` / `picture`); pick a signage asset that does, or drop screen")]
+    """ObjectSpec.screen: the images must exist; on an asset that declares its screens, the materials must be
+    them and the screen on. One that declares none is looked at in compose (a lit texture is a screen)."""
     out = []
+    if not a.screens:
+        try:
+            from agentic_sim_world_gen.usd.screen import found_screens
+
+            found = found_screens(a)
+        except ImportError:  # no pxr: compose tells
+            found = None
+        if found == []:
+            return [Issue("no_screen", (o.id,), f"{a.name} has no screen or picture whose image can be replaced "
+                          "(none declared in asset.json `screen` / `picture`, no material that lights up a texture); "
+                          "pick a signage asset or a TV, or drop screen")]
+        return [Issue("bad_screen", (o.id,), f"screen image not found: {f}") for f in o.screen.files()
+                if Path(f).expanduser().is_absolute() and not Path(f).expanduser().is_file()]
     names = [x["material"] for x in a.screens]
     for mat, img in o.screen.images(names).items():
         if mat not in names:

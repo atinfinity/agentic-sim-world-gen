@@ -15,6 +15,7 @@ So the image is not swapped in as is:
 
 from __future__ import annotations
 
+import functools
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -45,8 +46,9 @@ def find_material(root: Usd.Prim, name: str) -> Usd.Prim | None:
     return None
 
 
-def _faces(mesh: UsdGeom.Mesh, xf: Gf.Matrix4d) -> list[tuple[Gf.Vec3d, float, list[Gf.Vec3d], list[Gf.Vec2f]]]:
-    """(unit normal, area, world points, uvs) of each face."""
+def _faces(mesh: UsdGeom.Mesh, xf: Gf.Matrix4d,
+           only: set[int] | None = None) -> list[tuple[Gf.Vec3d, float, list[Gf.Vec3d], list[Gf.Vec2f]]]:
+    """(unit normal, area, world points, uvs) of each face (of the faces `only`, a GeomSubset's, if given)."""
     pts = mesh.GetPointsAttr().Get() or []
     counts = mesh.GetFaceVertexCountsAttr().Get() or []
     idx = mesh.GetFaceVertexIndicesAttr().Get() or []
@@ -57,7 +59,10 @@ def _faces(mesh: UsdGeom.Mesh, xf: Gf.Matrix4d) -> list[tuple[Gf.Vec3d, float, l
     face_varying = pv.GetInterpolation() == UsdGeom.Tokens.faceVarying
     wpts = [xf.Transform(Gf.Vec3d(p)) for p in pts]
     out, k = [], 0
-    for n in counts:
+    for f, n in enumerate(counts):
+        if only is not None and f not in only:
+            k += n
+            continue
         vs = [wpts[i] for i in idx[k:k + n]]
         us = [uv[j] for j in range(k, k + n)] if face_varying else [uv[i] for i in idx[k:k + n]]
         k += n
@@ -81,10 +86,22 @@ def screen_faces(stage: Usd.Stage, root: Usd.Prim, material: Usd.Prim) -> list[S
     for p in Usd.PrimRange(root):
         if not p.IsA(UsdGeom.Mesh):
             continue
+        mesh = UsdGeom.Mesh(p)
+        subsets = UsdShade.MaterialBindingAPI(p).GetMaterialBindSubsets()
+        # a subset's own binding only: one without inherits the mesh's, and its faces are then the mesh's (review)
+        mine = [s for s in subsets if (b := UsdShade.MaterialBindingAPI(s.GetPrim()).GetDirectBinding().GetMaterial())
+                and b.GetPath() == mat_path]
+        if mine:  # one mesh, a GeomSubset per material (a TV from SimReady Central)
+            only = {int(i) for s in mine for i in (s.GetIndicesAttr().Get() or [])}
+            faces += _faces(mesh, cache.GetLocalToWorldTransform(p), only)
+            continue
         bound = UsdShade.MaterialBindingAPI(p).ComputeBoundMaterial()[0]
         if not bound or bound.GetPath() != mat_path:
             continue
-        faces += _faces(UsdGeom.Mesh(p), cache.GetLocalToWorldTransform(p))
+        covered = {int(i) for s in subsets if UsdShade.MaterialBindingAPI(s.GetPrim()).GetDirectBinding().GetMaterial()
+                   for i in (s.GetIndicesAttr().Get() or [])}
+        faces += _faces(mesh, cache.GetLocalToWorldTransform(p),
+                        set(range(len(mesh.GetFaceVertexCountsAttr().Get() or []))) - covered if covered else None)
     groups: list[tuple[Gf.Vec3d, list]] = []  # by direction
     for f in faces:
         for g in groups:
@@ -231,6 +248,94 @@ def retarget_textures(material: Usd.Prim, original: str, new: str) -> list[str]:
                 i.Set(Sdf.AssetPath(new))
                 changed.append(f"{p.GetPath()}.{i.GetBaseName()}")
     return changed
+
+
+# a material that lights up a texture is a screen: MDL / OmniPBR, OpenPBR, MaterialX standard_surface
+EMISSIVE_TEXTURES = ("emissive_color_texture", "emissive_texture", "emission_color_texture")
+EMISSIVE_COLORS = ("emissiveColor", "emission_color", "emissive_color", "emission")  # connected to an image node
+EMISSION_ON = "enable_emission"
+EMISSION_AMOUNT = ("emissive_intensity", "emission_luminance", "emission_weight", "emission_intensity")
+
+
+def _local_file(attr_value) -> str | None:
+    """The local file of an asset-valued input (resolved against its layer), or None."""
+    if attr_value is None:
+        return None
+    path = getattr(attr_value, "resolvedPath", "") or ""
+    return path if path and Path(path).is_file() else None
+
+
+def _is_zero(v) -> bool:
+    """An emission amount of 0 (a token, a string or a vector is not a number: not 0)."""
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and float(v) == 0.0
+
+
+def _emissive_texture(material: Usd.Prim) -> str | None:
+    """The texture a material emits, if it emits one: an emissive texture input of a shader whose emission is on
+    (enable_emission true where the shader has it, intensity not 0), or an emission color fed by an image node."""
+    for p in Usd.PrimRange(material):
+        if not p.IsA(UsdShade.Shader):
+            continue
+        sh = UsdShade.Shader(p)
+        ins = {i.GetBaseName(): i for i in sh.GetInputs()}
+        # an MDL (OmniPBR) emits only with enable_emission true: its default is false
+        mdl = sh.GetImplementationSource() == UsdShade.Tokens.sourceAsset
+        if (EMISSION_ON in ins or mdl) and (EMISSION_ON not in ins or ins[EMISSION_ON].Get() is not True):
+            continue
+        if any(_is_zero(ins[k].Get()) for k in EMISSION_AMOUNT if k in ins):
+            continue
+        for k in EMISSIVE_TEXTURES:
+            if k in ins and (f := _local_file(ins[k].Get())):
+                return f
+        for k in EMISSIVE_COLORS:
+            i = ins.get(k)
+            if i is None or not i.HasConnectedSource():
+                continue
+            src = i.GetConnectedSource()[0]
+            node = UsdShade.Shader(src.GetPrim())
+            for name in ("file", "texture", "filename"):
+                fi = node.GetInput(name)
+                if fi and (f := _local_file(fi.Get())):
+                    return f
+    return None
+
+
+def detect_screens(root: Usd.Prim) -> list[dict[str, Any]]:
+    """Screens of an asset that declares none in asset.json (a TV from SimReady Central): its materials that
+    emit a texture, as AssetRecord.screens entries (`detected`: found, not declared). The texture must be a local
+    file (a Hugging Face asset is fetched first, like a tint)."""
+    out = []
+    for p in Usd.PrimRange(root):
+        if p.IsA(UsdShade.Material) and (tex := _emissive_texture(p)):
+            out.append({"kind": "screen", "material": p.GetName(), "image": tex, "detected": True})
+    return out
+
+
+@functools.lru_cache(maxsize=64)
+def _found_in(path: str, mtime: float) -> tuple[str, ...]:
+    stage = Usd.Stage.Open(path)
+    if not stage:
+        return ()
+    root = stage.GetDefaultPrim() or stage.GetPseudoRoot()  # what a reference brings in, like compose (review)
+    return tuple(s["material"] for s in detect_screens(root))
+
+
+def found_screens(asset) -> list[str] | None:
+    """The screen materials compose would find on an asset that declares none: [] = none, so set_screen
+    has nothing to draw on; None = not known before compose (a Hugging Face asset, fetched only then). Cached by
+    the file's mtime: a texture added later is seen after the USD file changes (or a restart)."""
+    from agentic_sim_world_gen.assets.localize import parse_hf_url
+    from agentic_sim_world_gen.assets.providers.isaac_index import rebase_uri
+
+    uri = rebase_uri(asset) or asset.uri or ""
+    if parse_hf_url(uri):
+        return None
+    if "://" in uri or not Path(uri).is_file():
+        return []
+    try:
+        return list(_found_in(str(Path(uri).resolve()), Path(uri).stat().st_mtime))
+    except Exception:  # an unreadable file shows no screen
+        return []
 
 
 def apply_screen(stage: Usd.Stage, prim_paths: list[str], asset, o, scene_dir: Path) -> list[dict[str, Any]]:
