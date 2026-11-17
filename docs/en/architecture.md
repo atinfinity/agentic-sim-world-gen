@@ -341,7 +341,7 @@ An object whose center is on a raised level is placed at that height by the solv
 - **Store displays**: in stores (`shop` and the 25 kinds in `STORE_PLACES`: convenience store, supermarket, drugstore, bookstore, bakery, bike shop, furniture store, etc.), the same mechanism stocks empty fixtures with goods via `fill`.
   Goods come from per-store tables (`decor.PRODUCTS`, `COLD_PRODUCTS` for refrigerated cases, `HANG` for hooks), and each fixture starts with different goods from its neighbor.
   For store types not in the table, `Room.goods` (English search terms for goods) and `goods_words` (words for the trade) place only goods that carry those words (`decor.fits_goods`). Defaults for store size, entrance, checkout, etc. are in the `plan_questions` table (`questions.STORE_SIZES`).
-- **Windows**: a window opening is only a hole in the wall, so `fill_windows` adds a window asset `win_<id>`. The window is stretched to the opening (`fit_scale`), and in stores, windows 1.8 m or wider become shop windows. In homes it also adds a curtain `curtain_<id>` (`covers` can make it a blind).
+- **Windows**: a window opening is only a hole in the wall, so `fill_windows` adds a window asset `win_<id>`. The window is stretched to the opening (`fit_scale`), and in stores, windows 1.8 m or wider become shop windows. It also adds a curtain `curtain_<id>` in homes and a blind `blind_<id>` in offices, schools, labs and hospitals (`covers="auto"`; `covers` can choose another).
 
 `layout.svg` (top view; arrows show the front):
 

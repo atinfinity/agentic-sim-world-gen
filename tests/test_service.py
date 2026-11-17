@@ -491,3 +491,28 @@ def test_reply_language_from_the_room_name(fake, tmp_path):
     assert st["reply_language"] == "ja"
     st = service.create_scene({**SPEC, "objects": [], "room": {**SPEC["room"], "name": "room"}}, tmp_path / "plain")
     assert "reply_language" not in st  # the default room name says nothing
+
+
+def test_blind_over_a_wide_window():
+    """a 2.5 m classroom window got a wall display for a blind. The 2 m blinds fell under the size limit
+    (stretched x1.35, past the window's 1.33) and "roll screen" matched the display's 'screen' tag."""
+    from agentic_sim_world_gen.scene.plan import Opening
+    from agentic_sim_world_gen.scene.spec import Placement
+
+    op = Opening(id="win_a", kind="window", wall="west", offset=3.4, width=2.49, height=1.43, sill=0.9)
+    lo, hi = service._cover_size(op, 2.9)
+    assert lo[0] < 2.0 < hi[0]  # a 2 m blind fits
+    q, alt = service.cover_query(op, 2.9, "blind")
+    assert not any("screen" in w for w in [q, *alt])
+    ok = {"score": 2.9, "weak": False}
+    # as SimReady returns it: no class, the caption says what it is
+    display = {"name": "sm_digitalSystem_displayPanel_wall_a01_01.usd", "class": None, "match": ok,
+               "caption": "Black wall-mounted flat-panel display with a thin bezel"}
+    assert "another kind" in service._unfit_window_asset(Placement(object_id="b", candidates=[display]))
+    # windows / covers, and third-party windows with a generic class stay
+    for c in ({"name": "sm_blinds_window_2m_open_a01_01.usd", "class": "window shade"},
+              {"name": "SM_Window_Sash_01.usd", "class": "sash"}, {"name": "mado_01.usd"},
+              {"name": "mado_01.usd", "class": "environment"}, {"name": "glass_front_02.usd", "class": "facade"},
+              {"name": "jidou_01.usd", "class": "door"},
+              {"name": "sm_blinds_window_4m_a01.usd", "caption": "Display of white window blinds"}):
+        assert service._unfit_window_asset(Placement(object_id="b", candidates=[{**c, "match": ok}])) is None

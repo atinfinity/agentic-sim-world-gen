@@ -3322,10 +3322,10 @@ def _photo_gate(s: ResolvedScene, d: Path) -> str | None:
 def _floor_furniture(o: ObjectSpec) -> bool:
     """An object standing on the floor on its own: not decor, a door / window piece, on something, hung from the
     ceiling or on a wall (z above the floor without a layout)."""
-    if o.decor or o.opening is not None:
+    if o.decor or o.opening is not None or o.covers is not None:  # a curtain / blind hangs at its window
         return False
-    if o.layout is not None and (o.layout.on or o.layout.ceiling):
-        return False
+    if o.layout is not None and (o.layout.on or o.layout.ceiling or (o.layout.wall_height or 0) > 0.05):
+        return False  # on something, from the ceiling, or on a wall (a whiteboard, a picture; wall_height 0 stands)
     return not (o.layout is None and (o.z or 0) > 0.05)
 
 
@@ -4396,6 +4396,7 @@ def add_objects(scene: str | Path, objs: list[ObjectSpec | dict[str, Any]],
 
 
 SHOP_WINDOW_W = 1.8  # a shop's window this wide is its storefront: a wide FIX window or a shop-front sash
+BLIND_PLACES = {"office", "school", "lab", "hospital"}  # covers="auto" hangs blinds
 FIXED_WINDOW_PLACES = {"office", "shop", "cafe", "restaurant", "factory", "plant_factory", "warehouse", "datacenter"}
 
 
@@ -4429,9 +4430,9 @@ def _window_size(op, wall_h: float) -> tuple[tuple[float, float, float], tuple[f
 def _cover_size(op, wall_h: float) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
     """min_size / max_size of a curtain / blind over this window: wide enough after stretching, as tall as
     the window at least and no taller than the wall."""
-    from agentic_sim_world_gen.layout.solver import COVER_WIDER, FIT_RANGE
+    from agentic_sim_world_gen.layout.solver import COVER_FIT, COVER_WIDER
 
-    lo, hi = FIT_RANGE
+    lo, hi = COVER_FIT
     sill, top = op.resolved(wall_h)
     w = op.width + COVER_WIDER
     return (round(w / hi, 3), 0.0, round((top - sill) * 0.9, 3)), (round(w / lo, 3), 0.6, round(wall_h, 3))
@@ -4443,7 +4444,7 @@ def cover_query(op, wall_h: float, kind: str) -> tuple[str, list[str]] | None:
     if op.width <= 0.8 and top - sill <= 0.8:
         return None
     if kind == "blind":
-        return "roller blind", ["roll screen", "blind"]
+        return "roller blind", ["window blind", "blinds", "window shade"]  # not "screen": a display
     if sill <= 0.05:
         return "floor-length curtain", ["curtain", "curtains"]
     return "waist window curtain", ["curtain", "curtains"]
@@ -4451,15 +4452,17 @@ def cover_query(op, wall_h: float, kind: str) -> tuple[str, list[str]] | None:
 
 def fill_windows(scene: str | Path, covers: str | None = "auto", candidates: int = DEFAULT_CANDIDATES) -> dict[str, Any]:
     """Put a window asset in every window opening that has none (win_<opening>, stretched to fit), and a
-    curtain or blind over it (curtain_<opening>). covers: "auto" (curtains at home, none elsewhere),
-    "curtain", "blind" or None. Small windows (<= 0.8 x 0.8 m: bathroom, toilet) get no cover."""
+    curtain or blind over it (curtain_<opening> / blind_<opening>). covers: "auto" (curtains at home, blinds
+    in offices, schools, labs and hospitals, none elsewhere), "curtain", "blind" or None. Small windows
+    (<= 0.8 x 0.8 m: bathroom, toilet) get no cover."""
     from agentic_sim_world_gen.layout.room import RoomGeometry
 
     if covers not in ("auto", "curtain", "blind", None):
         raise ValueError(f"covers must be auto, curtain, blind or None, not {covers!r}")
     s = load(scene)
     place = s.spec.room.place
-    kind = ("curtain" if place in (None, "home") else None) if covers == "auto" else covers
+    kind = ("curtain" if place in (None, "home") else "blind" if place in BLIND_PLACES else None) \
+        if covers == "auto" else covers
     have_win = {o.opening for o in s.spec.objects if o.opening}
     have_cover = {o.covers for o in s.spec.objects if o.covers}
     ids = {o.id for o in s.spec.objects}
@@ -4516,7 +4519,19 @@ def _unfit_window_asset(p: Placement) -> str | None:
         return "weak match: " + (p.candidates[0].get("caption") or p.candidates[0]["name"])
     if m.get("off_place"):
         return f"made for {m['off_place']}: " + (p.candidates[0].get("caption") or p.candidates[0]["name"])
+    c = p.candidates[0]
+    # a wall display matched "screen" in its tags for a blind (SimReady gives it no class, its caption says
+    # "flat-panel display"). Only a class / caption / name that names another kind and no window / cover word:
+    # third-party windows with a generic class ("environment", "facade", "door") stay.
+    what = f"{c.get('class') or ''} {c.get('caption') or ''} {c['name']}".lower()
+    if (other := _OTHER_KIND.search(what)) and not _WINDOW_WORDS.search(what):
+        return f"another kind ({other.group(0)}): " + (c.get("caption") or c["name"])
     return None
+
+
+_WINDOW_WORDS = re.compile(r"window|curtain|drape|blind|shade|shutter|sash|glaz|storefront|shop.?front")
+_OTHER_KIND = re.compile(r"display|monitor|television|\btv\b|computer|projector|whiteboard|blackboard|poster|"
+                         r"painting|mirror|fence|vehicle|\bcar\b|truck|signage")
 
 
 def remove_object(scene: str | Path, object_id: str | list[str]) -> dict[str, Any]:

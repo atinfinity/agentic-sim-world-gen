@@ -262,14 +262,16 @@ It is recorded in each frame's sidecar, so video_poses decodes the video turned 
 
 Put a window asset in every empty window opening (stretched to fit; opening_fit beyond 0.75-1.33x), chosen
 by shape (shop window / floor-length / small / casement / fixed / sliding), plus a curtain or blind: covers auto = curtains
-at home, none elsewhere. Swap them like any object.
+at home, blinds in offices / schools / labs / hospitals, none elsewhere. Swap them like any object.
 
 Put a window asset (sash, frame and glass) in every window opening that has none, stretched to the
 opening (fit_scale; opening_fit if it had to stretch more than 0.75-1.33x), and a curtain or blind over it.
 The asset is chosen by the opening's shape: floor-length (sill ~0) / small frosted (<= 0.8 x 0.8 m) /
 casement (<= 0.5 m wide) / fixed (offices, shops) / sliding; a shop's opening 1.8 m+ wide is its storefront
-(shop window: a wide FIX window or a shop-front sash). covers: auto = curtains at home, none
-elsewhere; small windows never get one. Swap them like any object (view_candidates, select_asset).
+(shop window: a wide FIX window or a shop-front sash). covers: auto = curtains at home, blinds in
+offices / schools / labs / hospitals (cut to the window, down to the sill), none elsewhere; small windows
+never get one. When photos show the windows, pass what they show (covers="blind" for slats or a roller,
+"curtain", or None for bare glass). Swap them like any object (view_candidates, select_asset).
 An opening whose best asset is no window / curtain (only weak matches, or made for another line of work: a
 car door tagged window) is left empty and listed in not_found: tell the user.
 

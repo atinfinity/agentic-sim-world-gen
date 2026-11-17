@@ -13,6 +13,7 @@ CATALOG.update({
     "small window": [rec("bathroom_window", "window", 0.64, 0.076, 0.57)],
     "curtain": [rec("curtain_waist_window", "curtain", 1.9, 0.12, 1.35)],
     "long curtain": [rec("curtain_floor_window", "curtain", 1.9, 0.12, 2.6)],
+    "roller blind": [rec("blinds_window_2m_open", "window shade", 2.0, 0.1, 2.1)],
 })
 
 ROOM = {"width": 3.64, "depth": 2.73, "height": 2.4, "wall_thickness": 0.12,
@@ -66,6 +67,26 @@ def test_curtain_too_long_and_bad_window(tmp_path):
     assert objs(st)["c"]["z"] == 0.0
 
 
+def test_blind_down_to_the_sill(tmp_path):
+    """a 2.1 m blind hung 1 m below a 1.1 m window; a blind is made to its window, a curtain is not."""
+    st = scene(tmp_path, [{"id": "b", "query": "roller blind", "covers": "win"}])
+    b = objs(st)["b"]
+    assert b["fit_scale"][2] == pytest.approx(1.2 / 2.1, abs=1e-3)  # sill 0.9 to the rail 2.1
+    assert b["z"] == pytest.approx(0.9, abs=1e-3)
+    assert st["issues"] == []
+
+
+def test_blind_under_the_ceiling(tmp_path):
+    """Review: a window up to the ceiling; the rail stops there, so the blind ends at the sill, not below."""
+    room = {**ROOM, "height": 2.7, "openings": [{**ROOM["openings"][0], "height": 1.8}]}  # sill 0.9, top 2.7
+    st = service.create_scene({"name": "w", "room": room, "objects": [
+        {"id": "b", "query": "roller blind", "covers": "win"}]}, tmp_path / "w")
+    b = objs(st)["b"]
+    assert b["z"] == pytest.approx(0.9, abs=1e-3)
+    assert b["z"] + 2.1 * b["fit_scale"][2] == pytest.approx(2.7, abs=1e-3)
+    assert st["issues"] == []
+
+
 def test_covers_excludes_layout():
     with pytest.raises(ValueError, match="covers places the object itself"):
         ObjectSpec(id="c", query="curtain", covers="win", layout={"against_wall": "north"})
@@ -112,6 +133,9 @@ def test_fill_windows_by_shape(tmp_path):
     service.create_scene({"name": "g", "room": {**room, "place": "office"}, "objects": []}, tmp_path / "g")
     st = service.fill_windows(tmp_path / "g")
     assert not [i for i in st["added"] if i.startswith("curtain")] and objs(st)["win_win"]["query"] == "fixed window"
+    assert "blind_win" in st["added"]  # an office gets blinds
+    service.create_scene({"name": "h", "room": {**room, "place": "shop"}, "objects": []}, tmp_path / "h")
+    assert not [i for i in service.fill_windows(tmp_path / "h")["added"] if not i.startswith("win_")]
 
 
 def test_fill_windows_picks_a_window_of_the_opening_size(tmp_path):

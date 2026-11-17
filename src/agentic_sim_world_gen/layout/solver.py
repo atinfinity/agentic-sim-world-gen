@@ -9,6 +9,7 @@ one block (agentic_sim_world_gen.layout.array.block_record).
 from __future__ import annotations
 
 import math
+import re
 
 from agentic_sim_world_gen.assets.record import AssetRecord
 from agentic_sim_world_gen.layout.array import block_record, instances
@@ -30,6 +31,9 @@ STEP = 0.05  # sampling step along a wall
 FIT_RANGE = (0.75, 1.33)  # stretch beyond this and the window looks wrong (sash bars, lock): pick another asset
 COVER_RISE = 0.10  # a curtain rail above the window head
 COVER_WIDER = 0.20  # a curtain / blind wider than its window (0.1 m each side)
+# a curtain / blind stretches more than a window (no sash bars or lock to look wrong): a 2 m blind over a
+# 2.5 m window (+0.2 m) is x1.35, just past FIT_RANGE
+COVER_FIT = (0.6, 1.6)
 COVER_GAP = 0.01  # between the wall face and the curtain's back
 
 
@@ -59,6 +63,10 @@ def _fit_issue(o: ObjectSpec, opening: str) -> list[Issue]:
                   f"to the opening's size (or change the opening)")]
 
 
+_BLIND = re.compile(r"blind|shade|shutter")
+_CURTAIN = re.compile(r"curtain|drape")
+
+
 def _cover(o: ObjectSpec, a: AssetRecord, geom: RoomGeometry, room_h: float) -> list[Issue]:
     """A curtain / blind in front of window o.covers: on the room side, centered, top above the window head."""
     found = geom.opening(o.covers)
@@ -68,7 +76,11 @@ def _cover(o: ObjectSpec, a: AssetRecord, geom: RoomGeometry, room_h: float) -> 
     w, op = found
     (cx, cy), facing, _ = geom.opening_pose(op.id, o.zone)
     sill, top = op.resolved(w.height)
-    o.fit_scale = _fit(o, a, op.width + COVER_WIDER, None)
+    # A blind is made to its window: down to the sill (a 2 m one hung far below a 1.4 m window). A curtain
+    # keeps its length (to the sill or the floor).
+    blind = _BLIND.search(f"{a.name} {a.semantic_class or ''}".lower()) and not _CURTAIN.search(a.name.lower())
+    tall = min(top + COVER_RISE, room_h) - sill  # the rail stops at the ceiling
+    o.fit_scale = _fit(o, a, op.width + COVER_WIDER, tall if blind and a.size_m[2] > tall else None)
     from agentic_sim_world_gen.layout.array import placed_size, unit_size
 
     d = unit_size(o, a)[1]
