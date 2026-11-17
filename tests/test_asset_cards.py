@@ -139,3 +139,20 @@ def test_build_script(tmp_path, card_file):
     card = cards.read(out)["x/a"]
     assert card["kind"] == "desk" and card["physics"] == {"stable": True}
     assert card["by"]["drop"] == "d" and card["by"]["look"].startswith("tester, ")
+
+
+def test_forgecad_assets_face_minus_y(card_file):
+    """ForgeCAD's SimReady assets have the backrest / tank at +Y; a card or a known front still wins."""
+    chair = AssetRecord(id="c", source="simready-central", name="dining_chair.usda", author="ForgeCAD",
+                        bbox_min=(0, 0, 0), bbox_max=(0.4, 0.4, 0.8),
+                        uri="https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/abc/dining_chair/"
+                            "simready_usd/dining_chair.usda")
+    assert asset_front_deg(chair) == 270
+    by_uri = AssetRecord(id="d", source="simready-central", name="toilet_with_seat.usda",
+                         bbox_min=(0, 0, 0), bbox_max=(0.4, 0.7, 0.8),
+                         uri="https://huggingface.co/datasets/ForgeCAD/simready-assets/resolve/abc/toilet_with_seat/"
+                             "simready_usd/toilet_with_seat.usda")
+    assert asset_front_deg(by_uri) == 270
+    assert asset_front_deg(rec("dining_chair", "chair")) == 0  # another source's chair of the same name
+    card_file({"key": cards.key(chair.uri), "front_deg": 0})
+    assert asset_front_deg(chair) == 0
