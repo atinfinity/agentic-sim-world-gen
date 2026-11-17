@@ -22,6 +22,8 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from pydantic import ValidationError
+
 from agentic_sim_world_gen import UA, isaac_worker, missing
 from agentic_sim_world_gen.assets import cards
 from agentic_sim_world_gen.assets.providers.base import AssetProvider, fits, size_filter_for
@@ -129,7 +131,11 @@ def load(scene: str | Path) -> ResolvedScene:
     path = _resolved_path(scene)
     if not path.exists():
         raise FileNotFoundError(f"{path} not found; create the scene first")
-    return ResolvedScene.load(path)
+    try:
+        return ResolvedScene.load(path)
+    except ValidationError as e:  # say the way out instead of the same error on every call
+        raise ValueError(f"{path.name} does not load ({e.error_count()} errors, first: "
+                         f"{e.errors()[0].get('msg')}); restore(scene_dir) goes back to the last saved version") from e
 
 
 def _placement(scene: ResolvedScene, object_id: str) -> Placement:
@@ -397,9 +403,13 @@ def restore(scene: str | Path, version: int | None = None) -> dict[str, Any]:
     if version not in vs:
         have = "; ".join(f"{r['version']}: {r['text']}" for r in rows[-10:]) or "none"
         raise ValueError(f"version {version} is not kept (the last {SNAPSHOTS} are); kept: {have}")
-    now = load(scene)
+    try:
+        notes = load(scene).spec.notes
+    except (ValueError, OSError):  # the scene on disk does not load: restore is the way back
+        notes = None
     s = ResolvedScene.model_validate(json.loads(gzip.decompress(_snap_path(d, int(version)).read_bytes())))
-    s.spec.notes = now.spec.notes
+    if notes is not None:
+        s.spec.notes = notes
     text = (next(r["text"] for r in rows if r["version"] == version) or "").removeprefix(_who_preview(""))
     st = _save(s, d, f"「{text}」の時点に戻す" if text else "前の状態に戻す", fix=False)
     st["restored"] = int(version)
@@ -433,6 +443,9 @@ def _save(scene: ResolvedScene, scene_dir: Path, event: str | None = None, focus
     if fixed:
         event += _record_fixes(scene, fixed)
     _auto_assumptions(scene)
+    # an edit that broke a rule (covers next to a layout) was saved, and then no call could load the scene.
+    # Check the spec as a load would, before anything is written.
+    SceneSpec.model_validate(scene.spec.model_dump())
     scene_dir.mkdir(parents=True, exist_ok=True)
     version = None
     if event is not None:
@@ -3877,7 +3890,7 @@ def place_from_photos(scene: str | Path, objects: list[str] | None = None, apply
                             "now - mark front / back feet (`edge`) to tell")
         placed.append(row)
         if apply:
-            o.layout = o.opening = None
+            o.layout = o.opening = o.covers = None
             o.position = (r["center"][0], r["center"][1])
             o.facing_deg = r["facing_deg"]
             ja = COMPASS_JA[round(norm_deg(r["facing_deg"]) % 360 / 45) % 8]
@@ -4122,7 +4135,7 @@ def _move(s: ResolvedScene, object_id: str, position: Any, yaw_deg: float | None
     o = s.obj(object_id)
     if position is None and o.position is None:
         raise ValueError(f"'{object_id}' has no position yet; pass position")
-    o.layout = o.opening = None
+    o.layout = o.opening = o.covers = None  # a hand placement ends every placing rule
     if position is not None:
         o.position = (float(position[0]), float(position[1]))
     if yaw_deg is not None:
@@ -4161,7 +4174,7 @@ def try_move(scene: str | Path, object_id: str, position: tuple[float, float], y
     s = load(scene)
     _placement(s, object_id)
     o = s.obj(object_id)
-    o.layout = o.opening = None
+    o.layout = o.opening = o.covers = None  # a hand placement ends every placing rule
     o.position, o.yaw_deg = (float(position[0]), float(position[1])), float(yaw_deg)
     mine = lambda i: any(x == object_id or x.startswith(object_id + ".") for x in i.objects)  # noqa: E731
     return [{"kind": i.kind, "objects": list(i.objects), "detail": i.detail} for i in check(s) if mine(i)]
@@ -4187,7 +4200,7 @@ def set_layout(
     before = NEAR_GAP if old is None or not old.in_front_of or old.gap is None else old.gap
     o.layout = None if layout is None else (layout if isinstance(layout, Layout) else Layout.model_validate(layout))
     if o.layout is not None:
-        o.opening = None  # the two placement rules exclude each other
+        o.opening = o.covers = None  # the placement rules exclude each other (covers too)
         o.facing_deg = None  # the layout decides the facing
     if front_offset_deg is not None:
         o.front_offset_deg = front_offset_deg

@@ -1,5 +1,7 @@
 """Window assets stretched to their opening (fit_scale) and curtains hung over a window (covers). No network."""
 
+import json
+
 import pytest
 
 from agentic_sim_world_gen import service
@@ -202,3 +204,54 @@ def test_shop_storefront_window_fits_under_the_ceiling(tmp_path):
         assert service.window_query(s.spec.room.openings[0], 2.7, "home")[0] != "shop window"
     finally:
         del CATALOG["shop window"], CATALOG["storefront window"]
+
+
+def test_blind_is_stretched_to_its_window(tmp_path):
+    """A 2 m blind over a 2.4 m window is stretched to the window + 0.2 m, not left narrower."""
+    room = {**ROOM, "width": 4.0, "openings": [{**ROOM["openings"][0], "offset": 2.0, "width": 2.4}]}
+    st = service.create_scene({"name": "w", "room": room, "objects": [
+        {"id": "b", "query": "roller blind", "covers": "win"}]}, tmp_path / "w")
+    assert objs(st)["b"]["fit_scale"][0] == pytest.approx(2.6 / 2.0, abs=1e-3)
+    assert st["issues"] == []
+
+
+def test_covered_blind_is_static(tmp_path):
+    """A blind on its rail has nothing under it: composed static (as a hung object), not a falling body."""
+    pytest.importorskip("pxr")
+    from pxr import Usd
+
+    scene(tmp_path, [{"id": "b", "query": "roller blind", "covers": "win"}])
+    service.compose_scene(tmp_path / "w")
+    stage = Usd.Stage.Open(str(tmp_path / "w" / "scene.usda"))
+    prim = stage.GetPrimAtPath("/World/Objects/b")
+    assert prim.GetCustomDataByKey("agentic_sim_world_gen:hung") is True
+    assert prim.GetChild("Asset").GetAttribute("physics:rigidBodyEnabled").Get() is False
+
+
+def test_set_layout_on_a_blind_drops_covers(tmp_path):
+    """Set_layout on a covers object raised a ValidationError (covers next to a layout) after writing it."""
+    scene(tmp_path, [{"id": "b", "query": "roller blind", "covers": "win"}])
+    service.set_layout(tmp_path / "w", "b", {"against_wall": "north", "wall_height": 0.9})
+    o = service.load(tmp_path / "w").obj("b")
+    assert o.covers is None and o.layout.wall_height == 0.9
+    service.remove_object(tmp_path / "w", "b")  # the scene still loads and saves
+
+
+def test_bad_save_leaves_the_scene_as_it_was(tmp_path):
+    """A save that breaks a rule fails before writing, and a scene that does not load points to restore."""
+    d = tmp_path / "w"
+    scene(tmp_path, [{"id": "b", "query": "roller blind", "covers": "win"}])
+    before = (d / "scene.resolved.json").read_text()
+    s = service.load(d)
+    s.obj("b").layout = service.Layout(against_wall="north")  # set past the validator, as an edit could
+    with pytest.raises(ValueError, match="covers places the object itself"):
+        service._save(s, d, "壊す")
+    assert (d / "scene.resolved.json").read_text() == before
+    service.move_object(d, "b", position=(1.0, 1.0))  # version 2
+    raw = json.loads((d / "scene.resolved.json").read_text())
+    raw["spec"]["objects"][0].update(covers="win", layout={"against_wall": "north"})  # broken on disk (before)
+    (d / "scene.resolved.json").write_text(json.dumps(raw))
+    with pytest.raises(ValueError, match="restore"):
+        service.load(d)
+    assert service.restore(d)["restored"] == 1
+    assert service.load(d).obj("b").covers == "win"

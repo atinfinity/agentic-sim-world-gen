@@ -499,8 +499,9 @@ def _floor_cover(o, a, inst) -> bool:
 
 
 def _hung(o) -> bool:
-    """Hung from the ceiling or on a wall (layout.ceiling / wall_height): mounted, so nothing holds it up in physics."""
-    return o.layout is not None and (o.layout.ceiling or o.layout.wall_height is not None)
+    """Hung from the ceiling or on a wall (layout.ceiling / wall_height), or in front of a window (covers: a curtain
+    / blind on its rail): mounted, so nothing holds it up in physics."""
+    return o.covers is not None or (o.layout is not None and (o.layout.ceiling or o.layout.wall_height is not None))
 
 
 def _make_static(stage: Usd.Stage, path: str, uri: str | None = None, key: str = "agentic_sim_world_gen:display") -> None:
