@@ -265,6 +265,7 @@ flowchart TD
 3. **再ランク**（`rerank`）：クエリの最後の名詞（物そのもの）が、アセットのclass・tags・caption・nameに名詞として出るかで点を付けます。
    たとえば「desk lamp」は机ではなく、「coffee table」はdining tableの代わりにならない（どちらもweak）。アセットのカード（`assets/cards.py`）に見て確かめた種類`kind`があれば、ラベルよりそちらを使います。
    強い一致が1つでもあればweakは一覧から外し、全部weakなら「該当なし＝代用」として残します。
+   形・つくりの語（round・oval・rectangular・upholstered・glass）はグループで照らし合わせ、合えば加点、逆の形（楕円を頼んで四角）なら減点します。
 4. **後ろへ回す**：合わない物も消さずに、次の表の上の行ほど後ろへ回します。
 
    | 印 | どんな物か | 例 |

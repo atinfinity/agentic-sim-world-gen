@@ -265,6 +265,7 @@ flowchart TD
 3. **Rerank** (`rerank`): an asset scores by whether the last noun of the query (the object itself) appears as a noun in its class, tags, caption or name.
    For example, a "desk lamp" is not a desk, and a "coffee table" does not stand in for a dining table (both weak). If the asset's card (`assets/cards.py`) has a kind `kind` checked by eye, that is used instead of the labels.
    If there is even one strong match, weak ones are removed from the list. If all are weak, they stay as "no match = substitute".
+   Shape and build words (round, oval, rectangular, upholstered, glass) are matched by group: a match adds points, and the opposite shape (rectangular for an oval one asked for) takes points away.
 4. **Move to the back**: poor fits are not removed. The higher their row in this table, the further back they go.
 
    | Marker | What it is | Example |

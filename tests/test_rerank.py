@@ -250,3 +250,55 @@ def test_material_and_color_are_no_kind():
     assert not score(PALLET, "slatted pallet").weak  # a "wooden pallet" is no other kind of pallet
     lamp = rec("bedside", "lamp", ["table lamp"], "White bedside table lamp")
     assert score(lamp, "white floor lamp").weak  # the kind word still counts
+
+
+def test_shape_words_pick_the_shape_asked_for():
+    """An "oval table" got a rectangular office desk; shape words match their group (oval ~ round)."""
+    round_t = rec("round_wooden_table_01", "round wooden table", ["table", "round table"], "A round wooden table.")
+    plain = rec("wooden_table", "wooden table", ["table"], "A simple wooden table.")
+    rect = rec("rect_table", "table", ["table"], "A rectangular meeting table.")
+    ranked = [r.name for r, _ in rerank([rect, plain, round_t], "oval table")]
+    assert ranked == ["round_wooden_table_01", "wooden_table", "rect_table"]
+    m = score(round_t, "oval table")
+    assert "shape 'oval'" in m.matched and not m.weak
+    assert "shape: rectangular, not oval" in score(rect, "oval table").matched
+
+
+def test_shape_word_is_no_other_kind():
+    """A round table is a table, not another kind of table (kinds like "coffee" still are)."""
+    round_t = rec("round_table", "round table", ["round table"], "A round table.")
+    assert score(round_t, "oval table").score >= 2.5
+    assert score(round_t, "square table").score < score(rec("t", "table", ["table"]), "square table").score
+
+
+def test_upholstered_and_glass_count_as_shape():
+    soft = rec("armchair", "chair", ["armchair"], "Wooden armchair with green fabric upholstery.")
+    hard = rec("dining_chair", "chair", ["dining chair"], "A wooden dining chair.")
+    assert rerank([hard, soft], "upholstered chair")[0][0].name == "armchair"
+    glass = rec("vitrine", "cabinet", ["display cabinet"], "Wooden display cabinet with glass doors.")
+    files = rec("file_cabinet", "cabinet", ["file cabinet"], "Gray metal file cabinet.")
+    assert rerank([files, glass], "glass cabinet")[0][0].name == "vitrine"
+
+
+def test_shape_never_makes_a_match_weak():
+    """A table of the other shape, or one that says no shape, is still a table (not weak)."""
+    cap_only = rec("t1", "furniture", [], "A meeting table.")
+    cap_rect = rec("t2", "furniture", [], "A rectangular meeting table.")
+    tag_rect = rec("t3", "furniture", ["table"], "A rectangular table.")
+    assert not score(cap_only, "oval table").weak and not score(cap_rect, "oval table").weak
+    assert not score(tag_rect, "oval desk", ["oval table"]).weak
+
+
+def test_shape_of_a_part_is_not_the_shape():
+    """'a rectangular table with round legs' is no round table; a coffee table lists no shape reason."""
+    legs = rec("t", "table", ["table"], "A rectangular table with round legs.")
+    m = score(legs, "oval table")
+    assert "shape 'oval'" not in m.matched and m.score < score(rec("r", "table", ["table"], "A round table."), "oval table").score
+    coffee = rec("c", "coffee table", ["coffee table"], "A coffee table.")
+    assert not any(w.startswith("shape") for w in score(coffee, "round dining table").matched)
+
+
+def test_leather_is_upholstered():
+    leather = rec("a", "chair", ["armchair"], "A black leather armchair.")
+    wood = rec("w", "chair", ["chair"], "A wooden chair.")
+    assert rerank([wood, leather], "upholstered chair")[0][0].name == "a"
