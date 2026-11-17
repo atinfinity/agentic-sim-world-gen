@@ -189,7 +189,7 @@ def test_a_preset_without_fixtures_gets_ceiling_lights(tmp_path, lighting):
     from agentic_sim_world_gen.usd.compose import compose
     from agentic_sim_world_gen.usd.look import SITE_FIXTURES
 
-    scene(tmp_path, [], ceiling=True, lighting=lighting)
+    scene(tmp_path, [], ceiling=True, lighting=lighting, place=None)  # no place: no fixtures of its own
     stage = compose(service.load(tmp_path / "t"), tmp_path / "scene.usda")
     lights = stage.GetPrimAtPath("/World/Lights")
     fixtures = [p for p in lights.GetChildren() if p.GetName().startswith("Fixture_")]

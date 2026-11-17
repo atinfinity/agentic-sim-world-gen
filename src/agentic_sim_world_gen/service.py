@@ -418,6 +418,8 @@ def _save(scene: ResolvedScene, scene_dir: Path, event: str | None = None, focus
     from agentic_sim_world_gen.preview.candidates import write_html
     from agentic_sim_world_gen.preview.layout2d import write_svg
 
+    if fix and event is not None:
+        event += _default_fixtures(scene)  # the place's ceiling fixtures
     _ensure_shelves(scene)
     solve(scene)  # objects with `layout` get position/yaw/z from their relations
     if fix and event is not None and scene.spec.decor_skipped and (more := _retry_decor(scene)):
@@ -2216,6 +2218,7 @@ def create_scene(spec: SceneSpec | dict[str, Any], out_dir: str | Path, candidat
         placements = [_placement_for(o, candidates, spec.room.place, spec.room.height) for o in spec.objects]
     applied = prefs.apply(spec, placements) if preferences else []
     s = ResolvedScene(spec=spec, placements=placements)
+    _default_fixtures(s, start=True)  # the place's ceiling fixtures, unless the spec decides them
     msg = f"シーンを作成：{len(placements)} 物体の候補を検索して配置" + (f"（前回の好み {len(applied)} 件）" if applied else "")
     if spec.room.density not in (None, "sparse"):
         msg += "。" + _apply_density(s, candidates)
@@ -2287,6 +2290,8 @@ def start_from_example(example: str | None = None, name: str | None = None, room
     if changed & {"width", "depth"} and data["room"].get("plan"):
         raise ValueError("this example has a floor plan: its size comes from the plan (set_room / edit the plan after)")
     data["room"].update(room or {})
+    if "fixtures" in changed:  # chosen here, not the example's place default
+        data["room"].pop("fixtures_from", None)
     ids = {o["id"] for o in data["objects"]}
     if missing := [i for i in drop or [] if i not in ids]:
         raise ValueError(f"drop: no such object(s) {missing} in {example}")
@@ -2932,6 +2937,62 @@ def _notes_view(s: ResolvedScene) -> dict[str, Any]:
             "then resolve_notes(ids, reply) with a short Japanese reply; ask in chat only if one is unclear"}
 
 
+FIXTURE_BASIS = "場所の標準の天井照明"  # basis of the row _default_fixtures records
+FIXTURE_ITEM = "照明器具"  # its item (exact; a shop's "fixtures" rows are its store fixtures)
+# an object hung from the ceiling that is a light fixture itself (a photo's fluorescent rows, the konbini's base
+# lights): with one the room keeps the preset's bare lights; emergency lights and exit signs are not one
+CEILING_LIGHT_RE = re.compile(
+    r"lamp|luminaire|fluorescent|troffer|chandelier|pendant|\blights?\b|light(?:s|ing)? ?(?:fixture|strip|bar|panel)|"
+    r"(?:down|spot|track|ceiling|base|panel|linear|recessed|strip|tube|bay)[ _-]?lights?|照明|蛍光灯|ライト|シャンデリア|ペンダント", re.I)
+NOT_CEILING_LIGHT_RE = re.compile(r"emergency|\bexit\b|\bsigns?\b|signage|非常|誘導灯", re.I)
+
+
+def _is_ceiling_light(o: ObjectSpec, p: Placement | None) -> bool:
+    """An object with layout.ceiling whose words (or selected asset) say it is a light fixture."""
+    if o.layout is None or not o.layout.ceiling:
+        return False
+    rec = p.asset if p is not None else None
+    words = " ".join(filter(None, [o.id, o.label, o.query, *(o.alt_queries or []),
+                                   rec.name if rec else None, rec.semantic_class if rec else None]))
+    words = re.sub(r"(?<=[a-z])(?=[A-Z])|_", " ", words)  # sm_lighting_taskLight -> sm lighting task Light
+    return bool(CEILING_LIGHT_RE.search(words)) and not NOT_CEILING_LIGHT_RE.search(words)
+
+
+def _default_fixtures(s: ResolvedScene, start: bool = False) -> str:
+    """an office / classroom / shop ... under a ceiling has the fixtures of its place (fixtures.place_default)
+    while Room.fixtures_from is "place": swapped when the place changes, taken back without a ceiling or when light
+    fixtures are placed as objects, with a guessed assumption row (FIXTURE_ITEM). start: a new scene, or its place /
+    ceiling just changed: the service takes the fixtures over when nobody decided them (no fixtures, no
+    fixtures_from). Chosen fixtures and fixtures false (fixtures_from none) are left alone. Returns the line for
+    the change log."""
+    from agentic_sim_world_gen.preview.changes import FIXTURE_JA
+    from agentic_sim_world_gen.scene.fixtures import place_default
+
+    room = s.spec.room
+    if start and room.fixtures is None and room.fixtures_from is None:
+        room.fixtures_from = "place"
+    ours = [a for a in s.spec.assumptions
+            if a.object is None and a.item == FIXTURE_ITEM and (a.basis or "").startswith(FIXTURE_BASIS)]
+    if room.fixtures_from != "place":
+        s.spec.assumptions = [a for a in s.spec.assumptions if a not in ours]
+        return ""
+    by_id = {p.object_id: p for p in s.placements}
+    lights = any(_is_ceiling_light(o, by_id.get(o.id)) for o in s.spec.objects)
+    want = None if lights else place_default(room)
+    s.spec.assumptions = [a for a in s.spec.assumptions if a not in ours]
+    if want is not None:
+        s.spec.assumptions.append(Assumption(item=FIXTURE_ITEM, value=FIXTURE_JA.get(want.kind, want.kind),
+                                             basis=f"{FIXTURE_BASIS}（{room.place}）"))
+    if want == room.fixtures:
+        return ""
+    had = room.fixtures
+    room.fixtures = want
+    if want is None:
+        return "。天井照明の器具を外した（" + ("器具を物として置いたため" if lights else "場所・天井から") + "）" if had else ""
+    return f"。天井照明の器具：{FIXTURE_JA.get(want.kind, want.kind)}（場所の標準）"
+
+
+
 AUTO_BASIS = "自動（配置から）"  # basis of the rows _auto_assumptions writes
 ROOM_ITEMS = ("size", "place", "floor", "walls", "lighting")  # what every scene decides about the room
 _ITEM_WORDS = {"size": ("size", "dimension", "寸法", "広さ", "サイズ", "大きさ", "畳"), "place": ("place", "場所", "種類", "業種"),
@@ -3117,7 +3178,7 @@ def _auto_assumptions(s: ResolvedScene) -> None:
         "walls": _surface_words(room.walls),
         "lighting": room.lighting + (f"（明るさ ×{room.lighting_scale:g}）" if room.lighting_scale != 1 else ""),
     }
-    room_items = [a.item.lower() for a in kept if a.object is None]
+    room_items = [a.item.lower() for a in kept if a.object is None and a.item != FIXTURE_ITEM]  # 照明器具 is not 照明
     for k in ROOM_ITEMS:
         if not any(w in it for it in room_items for w in _ITEM_WORDS[k]):
             rows.append(Assumption(item=k, value=words[k], basis=AUTO_BASIS, auto=True))
@@ -4148,6 +4209,8 @@ def set_room(scene: str | Path, floor_alt_queries: list[str] | None = None, wall
         data.pop("plan", None)
         data["openings"] = []
     data.update({k: v for k, v in changes.items() if v is not None})
+    if changes.get("fixtures") is not None:  # chosen now: no longer the place's default; false stays off
+        data["fixtures_from"] = None
     if changes.get("plan_file") and data.get("zone_floors"):  # keep the overrides of zones the new plan still has
         new = Room.model_validate({**data, "zone_floors": {}})
         zones = {z.id for z in new.plan.zones} if new.plan else set()
@@ -4158,6 +4221,8 @@ def set_room(scene: str | Path, floor_alt_queries: list[str] | None = None, wall
     from agentic_sim_world_gen.preview.changes import ROOM_FIELDS_JA
 
     after = s.spec.room.model_dump(mode="json")
+    if before["place"] != after["place"] or bool(before["ceiling"]) != bool(after["ceiling"]):
+        _default_fixtures(s, start=True)  # the place's fixtures, unless they were chosen
     for item in PREF_ITEMS:
         if changes.get(item) is not None:
             _learn(correction, item, room_target(s.spec.room.place), d, before[item], after[item])
