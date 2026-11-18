@@ -235,6 +235,7 @@ def test_people_check(walk, tmp_path, monkeypatch):
     if r["people_check"] == "none":
         assert "check the frames for people yourself" in r["hint_people"]
     assert "anyone is visible" in r["hint"]
+    assert "video_poses" in r["next"] and "fit_photos" in r["next"]  # measure, do not guess
     monkeypatch.setattr(video, "people_detector", lambda: (lambda f: 2 if "t005" in Path(f).name else 0))
     r = service.extract_frames(walk, tmp_path / "b", max_frames=4)
     hit = [f["id"] for f in r["frames"] if f.get("people")]

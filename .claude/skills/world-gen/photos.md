@@ -104,14 +104,14 @@ tool).
        about them (e.g. `z`).
 
      Mark every window / door you see by its corners (all four when visible, in each photo that shows it):
-     an opening without them stays at its guessed place and size (details in [videos.md](videos.md) step 4).
+     an opening without them stays at its guessed place and size (details in [videos-fit.md](videos-fit.md)).
      Read pixels off the image carefully (overlay a grid when needed). Aim for 6+ measurements per photo.
      Check `rms_px` (a few px is good), `worst` and `warnings`. A large error is usually a mislabeled landmark
      (start/end swapped, wrong corner); a camera with ± > 0.3 m needs more landmarks at different depths.
      With `out_dir` = the scene dir, the room and each input's `camera` are written into the scene
      (`applied`). With `apply=false` it only fits (e.g. before the scene exists): then pass `room` to
      create_scene and the cameras as each input's `camera`. The wall height sets the scale: use a known one
-     (2.4 m is the default) and say it is assumed (with depth it is fitted, see [videos.md](videos.md)).
+     (2.4 m is the default) and say it is assumed (with depth it is fitted, see [videos-fit.md](videos-fit.md)).
    - **Locate every piece of furniture you see** in the same fit_photos request (`locate`). Per object, give
      2-4 pixels where it meets the floor (feet, base corners - at least two diagonal ones; z = 0) or a top
      corner at its height. Give each pixel `object` = the object id you will use in the scene (`desk`, `bed`;

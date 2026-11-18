@@ -3937,6 +3937,12 @@ def place_from_photos(scene: str | Path, objects: list[str] | None = None, apply
     return out
 
 
+VIDEO_NEXT = ("MEASURE, do not guess: after create_scene with these inputs, run video_poses, then "
+              "fit_photos(out_dir=<scene>) with its relative, the landmarks of every frame and locate for the "
+              "furniture; it writes the room size and the cameras. Room size or cameras set by eye from the frames "
+              "are not a substitute. Read videos-fit.md when video_poses returns.")
+
+
 def extract_frames(video: str | Path, out_dir: str | Path, max_frames: int = 8, min_frames: int = 4,
                    url: str | None = None, title: str | None = None, author: str | None = None,
                    license: str | None = None, start_s: float | None = None,
@@ -3994,8 +4000,8 @@ def extract_frames(video: str | Path, out_dir: str | Path, max_frames: int = 8, 
                    "is on the left, +180 if upside down); fit_photos and video_poses need upright frames. Frames with notes (sky / close-up / dark) are weak views of the room; if they are not the room, "
                    "narrow start_s/end_s and extract again. The first frame "
                    "sets the room's orientation; pick landmarks per frame and run fit_photos for the room and every "
-                   "frame's camera, put each object seen in several frames into the room once, then set_input "
-                   "(camera) per frame and compare_photo")
+                   "frame's camera, put each object seen in several frames into the room once, then compare_photo")
+    out["next"] = VIDEO_NEXT
     return out
 
 

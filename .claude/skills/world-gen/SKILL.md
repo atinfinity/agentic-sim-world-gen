@@ -59,11 +59,13 @@ Each tool call is a turn; the shop trials took 39–49 turns where 20–25 would
 
 ## Reference files
 
-Read only what the request needs (each is a few thousand tokens):
+Read only what the request needs (each is a few thousand tokens), with the Read tool, one file at a time and
+when its step comes: not several files in one `cat` (a long output is saved to a file and read again, so it costs
+twice; a video run used 37k tokens that way before its first frame):
 
 | the request has | read |
 |---|---|
-| a video of the room | [videos.md](videos.md), then [photos.md](photos.md) |
+| a video of the room | [videos.md](videos.md) (it names the steps of photos.md it needs; [videos-fit.md](videos-fit.md) when video_poses returns) |
 | photos of the room to rebuild | [photos.md](photos.md) |
 | a reference image / mood board for the look, 「雰囲気はおまかせ」, a taste warning | [look.md](look.md) |
 | a shop, restaurant or plant factory (sizes, layouts, stocking shelves, hooks, kinds not in the list) | [shops.md](shops.md) |
