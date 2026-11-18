@@ -5635,8 +5635,6 @@ def compare_photo(scene: str | Path, input_id: str | None = None, timeout_s: int
     jobs = []
     for i in photos:
         render = d / f"render_{i.id}.png"
-        if render.exists():
-            render.unlink()
         jobs.append({"camera": f"/World/Cameras/{i.id}", "out": str(render), "photo": i.path,
                      "size": list(i.size_px) if i.size_px else None})
     if sheet.exists():
@@ -5660,6 +5658,8 @@ def compare_photo(scene: str | Path, input_id: str | None = None, timeout_s: int
         result.update(renders={i.id: j["out"] for i, j in zip(photos, jobs)}, image=str(sheet))
         if len(photos) == 1:
             result["render"] = jobs[0]["out"]
+        if result["ok"]:  # only a round the agent sees moves what it last saw
+            result.update(_changed_rows(d, photos, jobs))
         full_m: dict[str, Any] = {}
         for i in photos:  # sizes to compare, not only colors
             m = measure_photo(d, i.id)
@@ -5681,6 +5681,105 @@ def compare_photo(scene: str | Path, input_id: str | None = None, timeout_s: int
         result.update(_isaac_failure(proc))
         _compare_failed(d, result)
     return result
+
+
+RENDER_DIFF_LEVEL = 24  # a pixel differs from the render last shown by more than this (0-255, gray) ...
+RENDER_DIFF_FRAC = 0.001  # ... in more than this fraction of the render (RENDER_DIFF_W wide): the render changed
+RENDER_DIFF_W = 256
+CHANGED_SHEET = "compare_changed.jpg"
+SHOWN_JSON = "compare_shown.json"  # per input: what its last shown row was made of (camera, photo file)
+
+
+def _render_diff(prev: Path, now: Path) -> float | None:
+    """The fraction of the render that changed since it was last shown, None when they cannot be compared."""
+    from PIL import Image, ImageChops
+
+    try:
+        a, b = Image.open(prev).convert("L"), Image.open(now).convert("L")
+    except OSError:
+        return None
+    if a.size != b.size:
+        return None
+    size = (RENDER_DIFF_W, max(1, round(RENDER_DIFF_W * a.height / a.width)))
+    diff = ImageChops.difference(a.resize(size), b.resize(size))
+    hist = diff.histogram()
+    return sum(hist[RENDER_DIFF_LEVEL + 1:]) / (size[0] * size[1])
+
+
+def _row_key(i: InputRef) -> str:
+    """What else makes a row: its camera and its photo file (a camera turned toward a bare wall changes few pixels;
+    set_input can swap the photo under the same id)."""
+    p = Path(i.path) if i.path else None
+    st = p.stat() if p and p.exists() else None
+    return json.dumps([i.camera.model_dump() if i.camera else None, i.path,
+                       st and st.st_size, st and st.st_mtime_ns], sort_keys=True)
+
+
+def _changed_rows(d: Path, photos: list[InputRef], jobs: list[dict[str, Any]]) -> dict[str, Any]:
+    """The compare sheets of a video were 7 rows a round, and most rows did not change between rounds. The
+    MCP tool shows only the rows that changed since the agent last saw them (compare_changed.jpg); compare.png keeps
+    every row. Each row is compared with the render last shown (render_<id>.shown.png): a hidden row keeps its
+    baseline, so many small changes add up and come back; a failed round moves nothing."""
+    f = d / SHOWN_JSON
+    try:
+        keys = json.loads(f.read_text()) if f.exists() else {}
+    except (OSError, ValueError):
+        keys = {}
+    same = []
+    if len(photos) >= 2:
+        for i, j in zip(photos, jobs):
+            shown = Path(j["out"]).with_suffix(".shown.png")
+            if keys.get(i.id) != _row_key(i) or not shown.exists():
+                continue
+            v = _render_diff(shown, Path(j["out"]))
+            if v is not None and v <= RENDER_DIFF_FRAC:
+                same.append(i.id)
+    show = [(i, j) for i, j in zip(photos, jobs) if i.id not in same]
+    for i, j in show:  # what the agent sees now
+        if Path(j["out"]).exists():
+            shutil.copyfile(j["out"], Path(j["out"]).with_suffix(".shown.png"))
+            keys[i.id] = _row_key(i)
+    f.write_text(json.dumps(keys, indent=1))
+    sheet = d / CHANGED_SHEET
+    if sheet.exists():
+        sheet.unlink()
+    if not same:
+        return {}
+    out: dict[str, Any] = {"unchanged": same,
+                           "unchanged_hint": f"the renders of {', '.join(same)} did not change since you last saw them: "
+                                             "only the other rows are shown"
+                                             + (f" ({CHANGED_SHEET})" if show else " (none changed)")
+                                             + "; compare.png has every row (Read it after a compaction)"}
+    if any(Path(j["out"]).exists() for _, j in show):
+        _side_by_side([(i.id, Path(i.path), Path(j["out"])) for i, j in show if Path(j["out"]).exists()], sheet)
+        out["image_changed"] = str(sheet)
+    return out
+
+
+def _side_by_side(rows: list[tuple[str, Path, Path]], out: Path, h: int = 360) -> Path:
+    """One row per photo: the photo and its render, labeled (the rows of compare.png without the credits)."""
+    from PIL import Image, ImageDraw
+
+    blocks = []
+    for rid, photo, render in rows:
+        tiles = [Image.open(x).convert("RGB") for x in (photo, render)]
+        tiles = [t.resize((round(h * t.width / t.height), h)) for t in tiles]
+        b = Image.new("RGB", (sum(t.width for t in tiles) + 8, h + 22), "white")
+        draw = ImageDraw.Draw(b)
+        x = 0
+        for t, label in zip(tiles, (f"photo: {rid}", "render")):
+            b.paste(t, (x, 22))
+            draw.text((x + 6, 5), label, fill="black")
+            x += t.width + 8
+        blocks.append(b)
+    sheet = Image.new("RGB", (max(b.width for b in blocks), sum(b.height for b in blocks) + 10 * (len(blocks) - 1)),
+                      "white")
+    y = 0
+    for b in blocks:
+        sheet.paste(b, (0, y))
+        y += b.height + 10
+    sheet.save(out, quality=85)
+    return out
 
 
 COMPARE_JSON = "compare.json"

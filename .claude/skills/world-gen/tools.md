@@ -142,6 +142,8 @@ Run compose_scene first. layout.svg shows every photo camera (position and field
 `round` counts the comparisons and `hint` says what to do next: fix every difference of one round
 together, about 3 rounds, then report what still differs. `measure` has the free widths each
 camera sees and what bounds them; the gaps of each line are in `measure_file` (or measure_photo).
+With several photos, from the second round on only the rows that changed since they were last shown are returned
+(`unchanged` names the others; `image` = compare.png still has every row).
 
 - `scene_dir`: str
 - `input_id`?: str
