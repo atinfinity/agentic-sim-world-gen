@@ -71,11 +71,17 @@ def _cli_command() -> str:
 
 
 def hooks(out_dir: Path) -> dict[str, Any]:
-    """Claude Code hooks of the workspace: the user's language around a compaction."""
+    """Claude Code hooks of the workspace: the user's language around a compaction, and a check of the language the
+    agent actually wrote in (`agentic_sim_world_gen.lang_guard`): after each tool call (the note before it) and at the
+    end of a turn (the report, rewritten once when it is in another language)."""
     cmd = f"{shlex.quote(_cli_command())} reply-language --out {shlex.quote(str(out_dir))}"
+    # the standard library only, without the CLI's imports: it runs after every tool call
+    guard = f"{shlex.quote(str(Path(sys.executable).absolute()))} -I -m agentic_sim_world_gen.lang_guard"
     # `|| true`: a PreCompact hook that exits 2 blocks the compaction (an older agentic-sim-world-gen without the command did)
     return {"SessionStart": [{"matcher": "compact", "hooks": [{"type": "command", "command": cmd + SAFE}]}],
-            "PreCompact": [{"hooks": [{"type": "command", "command": cmd + " --compact" + SAFE}]}]}
+            "PreCompact": [{"hooks": [{"type": "command", "command": cmd + " --compact" + SAFE}]}],
+            "PostToolUse": [{"hooks": [{"type": "command", "command": guard + " post-tool" + SAFE}]}],
+            "Stop": [{"hooks": [{"type": "command", "command": guard + " stop" + SAFE}]}]}
 
 
 def _mcp_command() -> str:
