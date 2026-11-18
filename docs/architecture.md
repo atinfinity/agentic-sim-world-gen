@@ -514,7 +514,7 @@ flowchart TD
 ### Isaac worker
 
 Kitの起動はdraftのcheckの約40 sのほとんどを占めます。`AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=1`にすると、最初の呼び出しで起動したheadlessのIsaac Sim（`scripts/isaac/worker.py`）を起動したままにし、以後の`check_scene.py`・`front_views.py`・`render_view.py`をそこで続けて実行します。
-既定は切です（待っている間もKit 1つがGPUメモリを数GB持つため）。
+サーバーの既定は切ですが、`agentic-sim-world-gen workspace`で作った作業フォルダでは入です。待っている間もKit 1つがGPUメモリを数GB（3.8〜7.9 GB）持つので、MoGe（単眼の深度）の前に`isaac_worker.free_gpu()`で止めます（実行中の仕事は終わるまで待つ。次のIsaac Simの呼び出しで起動し直す、約11 s）。
 
 ```mermaid
 flowchart TD

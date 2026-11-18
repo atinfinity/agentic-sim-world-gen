@@ -512,7 +512,7 @@ flowchart TD
 ### Isaac worker
 
 Starting Kit takes most of the roughly 40 s of a draft check. With `AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=1`, the headless Isaac Sim started by the first call (`scripts/isaac/worker.py`) keeps running, and later `check_scene.py`, `front_views.py` and `render_view.py` runs go to it one after another.
-It is off by default (while waiting, one Kit holds several GB of GPU memory).
+The server's default is off, but a work folder made with `agentic-sim-world-gen workspace` turns it on. While waiting, one Kit holds several GB of GPU memory (3.8–7.9 GB), so `isaac_worker.free_gpu()` stops it before MoGe (monocular depth) runs (a running job is let finish; the next Isaac Sim call starts it again, about 11 s).
 
 ```mermaid
 flowchart TD
