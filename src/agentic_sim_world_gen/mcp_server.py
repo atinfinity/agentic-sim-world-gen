@@ -1195,8 +1195,8 @@ def fit_photos(request: FitRequest, out_dir: str | None = None, depth: bool = Fa
     """Several photos of one room -> room size, openings and each photo's camera, by least squares over landmarks you
     read off the photos (corners, wall lines, opening edges, shared points; video_poses' `relative` for video
     frames; depth=true for monocular depth). `locate` turns pixels into floor positions (give `object` ids for
-    place_from_photos). Read `worst`, `warnings`, `suspects`, `outside`. With out_dir = the scene folder it writes
-    photo_fit.json and (apply, default) the fitted room and cameras into the scene. Read the details before the
+    place_from_photos). Read `worst`, `warnings`, `suspects`, `outside`, `video_frames`. With out_dir = the scene
+    folder it writes photo_fit.json and (apply, default) the fitted room and cameras into the scene. Read the details before the
     first call: the landmark names and request fields are there.
 
     Several photos of one room -> room size, openings and each photo's camera, by least squares over
@@ -1221,8 +1221,14 @@ def fit_photos(request: FitRequest, out_dir: str | None = None, depth: bool = Fa
     `height_range`; the scene's place with out_dir; no place / a shop, factory, hall: no range, only warned of) or
     suspect is fitted again held (the given height, else 2.4 / 2.7 m) inside the same call: `height_refit`
     {adopted: held | fitted, reason, fitted, held, metric_worse} - held when the landmarks fit it about as well and
-    the depth / door top do not fit it worse (the scale was off); fitted otherwise (misread ceiling landmarks, or
-    a ceiling the depth says is that high). apply writes a held height only when given. Aim for 6+
+    the depth / door top do not fit it worse (the scale was off; also compared without each fit's one worst
+    landmark, `rms_px_but_one`); fitted otherwise (misread ceiling landmarks, or a ceiling the depth says is that
+    high). apply writes a held height only when given; give `height` only when it is known (a guessed 3.0 m held a
+    classroom 1 m too long). A frame whose landmarks turn it away from every video pair of it is fitted again with
+    the video's turn kept (`video_frames` {photos, adopted: video | landmarks, landmarks, video} - fits before any
+    height refit; a "video: ..." warning near the top): video when the landmarks fit it as well - still check that
+    frame's landmarks. `room.unmeasured` (a "not measured: ..." warning first): a width / depth whose 1-sigma is
+    over 25 % of it - a guess, never report it as measured; add landmarks that tie it. Aim for 6+
     measurements per photo and at least one landmark shared with another photo (a corner, an opening).
     `locate` turns pixels into floor positions afterwards (furniture feet at z=0, a table top at its height);
     give each its `object` (the scene object id) and the result's `objects` has each one's floor center, and

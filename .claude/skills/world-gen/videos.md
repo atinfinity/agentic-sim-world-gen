@@ -74,6 +74,20 @@ file adds what is specific to video frames.
    depth alone (fit_photos warns "rests on one photo for the east wall"; on a handheld recording one frame's
    east wall moved the width 3.0 → 3.85 m). Look through the other frames for that wall's corner, its floor /
    ceiling line or plain wall pixels (`surfaces`), and if none shows it, report the warning's ± with the size.
+   When the warning adds "the video disagrees with that photo", fix this before placing furniture: look at
+   that frame's landmarks, and add frames of that wall (video_poses with frames between it and the others).
+   **A frame the video disagrees with** (the result's `video_frames`): the landmarks turned one frame away
+   from every video pair of it, so the fit was redone with the video's turn kept. `adopted: video` = the
+   landmarks fit that as well, so the room is from the video's turn (`landmarks`: the other fit; both before any
+   height refit). On a classroom video the east wall's only frame was 16° off and held at 2.7 m the room came 9.41 × 6.23 m instead of
+   10.76 × 5.83 (truth 9.59 × 6.19). Still look at that frame's landmarks. `adopted: landmarks` = they hold
+   their turn, the video may be off there (a blank wall): look at the frame, and add its walls from others.
+   **Not measured** (`room.unmeasured` and a warning first): a width / depth whose 1σ is over a quarter
+   of it is not held by the photos (it stays near `size_guess`). Never report it as the room's size: say it is
+   unmeasured (a guess), and add landmarks that tie it before placing furniture.
+   **Give `height` only when it is known** (the user says so, a drawing): it is the one a refit holds.
+   A guess (3.0 m for a classroom) made that room 10.49 × 6.92 m; left out, it was held at the typical
+   2.7 m and came 9.41 × 6.23 m (truth 9.59 × 6.19). An unknown height: leave it out, never guess it.
    **Scale**: if no landmark at the ceiling is seen (ceiling corner / ceiling line / a shared point with a known
    height above the floor), the room's size comes from the camera height. Give `eye_height` (a hand-held phone
    is about 1.4–1.6 m; 1.4 is the default) and say it is assumed. A 6 % wrong height makes the room 6 % wrong.

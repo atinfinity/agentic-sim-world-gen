@@ -226,6 +226,14 @@ SCALE_ERR = {"depth": 0.15,  # one photo's depth scale (-15 .. +24 %); averages 
              "eye height": 0.15}  # a handheld walk's mean camera height: 1.06-1.6 m against 1.4
 DEPTH_ERR_FLOOR = 0.06  # ... this: a depth model can be off the same way for every photo of a room
 SCALE_OUTLIER = 0.1  # one source this far from the others' median, while the others agree: named
+# a photo whose every video pair (2 or more) the second pass left out, while other pairs were kept: its
+# landmarks turn it away from the video. Fitted again with those pairs kept (not given up); when the landmarks fit
+# that about as well (rms within this share + VIDEO_FRAME_PX), the video decides. A classroom video (9.59 x 6.19 m):
+# one frame (the east wall's only one) 16 deg off its 5 pairs; kept, the landmarks' rms 20.7 -> 21.0 px, and held at
+# 2.7 m the room came 9.41 x 6.23 m (with the frame where its landmarks turned it: 10.76 x 5.83)
+VIDEO_FRAME_GAIN = 1.1
+VIDEO_FRAME_PX = 0.5
+UNMEASURED_SHARE = 0.25  # a width / depth whose 1-sigma is more than this share of it is not measured
 
 
 # ---------- small linear algebra ----------
@@ -1006,15 +1014,28 @@ def fit(req: FitRequest | dict, compare: bool = True) -> dict:
     req = req if isinstance(req, FitRequest) else FitRequest.model_validate(req)
     r = _fit(req, compare=False)
     if compare and r.get("ok"):
-        winner, solved, info = req, r.pop("_solved"), None
-        if (got := _height_refit(req, r)) is not None:
+        winner, video = req, None
+        if (got := _video_frame_refit(req, r)) is not None:
+            alt_req, alt, video = got
+            if video["adopted"] == "video":
+                winner, r = alt_req, alt
+        solved, info = r.pop("_solved"), None
+        if (got := _height_refit(winner, r)) is not None:
             alt_req, alt, info = got
             if info["adopted"] == "held":
                 winner, solved = alt_req, alt.pop("_solved")
         r = _fit(winner, compare=True, solved=solved)
-        if info is not None and r.get("ok"):
-            _add_height_refit(r, info)
+        if r.get("ok"):
+            if info is not None:
+                _add_height_refit(r, info)
+            if video is not None:
+                r["warnings"].insert(0, video.pop("warning"))
+                r["video_frames"] = video
+            # "not measured" stays first, ahead of the refits' warnings
+            r["warnings"].sort(key=lambda w: not w.startswith("not measured"))
     r.pop("_solved", None)
+    r.pop("_rms_but_one", None)
+    r.pop("_off_video", None)
     if r.get("ok") and req.place is not None:
         from agentic_sim_world_gen.scene.spec import PLACES
 
@@ -1067,6 +1088,57 @@ def _metric_worse(r: dict, alt: dict) -> list[str]:
     return out
 
 
+def _off_video(req: FitRequest, p: dict, unused: set, other_model: set) -> dict[str, float]:
+    """Photos whose every video pair (2 or more) was left out for its turn (not for being of another SfM model) while
+    some other pair was kept: {photo: the least turn error of its pairs [deg]}. One pair left out may be the
+    video's error; all of one photo's pairs, with the rest of the video holding, says its landmarks turn it away."""
+    turn = {i: _turn_error(p, rp) for i, rp in enumerate(req.relative)}
+    kept = [rp for i, rp in enumerate(req.relative) if i not in unused]
+    out = {}
+    for cid in req.photos:
+        mine = [i for i, rp in enumerate(req.relative) if cid in (rp.a, rp.b)]
+        if (len(mine) >= 2 and all(i in unused and i not in other_model and turn[i] > DROP_DEG for i in mine)
+                and any(cid not in (rp.a, rp.b) for rp in kept)):
+            out[cid] = round(min(turn[i] for i in mine), 1)
+    return out
+
+
+def _video_frame_refit(req: FitRequest, r: dict) -> tuple[FitRequest, dict, dict] | None:
+    """Fit again with the video pairs of the photos the video disagrees with (_off_video) kept in full: the
+    first fit gave them up and the photo went where its landmarks turned it; when the landmarks fit the video's
+    turn about as well, the video decides. Returns (that request, its fit without the comparisons, `video_frames`:
+    both fits, the one taken and a warning), or None."""
+    off = r.get("_off_video") or {}
+    if not off:
+        return None
+    alt_req = req.model_copy(update={"relative": [
+        rp.model_copy(update={"robust": False}) if rp.a in off or rp.b in off else rp for rp in req.relative]})
+    alt = _fit(alt_req, compare=False)
+    if not alt.get("ok"):
+        return None
+
+    def brief(res):
+        turns = [d["turn_error_deg"] for d in res["relative"] if d["a"] in off or d["b"] in off]
+        return {"width": res["room"]["width"], "depth": res["room"]["depth"], "height": res["room"]["height"],
+                "rms_px": res["rms_px"], "turn_error_deg": [min(turns), max(turns)],
+                "cameras": {cid: res["cameras"][cid]["position"] for cid in off}}
+
+    was, now = brief(r), brief(alt)
+    take = now["rms_px"] <= VIDEO_FRAME_GAIN * was["rms_px"] + VIDEO_FRAME_PX
+    names = ", ".join(f"{cid} ({deg:.0f} deg)" for cid, deg in off.items())
+    head = (f"video: the landmarks turn {names} away from every video pair of it - fitted again with the video's turn "
+            f"kept: the room (before any height refit) {was['width']:.2f} x {was['depth']:.2f} -> {now['width']:.2f} x {now['depth']:.2f} m, rms "
+            f"{was['rms_px']:.1f} -> {now['rms_px']:.1f} px")
+    warning = head + (". The landmarks fit the video's turn as well, so it is used: check this photo's landmarks (a "
+                      "wall named for another, a point on something else), the room came from the video's turn "
+                      "(video_frames.landmarks is the other fit)" if take else
+                      ". The landmarks do not fit the video's turn, so they are kept: the video may be off for this "
+                      "frame (a blank wall), or its landmarks are - look at the photo, and add the walls it alone "
+                      "sees from other frames (video_frames.video is the other fit)")
+    return alt_req, alt, {"photos": off, "adopted": "video" if take else "landmarks", "landmarks": was,
+                          "video": now, "warning": warning}
+
+
 def _height_refit(req: FitRequest, r: dict) -> tuple[FitRequest, dict, dict] | None:
     """Fit again with the wall height held, when the fitted height is outside the room's range, or suspect
     (height_suspect) with the place's range (an explicit height_range that takes it in is kept). No range (no place, a place
@@ -1096,12 +1168,15 @@ def _height_refit(req: FitRequest, r: dict) -> tuple[FitRequest, dict, dict] | N
     def brief(res):
         d = _mean_depth_rms(res["cameras"])
         return {"width": res["room"]["width"], "depth": res["room"]["depth"], "height": res["room"]["height"],
-                "rms_px": res["rms_px"], **({"depth_rms": d} if d is not None else {})}
+                "rms_px": res["rms_px"], "rms_px_but_one": res["_rms_but_one"],
+                **({"depth_rms": d} if d is not None else {})}
 
     was, now = brief(r), brief(alt)
     if "height_suspect" in (r.get("scale") or {}):
         was["height_suspect"] = r["scale"]["height_suspect"]
-    pixels = now["rms_px"] <= HELD_RMS_GAIN * was["rms_px"] + HELD_RMS_PX
+    # ... or so without the one landmark each fits worst (a classroom video: one desk corner seen in one frame,
+    # 141 px off at 2.7 m and on at 3.33 m, decided the height alone; misread ceiling landmarks are off in many)
+    pixels = any(now[k] <= HELD_RMS_GAIN * was[k] + HELD_RMS_PX for k in ("rms_px", "rms_px_but_one"))
     worse = _metric_worse(r, alt)
     take = pixels and not worse
     info = {"adopted": "held" if take else "fitted", "reason": why, "held_height_m": held, "range": list(rng),
@@ -1215,8 +1290,17 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
     for k in ("width", "depth", *(("height",) if m.fit_H else ())):
         if (v := sd(k)) is not None:
             sigma[k] = round(v, 3)
+    size = {"width": W, "depth": D}
+    unmeasured = [k for k in size if k in sigma and sigma[k] > UNMEASURED_SHARE * size[k]]
 
     warnings = []
+    if unmeasured:  # first: the agent must not report such a size as measured
+        warnings.append(
+            "not measured: the room's " + " and ".join(f"{k} {size[k]:.2f} m (±{min(sigma[k], 99):.2f} m)"
+                                                        for k in unmeasured) +
+            " - the photos do not hold it (it stays near the start, size_guess or the last fit); report it as "
+            "unmeasured, not as the room's size, and add landmarks that tie it (both of its walls in two or more "
+            "frames, a shared point seen from far apart, the frames between them for video_poses)")
     openings = []
     narrow = []  # openings narrower than NARROW_M with both edges marked
     for oid, o in req.openings.items():
@@ -1361,6 +1445,7 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
                             "or remove them, and fit again")
     if len(req.photos) > 1:  # a single photo carries every wall alone; nothing to add
         seen_by = {w: [cid for cid, c in req.photos.items() if w in _walls_of(req, c)] for w in WALLS}
+        off = _off_video(req, p, unused, other_model)
         for dim, pair in (("width", ("west", "east")), ("depth", ("south", "north"))):
             for w in pair:
                 sd_txt = f" (±{sigma[dim]:.2f} m)" if dim in sigma else ""
@@ -1369,9 +1454,14 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
                                     f"stays near the guess - add a corner, a floor / ceiling line or wall pixels of it")
                 elif len(seen_by[w]) == 1:
                     # one frame's east wall pixels moved the width 3.0 -> 3.85 m (truth 3.66 m)
+                    one = seen_by[w][0]
+                    why = (f", and the video disagrees with that photo by {off[one]:.0f} deg (every pair of it): its "
+                           f"landmarks or its place are likely wrong, so the {dim} is not to be trusted"
+                           if one in off else "")
                     warnings.append(f"the room's {dim}{sd_txt} rests on one photo for the {w} wall "
-                                    f"({seen_by[w][0]}): a mislabeled landmark or an off depth there moves the whole "
-                                    f"{dim} - add the {w} wall (a corner, a line or wall pixels) from another frame")
+                                    f"({one}){why}: a mislabeled landmark or an off depth there moves the whole "
+                                    f"{dim} - add the {w} wall (a corner, a line or wall pixels) from another frame"
+                                    + (" (video_poses: the frames between it and the others)" if why else ""))
     for cid, at, e, behind in rows:
         if behind:
             warnings.append(f"photo {cid}: '{at}' is behind the camera - check the facing / landmark name")
@@ -1483,8 +1573,11 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
     return {
         "ok": True,
         "rms_px": round(rms, 1),
+        "_off_video": _off_video(req, p, unused, other_model) if len(req.photos) > 1 else {},
+        "_rms_but_one": round(math.sqrt(sum(e * e for e in sorted(errs)[:-1]) / max(1, len(errs) - 1)), 1),
         "room": {"width": round(W, 2), "depth": round(D, 2), "height": round(H, 2),
                  "height_fitted": m.fit_H, **({"height_suspect": True} if "height_suspect" in scale else {}),
+                 **({"unmeasured": unmeasured} if unmeasured else {}),
                  "openings": openings},
         "sigma_m": sigma,
         "cameras": cams,
