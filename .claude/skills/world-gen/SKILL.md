@@ -452,7 +452,7 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
    `window_view`: windows look out on a gray void - `set_room(site=true)`, or, when no render shows the
    windows or blinds / curtains cover them, `set_assumptions([{item: "window_view", value: <why>}])`. `compare`:
    the photos were not compared with the scene as it is - `compose_scene`, `compare_photo`, fix, finish again
-   (only while compare rounds are left and Isaac Sim's Python is here; after 2 failed compare_photo, or with
+   (only when more than small moves changed - over 15 cm / 10°, an object, the room -; only while compare rounds are left and Isaac Sim's Python is here; after 2 failed compare_photo, or with
    `set_assumptions([{item: "photo_compare", value: <why>}])` when it cannot run, finish goes on). When done, `report_must_include` lists what the
    report has to name: `usability` (count, kinds), `substitutes`, `decor_skipped`, `windows_not_found`,
    `unlocated` (furniture no photo placed). Name every one in step 8, with what you did or why it stays. Without Isaac Sim the check is
