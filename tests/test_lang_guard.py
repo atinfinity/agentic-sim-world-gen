@@ -29,20 +29,20 @@ def _transcript(tmp_path, records):
     return str(p)
 
 
-PROMPT = "computer.mp4 は部屋の中を歩いて撮った動画です。この部屋を Isaac Sim のワールドにしてください。"
+PROMPT = "computer.jpg は部屋の中で撮った写真です。この部屋を Isaac Sim のワールドにしてください。"
 
 
 def test_language():
     assert g.language("机は 1.8 m の白い机（sm_desk_a01_01）になりました。") == "ja"
     assert g.language("USD を書き出しました。`compose_scene` の結果を見ます。") == "ja"
-    assert g.language("Meanwhile I'll read the landmarks in the other frames.") == "en"
+    assert g.language("Meanwhile I'll read the landmarks in the other photos.") == "en"
     assert g.language("OK") is None and g.language("`/home/a/b.usd` scenes/computer_room/check.png") is None
 
 
 def test_post_tool(tmp_path):
-    ja = [_user(PROMPT), _say("フレームを切り出します。", "@a"), _result("a")]
+    ja = [_user(PROMPT), _say("写真を読みます。", "@a"), _result("a")]
     assert g.check({"transcript_path": _transcript(tmp_path, ja), "tool_use_id": "a"}, "post") is None
-    en = ja + [_say("Meanwhile I'll read the landmarks in the other frames.", "@b"),
+    en = ja + [_say("Meanwhile I'll read the landmarks in the other photos.", "@b"),
                {"type": "assistant", "message": {"content": [{"type": "tool_use", "id": "c", "name": "x", "input": {}}]}}]
     path = _transcript(tmp_path, en)
     out = g.check({"transcript_path": path, "tool_use_id": "b"}, "post")
@@ -58,7 +58,7 @@ def test_post_tool(tmp_path):
 def test_notifications_are_not_the_user(tmp_path):
     """A background task's notification is English but not what the user writes in."""
     note = ("<task-notification>\n<task-id>k58ht4ako</task-id>\n<status>completed</status>\n"
-            "<summary>MCP task k58ht4ako (agentic-sim-world-gen/video_poses) completed</summary>\n</task-notification>")
+            "<summary>MCP task k58ht4ako (agentic-sim-world-gen/fit_photos) completed</summary>\n</task-notification>")
     recs = [_user(PROMPT), _say("@a"), _result("a"), _user(note, "task-notification"),
             _say("推定が通りました。部屋の寸法を当てはめます。", "@b")]
     assert g.check({"transcript_path": _transcript(tmp_path, recs), "tool_use_id": "b"}, "post") is None
@@ -154,7 +154,7 @@ def test_call_not_written_yet(tmp_path):
     assert g.check({"transcript_path": path2, "tool_use_id": "c"}, "post") is None
     assert g.call_groups(path2) == [["b"], ["a"]]
     # the first note's hook ran too early, the second's in time: the second hook tells the first note too
-    first = "Next I will read the frames of the video."
+    first = "Next I will read the landmarks in the photos."
     recs = [_user(PROMPT), _say(first), _say("@e"), _result("e"), _say("次はギャラリーを開きます。"), _say("@f")]
     path3 = str(tmp_path / "v.jsonl")
     with open(path3, "w") as f:

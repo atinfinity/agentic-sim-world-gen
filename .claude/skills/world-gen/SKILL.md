@@ -32,7 +32,7 @@ Each tool call is a turn; the shop trials took 39–49 turns where 20–25 would
   `mcp__agentic-sim-world-gen__move_object,mcp__agentic-sim-world-gen__move_objects,mcp__agentic-sim-world-gen__set_layout,mcp__agentic-sim-world-gen__set_array,mcp__agentic-sim-world-gen__set_fill,`
   `mcp__agentic-sim-world-gen__set_room,mcp__agentic-sim-world-gen__add_objects,mcp__agentic-sim-world-gen__remove_object,`
   `mcp__agentic-sim-world-gen__set_variants,mcp__agentic-sim-world-gen__set_assumptions,mcp__agentic-sim-world-gen__check_request,mcp__agentic-sim-world-gen__finish`.
-  Add photo / video / SDG / floor-plan tools only when the request has them. Add `set_purpose`, `fill_windows`,
+  Add photo / SDG / floor-plan tools only when the request has them. Add `set_purpose`, `fill_windows`,
   `open_preview`, `compose_scene`, `check_in_isaac` or `license_report` only to redo that one step.
 - **`create_scene` opens, `finish` closes.** `create_scene` also records the purpose, fills the windows,
   opens the preview and, when the layout has no issue, writes the USD and shoots the first draft in Isaac Sim
@@ -63,8 +63,8 @@ Read only what the request needs (each is a few thousand tokens):
 
 | the request has | read |
 |---|---|
-| a video of the room | [videos.md](videos.md), then [photos.md](photos.md) |
 | photos of the room to rebuild | [photos.md](photos.md) |
+| a video of the room | video is not read: ask for photos instead (stills the user takes or picks from it), then [photos.md](photos.md) |
 | a reference image / mood board for the look, 「雰囲気はおまかせ」, a taste warning | [look.md](look.md) |
 | a shop, restaurant or plant factory (sizes, layouts, stocking shelves, hooks, kinds not in the list) | [shops.md](shops.md) |
 | signage screens, posters, POPs, an image on a screen | [pictures.md](pictures.md) |
@@ -131,11 +131,11 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
      | the kind of place | the request names none (「ワールドを作って」) | ask | call `plan_questions` again with it |
      | the purpose (`purpose_unclear`) | the request names a robot but not its job (「ロボット用の店」) | still ask; never assume amr | pass it to `create_scene` as `purpose` (see **Purpose** below) |
      | the **robot's size** | the purpose is amr / manipulation and the request names no machine or size. When the purpose itself is still asked (`after_purpose`), ask the size together with an amr / manipulation answer. | not asked | pass the answer's `radius` (or `robot.radius` when the request said it) as `robot_radius` to `create_scene` / `set_purpose`; わからない → leave it out (0.3 m, a guess) |
-     | **a plan or photo** (`existing_place`) | 「うちの」「実際の」「この店」with no file. A made-up room (「6畳の書斎」) is never asked. | not asked | with one, start from it ([plans.md](plans.md) / [photos.md](photos.md) / [videos.md](videos.md), `set_input`) instead of drafting from words; 「ない」 → the draft as usual |
+     | **a plan or photo** (`existing_place`) | 「うちの」「実際の」「この店」with no file. A made-up room (「6畳の書斎」) is never asked. | not asked | with one, start from it ([plans.md](plans.md) / [photos.md](photos.md), `set_input`) instead of drafting from words; 「ない」 → the draft as usual |
    - The user asked to be asked first (「先に質問して」「確認しながら」): call `plan_questions(..., ask_first=true)`
      and ask its questions in one message (at most 3, options with the default first, marked「（おすすめ）」),
      then record the answers with `given: true`.
-   - A floor plan / photo / video the request mentions is missing.
+   - A floor plan / photo the request mentions is missing.
 
    `no_questions` (「おまかせ」「確認は不要」…): use the defaults with basis「おまかせ（既定）」, and do not stop
    in step 5. On later turns pass `known=[...]` (keys or items) so that answered items are not asked again.

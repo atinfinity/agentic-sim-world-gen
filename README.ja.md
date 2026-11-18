@@ -7,7 +7,7 @@
 
 ```mermaid
 flowchart TB
-  IN["<b>入力</b><br/>文章（日本語・英語）<br/>間取り図：JSON / DXF / IFC / 画像<br/>写真・動画"]
+  IN["<b>入力</b><br/>文章（日本語・英語）<br/>間取り図：JSON / DXF / IFC / 画像<br/>写真"]
   CC["<b>Claude Code</b><br/>指示を読み、どのツールを呼ぶか決める"]
   subgraph WG["agentic-sim-world-gen（このリポジトリ）：MCPサーバー＋スキル、同じ操作をCLIからも"]
     direction LR
@@ -46,7 +46,7 @@ flowchart TB
 > アセットのライセンスはアセットごとに違い、非商用（CC-BY-NCなど）の物も選ばれます。シーンごとに書き出す`LICENSES.md`で、使う前に必ず確かめてください。Isaac Sim同梱アセットはNVIDIAのライセンスで、このリポジトリのApache-2.0の対象外です。アセットを同梱したUSDを人に渡すと再配布になります。
 
 > [!CAUTION]
-> 写真・動画からシーンを作るときは、人が写っている物を使わないでください。
+> 写真からシーンを作るときは、人が写っている物を使わないでください。
 
 **はじめての方は[Getting Started](docs/getting-started.md)**（cloneからIsaac Simでワールドを開くまで）。
 
@@ -73,8 +73,8 @@ Ubuntuの画面の録画（Isaac Simは開かず、checkはheadless）。高画�
 
 ## できること
 
-- **Claude CodeのMCPサーバー＋スキル**（63ツール）。同じ処理をCLI `agentic-sim-world-gen`でも呼べる
-- 入力：自然言語（屋内・倉庫・屋外）、間取り図（JSON / DXF / IFC / 画像をなぞる）、写真・部屋を歩いて撮った動画（出典を記録）
+- **Claude CodeのMCPサーバー＋スキル**（62ツール）。同じ処理をCLI `agentic-sim-world-gen`でも呼べる
+- 入力：自然言語（屋内・倉庫・屋外）、間取り図（JSON / DXF / IFC / 画像をなぞる）、写真（出典を記録）
 - 配置：関係配置（壁際・机の前・隣・上・向き合う）、繰り返し配置（ラック列＋通路）、棚への物の陳列、重なり・はみ出し・ドア前の検査
 - 見た目：床・壁のマテリアル（Isaac Sim同梱のMDL・CC0のPBR）、照明プリセット、雰囲気（moods）、屋外の地面・道路・建物・空（HDRI）
 - 確認：候補のサムネイル一覧・上面配置図（ブラウザのプレビューで動かせる）、Isaac Sim 6.1で物理チェック＋スクショ（headlessか、起動中のIsaac Simでライブ）
@@ -119,7 +119,7 @@ usd-coreは`.venv`にだけ入れる（Isaac SimのPythonには入れない）�
 ワールドを作るだけなら`agentic-sim-world-gen workspace <dir>`で作業フォルダを作り、そこで起動する（[Getting Started](docs/getting-started.md) 4）。
 別ディレクトリから使う場合：`claude mcp add agentic-sim-world-gen -- /path/to/repo/.venv/bin/agentic-sim-world-gen-mcp`
 
-主なツール（全63ツールの引数は[.claude/skills/world-gen/tools.md](.claude/skills/world-gen/tools.md)）：
+主なツール（全62ツールの引数は[.claude/skills/world-gen/tools.md](.claude/skills/world-gen/tools.md)）：
 
 | ツール | 内容 |
 |---|---|
@@ -151,8 +151,6 @@ usd-coreは`.venv`にだけ入れる（Isaac SimのPythonには入れない）�
 | set_collider | 当たり判定の無いアセットに見えない箱の当たり判定を付ける |
 | set_input / compare_photo | 入力写真の出典・撮影カメラの記録 / 写真と同じ視点で描画して並べる（Ubuntuのみ） |
 | fit_photos | 同じ部屋の写真が複数のとき、写真上の目印から部屋の寸法・開口・各カメラを求める |
-| extract_frames | 部屋を歩いて撮った動画から、ぶれが少なく見え方の違うコマを4〜8枚選び、出典・時刻つきの入力写真にする（ffmpegが必要） |
-| video_poses | 動画のコマの間のカメラの回転（と移動の向き）を測り、fit_photosに渡す |
 | place_from_photos / measure_photo | 写真で位置を求めた物をその位置・向きに置く / 写真と寸法を比べる |
 | nav_map | ロボット用の2D地図（Nav2のmap.pgm＋map.yaml）と、ドアから走れる範囲 |
 | make_variants | 完成したシーンのバリエーション（アセット・配置・素材・サイズ）を作る |

@@ -19,9 +19,9 @@ jobs:
           # the extras the README and Getting Started install: a test that needs another extra must skip, not fail
           - name: documented
             extras: --extra usd --extra hf --extra mcp --extra dev
-          # everything but taste (torch): runs the floor plan and video tests too
+          # everything but taste (torch): runs the floor plan and photo tests too
           - name: all
-            extras: --extra usd --extra mcp --extra dxf --extra ifc --extra video --extra hf --extra dev
+            extras: --extra usd --extra mcp --extra dxf --extra ifc --extra photo --extra hf --extra dev
     name: test (${{ matrix.name }})
     steps:
       - uses: actions/checkout@v7.0.1

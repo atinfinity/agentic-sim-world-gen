@@ -49,7 +49,7 @@ flowchart LR
 | Isaac Sim 6.1（pip版かスタンドアロン版） | 物理チェック・スクショ・写真比較・合成データ |
 | Python 3.12以上と[uv](https://docs.astral.sh/uv/) | agentic-sim-world-gen本体 |
 | [Claude Code](https://claude.com/claude-code)（ログイン済み） | 日本語の指示からシーンを作る |
-| ffmpeg（任意、`sudo apt install ffmpeg`） | 動画からコマを抜く |
+| ffmpeg（任意、`sudo apt install ffmpeg`） | 物理チェックの様子をGIFに録る（`check --gif`） |
 
 ## 2. インストール
 
@@ -127,7 +127,7 @@ python_serverは任意のコードを実行するので、127.0.0.1のまま使�
 
 ## 5. 入力と結果
 
-- 写真・動画・図面は、手元のパスをそのまま渡す（「~/photos/living.jpgの部屋を作って」）。出典は隣の`<stem>.source.json`（[Getting Started「6. 他の入力」](getting-started.md#6-他の入力)）。
+- 写真・図面は、手元のパスをそのまま渡す（「~/photos/living.jpgの部屋を作って」）。出典は隣の`<stem>.source.json`（[Getting Started「6. 他の入力」](getting-started.md#6-他の入力)）。
 - できたシーンはそのまま手元のIsaac Simで開ける。別のPCに渡すときは、アセットも同梱したUSDにしてからフォルダごと渡す：
   「USDをローカル参照で出し直して」（MCP `compose_scene(localize=true)`、CLI `agentic-sim-world-gen compose <scene>/scene.resolved.json --localize`）。
 

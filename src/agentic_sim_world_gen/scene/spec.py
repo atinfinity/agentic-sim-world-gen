@@ -781,9 +781,6 @@ class InputRef(BaseModel):
     author: str | None = None
     license: str | None = Field(default=None, description="e.g. CC0-1.0, public domain, own photo")
     size_px: tuple[int, int] | None = Field(default=None, description="image width, height (read from the file)")
-    video: str | None = Field(default=None, description="a frame taken from a video (extract_frames): the video "
-                              "file; url/title/author/license are the video's")
-    time_s: float | None = Field(default=None, ge=0, description="a video frame: its time in the video [s]")
     camera: PhotoCamera | None = Field(default=None, description="viewpoint of the photo, for compare_photo")
     taste: Taste | None = Field(default=None, description="reference images: the look read off the image")
 

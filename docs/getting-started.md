@@ -28,7 +28,7 @@ flowchart LR
 | Ubuntu＋RTX GPU、Isaac Sim 6.1（pip版で確認済み。スタンドアロンの`python.sh`は未確認） | 物理チェック・スクショ・写真比較・合成データ |
 | Python 3.12以上、[uv](https://docs.astral.sh/uv/) | agentic-sim-world-gen本体（検索・プレビュー・USD出力） |
 | [Claude Code](https://claude.com/claude-code) | 日本語の指示からシーンを作る（MCPサーバー＋スキル） |
-| ffmpeg（任意。Ubuntu `apt install ffmpeg`、Mac `brew install ffmpeg`） | 動画からコマを抜く（`extract_frames`） |
+| ffmpeg（任意。Ubuntu `apt install ffmpeg`、Mac `brew install ffmpeg`） | 物理チェックの様子をGIFに録る（`check --gif`） |
 
 GPUの無いMac / PCでも、検索・プレビュー・USD出力まではできる（Isaac Simを使う操作だけ「Isaac Sim not found」になる）。
 
@@ -205,15 +205,14 @@ agentic-sim-world-gen finish out/study                                 # compose
 
 ## 6. 他の入力
 
-文章のほかに、間取り図・写真・動画からも作れる。
+文章のほかに、間取り図・写真からも作れる。
 
 | 入力 | 例 | 詳しく |
 |---|---|---|
 | 間取り図（JSON / DXF / IFC） | `agentic-sim-world-gen plan examples/plans/1ldk.json -o out/1ldk_plan`でplan.jsonにし、`room.plan_file`に指定する。Claudeには「examples/plans/1ldk.jsonの間取りで、LDKにソファ、和室に座卓」（和室は畳、洗面はタイルの床になる） | [データの形](architecture.md#2-データの形)、`src/agentic_sim_world_gen/scene/plan.py` |
 | 間取り図（画像 / PDF） | Claudeに画像を渡すと、なぞってJSONにする（単位px＋下敷き画像） | [スキルのplans.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/plans.md) |
 | 写真 | 「examples/photos/living_room.jpgの部屋を作って」。出典は隣の`<stem>.source.json`。`agentic-sim-world-gen photo <scene>`で同じ視点の描画と並べる | [スキルのphotos.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/photos.md) |
-| 写真・動画の深度 | 下の「単眼の深度」のvenvを作り、`agentic-sim-world-gen fit-photos req.json --depth`（写真に`image`）。部屋の寸法が決まりやすくなる | 下の「単眼の深度」 |
-| 動画 | 「walk.mp4の部屋を作って」（部屋を歩いて撮った動画、人が写っていないもの）。出典は隣の`walk.source.json`。`agentic-sim-world-gen frames walk.mp4 -o <scene>`でコマを選んで入力写真にする（ffmpegが必要） | [スキルのvideos.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/videos.md) |
+| 写真の深度 | 下の「単眼の深度」のvenvを作り、`agentic-sim-world-gen fit-photos req.json --depth`（写真に`image`）。部屋の寸法が決まりやすくなる | 下の「単眼の深度」 |
 
 ### 単眼の深度（任意）
 

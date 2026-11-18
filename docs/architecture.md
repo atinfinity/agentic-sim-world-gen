@@ -15,7 +15,7 @@
 6. [USDの合成](#6-usdの合成)
 7. [Isaac Sim側](#7-isaac-sim側)
 8. [対話の流れ](#8-対話の流れ)
-9. [写真・動画から部屋を推定](#9-写真動画から部屋を推定)
+9. [写真から部屋を推定](#9-写真から部屋を推定)
 
 ---
 
@@ -25,13 +25,13 @@
 flowchart TD
     subgraph inputs["入力"]
         nl["言葉の指示"]
-        photo["写真・動画"]
+        photo["写真"]
         plan["間取り図JSON / DXF / IFC"]
         ref["参考画像"]
     end
 
     nl -->|"plan_questionsの既定＋Claudeが英訳して書く"| spec["SceneSpec"]
-    photo -->|"extract_frames / video_poses / fit_photos"| spec
+    photo -->|"fit_photos"| spec
     plan -->|"import_floor_plan → room.plan_file"| spec
     ref -->|"InputRef kind=referenceのtaste"| spec
 
@@ -228,8 +228,8 @@ classDiagram
   layout_options/       配置案・叩き台 3 案の上面図と summary.json
   taste_pool.json       テイスト検査の比較用の候補
   plan.json / plan.svg  間取り図を読み込んだとき
-  inputs/               入力の写真・動画のコマ（出典は <stem>.source.json）
-  photo_fit.json / video_poses.json / compare.png   写真・動画から推定したときの結果と見比べ
+  inputs/               入力の写真（出典は <stem>.source.json）
+  photo_fit.json / compare.png   写真から推定したときの結果と見比べ
   nav/                  ロボット用のナビ地図（map.pgm・map.yaml、nav_map）
   variants/             シーンのバリエーション（make_variants）
   sdg/                  合成データ
@@ -539,7 +539,7 @@ workerは仕事ごとにステージを閉じ、その仕事のフォルダの�
 - `view_fronts`（`front_views.py`）：各物を想定した正面から撮ります。撮らない物を非アクティブにしたレイヤー`front_views_stage.usda`を開くので、撮る物のアセットだけを読みます。
 - `compare_photo`（`render_view.py`）：写真と同じ視点で描きます。
 - `nav_map(isaac=true)`（`nav_map.py`）：Isaac SimのOccupancy Mapでナビ地図を作ります。
-- `front_views.py`・`render_view.py`・`render_path.py`は、決まったコマ数だけ待ってから撮るのではありません。20コマおきに撮り直し、2枚続けて同じ画になったら止めます（`view.capture_settled`、上限900コマ）。シェーダーのコンパイル中に撮って、モデルが抜けることを防ぎます。
+- `front_views.py`・`render_view.py`は、決まったコマ数だけ待ってから撮るのではありません。20コマおきに撮り直し、2枚続けて同じ画になったら止めます（`view.capture_settled`、上限900コマ）。シェーダーのコンパイル中に撮って、モデルが抜けることを防ぎます。
 
 どれもcheckと同じく、Isaac SimのPythonで動かします。
 
@@ -656,23 +656,17 @@ sequenceDiagram
 - [src/agentic_sim_world_gen/notes.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/notes.py)：プレビューのメモの場所を言葉にする
 - [src/agentic_sim_world_gen/preview/page.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/preview/page.py)・[changes.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/preview/changes.py)：ページと変更履歴
 
-## 9. 写真・動画から部屋を推定
+## 9. 写真から部屋を推定
 
-流れは2段です。まず写真・動画から部屋の寸法とカメラを推定し（`fit_photos`）、次にその結果をシーンに入れて、家具の位置を決めたり写真と見比べたりします。
+流れは2段です。まず写真から部屋の寸法とカメラを推定し（`fit_photos`）、次にその結果をシーンに入れて、家具の位置を決めたり写真と見比べたりします。
 
 ### 部屋とカメラの推定
 
 ```mermaid
 flowchart TD
-    video["動画"] -->|"extract_frames"| frames["選んだコマ<br/>inputs/stem_tNNN_NN.jpg＋.source.json"]
-    photos["写真"] --> lm
-    frames --> lm["Claudeが目印を拾う<br/>部屋の角・壁の継ぎ目・開口の角"]
-    frames -->|"video_poses"| orb["video_pose.py<br/>OpenCVのORB"]
-    orb --> rel["コマの間の回転・動いた向き<br/>relative"]
+    photos["写真"] --> lm["Claudeが目印を拾う<br/>部屋の角・壁の継ぎ目・開口の角"]
     photos -->|"depth.run"| dep["MoGe-2の深度<br/>stem.depth.npz"]
-    frames -->|"depth.run"| dep
     lm --> fit["fit_photos<br/>photo_fit.fitの最小二乗"]
-    rel --> fit
     dep -->|"depth=true"| fit
     fit --> res["部屋の寸法・開口・各カメラ"]
 ```
@@ -682,7 +676,6 @@ flowchart TD
 尺度は壁の高さで決まります。天井の目印が無ければ、カメラの高さ（`eye_height`）で決めます。
 壁の高さも当てはめて、それが部屋の種類の範囲（`place`）から外れたり怪しい（`height_suspect`）ときは、同じ呼び出しの中で高さを固定して当て直し、目印が同じくらい合い、深度などメートルで測ったものも悪くならなければ固定した方を採ります（`height_refit`。placeが無い・載っていない部屋は当て直さない）。
 
-動画の場合は、まず`extract_frames`が、見え方の変わる所のくっきりしたコマを選びます。次に`video_poses`がコマの間でカメラがどれだけ回ったかを測り（OpenCVのORB特徴、`video_pose.py`）、`fit_photos`に足します。
 単眼の深度（MoGe-2）を足すと、壁を1〜2面しか写さない写真でも寸法が決まりやすくなります。
 
 ### シーンに入れて確かめる
@@ -706,9 +699,7 @@ flowchart TD
    - 寸法の分かる物（棚1台・ドア・床タイルなど）が写っていれば、その画素を`known`で渡します。その物を物差しにした幅とカメラの高さも出します。
 
 関係するファイル
-- [src/agentic_sim_world_gen/photo_fit.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_fit.py)：`fit`（結果の`scale`＝ 縮尺の根拠の一覧は`_scale_evidence`。高さの当て直しは`_height_refit`）・`FitRequest`・`PointObs`・`LineObs`・`SurfaceObs`・`RelativePose`
-- [src/agentic_sim_world_gen/video.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/video.py)：`extract`（コマ抜き）
-- [src/agentic_sim_world_gen/video_pose.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/video_pose.py)：`relative_poses`（ORBでコマの間の回転・動いた向き）
+- [src/agentic_sim_world_gen/photo_fit.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_fit.py)：`fit`（結果の`scale`＝ 縮尺の根拠の一覧は`_scale_evidence`。高さの当て直しは`_height_refit`）・`FitRequest`・`PointObs`・`LineObs`・`SurfaceObs`
 - [src/agentic_sim_world_gen/photo_refine.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_refine.py)：`refine`（箱の投影と足元・輪郭の画素の差を最小化）
 - [src/agentic_sim_world_gen/photo_place.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_place.py)・[photo_measure.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_measure.py)：写真から家具の位置、写真との幅の比較（幅には誤差の幅を付ける）。[photo_vanish.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_vanish.py)：写真の縦の線の消失点からカメラのピッチ・ロール
 - [src/agentic_sim_world_gen/depth.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/depth.py)・[scripts/depth/moge_depth.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/depth/moge_depth.py)：単眼の深度

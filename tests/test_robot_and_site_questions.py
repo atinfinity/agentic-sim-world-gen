@@ -68,7 +68,7 @@ def test_plan_or_photo_is_asked_for_a_place_that_exists():
 
 def test_plan_or_photo_is_not_asked_when_there_is_one_or_the_place_is_made_up():
     for r in ("うちの店を写真から再現して", "うちの店 ~/shop/front.jpg", "実際の倉庫の図面 plan.dxf から作って",
-              "うちの店の動画があります"):
+              "うちの店の写真があります"):
         assert "source" not in keys(plan_questions(r)), r
     for r in ("6畳の書斎を作って", "コンビニを作って", "昭和の喫茶店を再現して", "私の理想の書斎"):
         out = plan_questions(r)

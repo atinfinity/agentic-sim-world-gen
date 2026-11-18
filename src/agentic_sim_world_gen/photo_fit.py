@@ -15,18 +15,13 @@ For each photo the caller gives pixel positions of landmarks it can see:
 Unknowns: width, depth, the openings, the shared points, each camera (x, y, z, yaw, pitch, roll; the roll
 held near 0 by a weak prior, a handheld phone tilts a few degrees) and one horizontal field of view. The wall height fixes the scale (photos alone cannot).
 Solved with Levenberg-Marquardt in plain Python (a few dozen unknowns).
-
-Frames of one video can also carry `relative` poses measured from the video between them (agentic_sim_world_gen.video_pose:
-how far the camera turned, and in which direction it moved). They are soft constraints on the cameras' yaw / pitch
-(and the direction from one camera to the other), and they seed the cameras' starting yaw / pitch, so a frame with
-few or ambiguous landmarks still gets its view direction from the frames around it.
 """
 from __future__ import annotations
 
 import math
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, PrivateAttr, field_validator
+from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator
 
 WALLS = ("south", "north", "west", "east")
 COMPASS = {"east": 0, "northeast": 45, "north": 90, "northwest": 135, "west": 180, "southwest": 225,
@@ -103,25 +98,6 @@ class Locate(BaseModel):
                                                   "front")
 
 
-class RelativePose(BaseModel):
-    """Relative pose of two photos measured from the video between them (agentic_sim_world_gen.video_pose). OpenCV camera
-    axes (x right, y down, z forward): a point's coordinates in b = rotation @ (its coordinates in a) + t."""
-    a: str
-    b: str
-    rotation: list[list[float]] = Field(description="3x3 rotation from a's camera axes to b's")
-    direction: tuple[float, float, float] | None = Field(
-        default=None, description="t normalized: from b's camera to a's, in b's camera axes (None: the camera only "
-        "turned, or the move was too small to tell)")
-    weight: float = Field(default=1.0, gt=0, description="1 for a direct match of the two frames, less for a chain")
-    hfov_deg: float | None = Field(default=None, description="field of view the rotation was measured with")
-    robust: bool = Field(default=True, description="true: a pair far off the landmarks is given up (Cauchy) and left "
-                         "out of the second pass; false: kept in full (poses known to be more accurate than a "
-                         "few picked landmarks)")
-    group: str | None = Field(default=None, description="poses measured in one frame (one reconstruction). A photo "
-                              "in two groups is kept in the one whose poses fit its landmarks best (the edge of a "
-                              "model can be off)")
-
-
 class FitRequest(BaseModel):
     photos: dict[str, PhotoObs]
     height: float = Field(default=2.4, gt=1.5, lt=10, description="wall height [m]; sets the scale (without depth), "
@@ -135,14 +111,20 @@ class FitRequest(BaseModel):
                               "known; sets the scale instead of the wall height when no landmark at the ceiling "
                               "(or a shared point of known height) is seen")
     size_guess: tuple[float, float] | None = Field(default=None, description="rough width, depth [m] (start)")
+
+    @model_validator(mode="before")
+    @classmethod
+    def _no_relative(cls, data):
+        if isinstance(data, dict) and data.get("relative"):
+            raise ValueError("`relative` (camera turns between the frames of a video) is no longer read: video input "
+                             "was removed. Fit the photos without it.")
+        return data
     hfov_deg: float | None = Field(default=None, description="rough field of view (soft prior; default 65)")
     hfov_shared: bool = Field(default=True, description="one field of view for all photos without hfov_deg (same "
                               "camera); false: fit one per photo")
     openings: dict[str, OpeningGuess] = Field(default_factory=dict)
     points: dict[str, SharedPoint] = Field(default_factory=dict)
     locate: list[Locate] = Field(default_factory=list)
-    relative: list[RelativePose] = Field(default_factory=list, description="relative poses of video frames "
-                                         "(video_poses): constrain and seed the cameras' view directions")
     place: str | None = Field(default=None, description="what the room is (Room.place: home, office, school ...): "
                               "the wall heights it may have (CEILING_RANGE_BY_PLACE: home, office, school, lab, "
                               "hospital, cafe, restaurant); a fitted height outside is fitted again held at a typical "
@@ -165,13 +147,6 @@ class FitRequest(BaseModel):
     _hold: list = PrivateAttr(default_factory=list)
 
 
-TURN_WEIGHT = 0.5  # a turn error of 1 deg costs as much as ~0.5 deg of image (~7 px at 75 deg / 1280 px): on a
-#                   rendered walk the measured direct turns were 0.4-4 deg off
-DIRECTION_WEIGHT = 0.25  # the direction of the move is noisier than the turn
-DROP_DEG = 5.0  # a relative pose this far from the first fit is left out of the second (an outlier of the video)
-ROBUST_DEG = 2.0  # Cauchy scale of the relative terms: a video pose far off the landmarks is given up, not followed
-MAX_GROUP_CHOICES = 16  # photos shared by two models: choices fitted at most
-DIRECTION_SOFT_M = 0.05  # keeps the direction smooth when two cameras meet (much shorter than a move between frames)
 HEIGHT_LOOSE_M = 0.15  # a fitted height this uncertain is reported as a guess
 HEIGHT_PX_PER_M = 2.0  # weak prior that holds a fitted wall height near `height` (a guess)
 EYE_PX_PER_M = 50.0  # weight of the eye height when it sets the scale
@@ -207,7 +182,7 @@ MIN_OBS = 6  # a camera has 6 unknowns: fewer measurements leave it free (warned
 PRIOR_PX = 10.0  # the priors above are written so that about 10 px is their 1-sigma (the depth scale's 15%)
 # What sets the room's scale, side by side. Each source's own error (share, about 1 sigma):
 CEILING_TYPICAL_M = (2.4, 2.7)  # wall heights of homes and offices: a fitted height outside says the scale is off
-# wall heights a room may have: a fitted height outside is fitted again held at a typical one (a classroom video
+# wall heights a room may have: a fitted height outside is fitted again held at a typical one (a classroom
 # fitted 3.53 m against 2.65 m, its room 13.44 x 8.37 m against 9.59 x 6.19; held at 2.7: 10.27 x 6.39).
 # No place, or a place not listed (shops, factories, warehouses, halls, stations: high ceilings, "other"): not held,
 # only warned of (height_suspect), unless height_range is given
@@ -272,64 +247,6 @@ def _axes(yaw_deg: float, pitch_deg: float, roll_deg: float = 0.0):
         k = _cross(fw, rt)  # = down without roll
         rt = tuple(math.cos(r) * rt[i] + math.sin(r) * k[i] for i in range(3))
     return fw, rt, _cross(rt, fw)
-
-
-def _basis(yaw_deg: float, pitch_deg: float, roll_deg: float = 0.0):
-    """Camera axes in world coordinates, OpenCV order (x right, y down, z forward): rows of the matrix whose
-    columns are the camera axes, i.e. B^T. A world vector d has camera coordinates B^T d."""
-    fw, rt, up = _axes(yaw_deg, pitch_deg, roll_deg)
-    return (rt, (-up[0], -up[1], -up[2]), fw)
-
-
-def _rel_rotation(bt_a, bt_b):
-    """R = B_b^T B_a (a's camera axes -> b's)."""
-    return [[_dot(bt_b[i], bt_a[j]) for j in range(3)] for i in range(3)]
-
-
-def _rot_log(m) -> tuple[float, float, float]:
-    """Axis-angle vector [rad] of a rotation matrix."""
-    tr = m[0][0] + m[1][1] + m[2][2]
-    c = max(-1.0, min(1.0, (tr - 1) / 2))
-    th = math.acos(c)
-    w = (m[2][1] - m[1][2], m[0][2] - m[2][0], m[1][0] - m[0][1])
-    if th < 1e-6:
-        return (w[0] / 2, w[1] / 2, w[2] / 2)
-    if math.pi - th < 1e-4:  # 180 degrees: axis from the diagonal
-        ax = [math.sqrt(max(0.0, (m[i][i] + 1) / 2)) for i in range(3)]
-        return (ax[0] * th, ax[1] * th, ax[2] * th)
-    k = th / (2 * math.sin(th))
-    return (w[0] * k, w[1] * k, w[2] * k)
-
-
-def _matmul_t(a, b):
-    """a^T b for 3x3 lists."""
-    return [[sum(a[k][i] * b[k][j] for k in range(3)) for j in range(3)] for i in range(3)]
-
-
-def _angle_deg(m) -> float:
-    return math.degrees(math.sqrt(sum(v * v for v in _rot_log(m))))
-
-
-def _yaw_pitch(fw) -> tuple[float, float]:
-    n = math.sqrt(_dot(fw, fw)) or 1.0
-    return math.degrees(math.atan2(fw[1], fw[0])), -math.degrees(math.asin(max(-1.0, min(1.0, fw[2] / n))))
-
-
-def _yaw_pitch_roll(bt) -> tuple[float, float, float]:
-    """Yaw, pitch, roll of camera axes given as rows (right, down, forward)."""
-    yaw, pitch = _yaw_pitch(bt[2])
-    _, rt0, _ = _axes(yaw, pitch)
-    rt = bt[0]
-    return yaw, pitch, math.degrees(math.atan2(_dot(_cross(rt0, rt), bt[2]), _dot(rt0, rt)))
-
-
-def _robust(e: list[float], c: float) -> list[float]:
-    """Scale a residual block so its squared norm is the Cauchy cost c^2 log(1 + |e|^2 / c^2)."""
-    s2 = sum(v * v for v in e)
-    if s2 < 1e-18:
-        return e
-    k = math.sqrt(c * c * math.log1p(s2 / (c * c)) / s2)
-    return [v * k for v in e]
 
 
 # ---------- the model ----------
@@ -422,7 +339,7 @@ def _warm_fit(req: FitRequest, names: list[str], x: list[float]):
         return None
     x2, _, _ = _lm(m.residuals, x, m.scale)
     _, rows = m.residuals(x2, detail=True)
-    errs = [e for _, _, e, k in rows if k not in ("relative", "depth")]
+    errs = [e for _, _, e, k in rows if k != "depth"]
     return dict(zip(m.names, x2)), math.sqrt(sum(e * e for e in errs) / max(1, len(errs)))
 
 
@@ -462,26 +379,12 @@ def _ceiling_seen(req: FitRequest) -> bool:
     return any(_sees(c, "ceiling") for c in req.photos.values())
 
 
-def _floor_and_ceiling_tied(req: FitRequest, unused: set[int]) -> list[str] | None:
-    """Photos joined by the relative poses kept (or one photo) that see both the floor and the ceiling: their ids,
-    or None. Their cameras' heights are then tied to both, and the height is fixed as far as the scale is."""
-    up = {cid: cid for cid in req.photos}
-
-    def root(a):
-        while up[a] != a:
-            up[a] = up[up[a]]
-            a = up[a]
-        return a
-
-    for i, rp in enumerate(req.relative):
-        if i not in unused and rp.a in up and rp.b in up:
-            up[root(rp.a)] = root(rp.b)
-    parts: dict[str, list[str]] = {}
-    for cid in req.photos:
-        parts.setdefault(root(cid), []).append(cid)
-    for ids in parts.values():
-        if any(_sees(req.photos[c], "floor") for c in ids) and any(_sees(req.photos[c], "ceiling") for c in ids):
-            return ids
+def _floor_and_ceiling_tied(req: FitRequest) -> list[str] | None:
+    """A photo that sees both the floor and the ceiling: [its id], or None. Its camera's height is then tied to
+    both, and the height is fixed as far as the scale is."""
+    for cid, c in req.photos.items():
+        if _sees(c, "floor") and _sees(c, "ceiling"):
+            return [cid]
     return None
 
 
@@ -553,14 +456,12 @@ class _Model:
     def _scale_seen(self) -> bool:
         """Whether a landmark of known height above the floor is seen: a ceiling corner or line, or a shared
         point with a fixed z > 0, or a depth (its scale per photo is loose, but not free). Without one, the photos
-        fit a room of any size. Only photos whose camera is held count: 6+ measurements, or a relative pose to
-        another photo. A photo with a ceiling corner and two lines (4) can sit anywhere, and took the scale from the
+        fit a room of any size. Only photos whose camera is held count: 6+ measurements. A photo with a ceiling corner and two lines (4) can sit anywhere, and took the scale from the
         camera heights: the room came out 3x (#27)."""
         if _depth_seen(self.req):
             return True
-        tied = {k for rp in self.req.relative for k in (rp.a, rp.b)}
         for cid, c in self.req.photos.items():
-            if cid not in tied and _n_obs(c) < MIN_OBS:
+            if _n_obs(c) < MIN_OBS:
                 continue
             if any(o.at.startswith("corner:") and o.at.endswith(":ceiling") for o in c.points):
                 return True
@@ -725,22 +626,6 @@ class _Model:
         c = self.req.photos[cid]
         return c.size[0] / 2 / math.tan(math.radians(self.hfov(p, cid)) / 2)
 
-    def relative_error(self, p, rp: RelativePose) -> list[float]:
-        """Turn error (axis-angle of R_meas^T R_pred, in pixels at a's focal length), if measured, the
-        error of the move's direction (scaled down)."""
-        bt_a, bt_b = _cam_basis(p, rp.a), _cam_basis(p, rp.b)
-        f = self.focal(p, rp.a) * rp.weight * TURN_WEIGHT
-        e = [v * f for v in _rot_log(_matmul_t(rp.rotation, _rel_rotation(bt_a, bt_b)))]
-        if rp.direction is not None:
-            d = _sub((p[f"{rp.a}.x"], p[f"{rp.a}.y"], p[f"{rp.a}.z"]), (p[f"{rp.b}.x"], p[f"{rp.b}.y"], p[f"{rp.b}.z"]))
-            n = math.sqrt(_dot(d, d))
-            m = math.sqrt(sum(v * v for v in rp.direction)) or 1.0
-            # unit move - measured direction: does not change with the scale of the room (a residual that grows
-            # with the move pulled the room and the cameras smaller when nothing at the ceiling fixed the scale)
-            g = math.sqrt(n * n + DIRECTION_SOFT_M ** 2)
-            e += [(_dot(bt_b[i], d) / g - rp.direction[i] / m) * f * DIRECTION_WEIGHT for i in range(3)]
-        return _robust(e, f * math.radians(ROBUST_DEG)) if rp.robust else e
-
     def residuals(self, v, detail=False):
         p = dict(zip(self.names, v))
         r, rows = [], []
@@ -772,11 +657,6 @@ class _Model:
                 e = 100.0 if z is None else self.depth_error(p, cid, z, o.depth)
                 r.append(e)
                 rows.append((cid, "depth " + o.on, abs(e), "depth"))
-        for rp in self.req.relative:
-            e = self.relative_error(p, rp)
-            r += e
-            if detail:
-                rows.append((rp.a, f"relative {rp.a}->{rp.b}", math.sqrt(sum(x * x for x in e)), "relative"))
         for k in self.names:  # soft prior on the field of view: keeps a weak view set from running away
             if k == "hfov" or k.endswith(".hfov"):
                 r.append((p[k] - (self.req.hfov_deg or 65.0)) * (0.5 if self.req.hfov_deg else 0.1))
@@ -968,9 +848,9 @@ def _outside_text(o: dict) -> str:
     if o["verdict"] == "doorway":
         via = ", ".join(f"{k} ({n} pixels)" for k, n in o["through"].items())
         return (f"{head}, looking in through {via}: it stood in that opening or beyond it (a hallway) - fine if the "
-                "frame was taken there; landmarks of the hallway itself must not be named for this room")
+                "photo was taken there; landmarks of the hallway itself must not be named for this room")
     if o["verdict"] == "loose":
-        return (f"{head}, but its {o['measurements']} measurements and no relative pose leave the camera free: "
+        return (f"{head}, but its {o['measurements']} measurements leave the camera free: "
                 "its place says nothing about the walls - add points / lines to it, or leave it out")
     if o["verdict"] == "wall":
         seen = " and ".join(t for t in (f"sees {o['solid']} of its pixels through the wall itself (not an opening)"
@@ -979,16 +859,16 @@ def _outside_text(o: dict) -> str:
                                         if o["floor_beyond"] else "") if t)
         txt = (f"{head} but {seen}: the "
                f"{wall} wall is likely placed about {d:.2f} m too far in (a corner named for the wrong wall, or "
-               f"furniture's foot taken for the wall's floor line) - check the {wall}-wall landmarks of every frame")
+               f"furniture's foot taken for the wall's floor line) - check the {wall}-wall landmarks of every photo")
         if h := o.get("wall_moved_out"):
             txt += (f". With the {wall} wall moved out past the camera (the camera kept where it is from the "
                     f"{OPPOSITE[wall]} wall): rms {h['rms_px_was']} -> {h['rms_px']} px, depth rms "
                     f"{h['depth_rms_was']} -> {h['depth_rms']}, room {h['room_was']} -> {h['room']} m")
-            txt += (": about as good, so the wall is the error - find the landmarks that hold it (the frames whose "
+            txt += (": about as good, so the wall is the error - find the landmarks that hold it (the photos whose "
                     f"{wall}-wall landmarks are furniture or another wall), fix them and fit again (until then "
                     "the room is more likely the moved-out size)" if h["about_as_good"] else
-                    ": much worse, so the other frames do see that wall there - the camera stood beyond it, or "
-                    "this frame's own landmarks are off: check them")
+                    ": much worse, so the other photos do see that wall there - the camera stood beyond it, or "
+                    "this photo's own landmarks are off: check them")
         return txt
     return f"{head} - check the landmarks / facing"
 
@@ -1147,43 +1027,20 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
     for oid in req.openings:
         if ":" in oid:
             return {"ok": False, "error": f"opening id '{oid}' must not contain ':'"}
-    for rp in req.relative:
-        bad = [k for k in (rp.a, rp.b) if k not in req.photos]
-        if bad:
-            return {"ok": False, "error": f"relative {rp.a}->{rp.b}: no photo {', '.join(bad)}"}
-        if len(rp.rotation) != 3 or any(len(row) != 3 for row in rp.rotation):
-            return {"ok": False, "error": f"relative {rp.a}->{rp.b}: rotation must be 3x3"}
     try:
         m = _Model(req)
         m.residuals(m.init)
     except ValueError as e:
         return {"ok": False, "error": str(e)}
     if solved is None:
-        unused, group_notes = _pick_groups(req)
-        other_model = set(unused)
-
-        def without(drop):
-            return req.model_copy(update={"relative": [rp for i, rp in enumerate(req.relative) if i not in drop]})
-
-        first = without(unused) if unused else req
-        m, x, cost, JtJ, seed_notes = _fit_once(first, _Model(first) if unused else m)
-        if req.relative:  # second pass without the relative poses that disagree with the first fit
-            p = dict(zip(m.names, x))
-            off = {i for i, rp in enumerate(req.relative)
-                   if i not in unused and rp.robust and _turn_error(p, rp) > DROP_DEG}
-            if off:
-                unused |= off
-                kept = without(unused)
-                m, x, cost, JtJ, seed_notes = _fit_once(kept, _Model(kept))
-        seed_notes = group_notes + seed_notes
-        solved = (m, x, cost, JtJ, seed_notes, unused, other_model)
+        m, x, cost, JtJ = _fit_once(req, m)
+        solved = (m, x, cost, JtJ)
     else:
-        m, x, cost, JtJ, seed_notes, unused, other_model = solved
-        seed_notes = list(seed_notes)
+        m, x, cost, JtJ = solved
     p = dict(zip(m.names, x))
     r, rows = m.residuals(x, detail=True)
     depth_rows = [row for row in rows if row[3] == "depth"]
-    rows = [row for row in rows if row[3] not in ("relative", "depth")]
+    rows = [row for row in rows if row[3] != "depth"]
     errs = [e for _, _, e, _ in rows]
     rms = math.sqrt(sum(e * e for e in errs) / max(1, len(errs)))
     W, D, H = p["width"], p["depth"], m.h(p)
@@ -1233,7 +1090,7 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
                      "end": "east" if o.wall in ("south", "north") else "north"}["end" if edge == "start" else "start"]
             warnings.append(f"{o.kind} {oid}: only its {edge} edge is marked, so its width is not measured (held near "
                             f"{_width(p, oid):.2f} m) - mark its other edge ({oid}:{'end' if edge == 'start' else 'start'}, "
-                            f"the {other} end) in a frame that shows it")
+                            f"the {other} end) in a photo that shows it")
         elif f"{oid}.width" in m.used and d["width"] < NARROW_M:
             narrow.append(d)
         if missing:
@@ -1241,7 +1098,6 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
         openings.append(d)
     cams = {}
     outside = []
-    tied = {k for rp in req.relative for k in (rp.a, rp.b)}
     for cid, c in req.photos.items():
         pos = [p[f"{cid}.x"], p[f"{cid}.y"], p[f"{cid}.z"]]
         fw, _, _ = _cam_axes(p, cid)
@@ -1276,8 +1132,8 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
             n_in = sum(through.values())
             # mostly through an opening: it stood there (a few pixels near the opening's edge cross the wall)
             # floor / ceiling pixels beyond the wall (and nothing through an opening): the room goes on there
-            # too few measurements and no relative pose: the camera is free, its place says nothing of the walls (#28)
-            verdict = ("loose" if nobs < MIN_OBS and cid not in tied else
+            # too few measurements: the camera is free, its place says nothing of the walls
+            verdict = ("loose" if nobs < MIN_OBS else
                        "doorway" if n_in and n_in >= 2 * solid else "wall" if solid or floor_out else "unknown")
             outside.append({"photo": cid, "wall": out[0], "beyond_m": round(out[1], 2),
                             "position": cams[cid]["position"], "through": through, "solid": solid,
@@ -1368,54 +1224,29 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
                     warnings.append(f"no photo has a landmark on the {w} wall: the room's {dim} is not measured, it "
                                     f"stays near the guess - add a corner, a floor / ceiling line or wall pixels of it")
                 elif len(seen_by[w]) == 1:
-                    # one frame's east wall pixels moved the width 3.0 -> 3.85 m (truth 3.66 m)
+                    # one photo's east wall pixels moved the width 3.0 -> 3.85 m (truth 3.66 m)
                     warnings.append(f"the room's {dim}{sd_txt} rests on one photo for the {w} wall "
                                     f"({seen_by[w][0]}): a mislabeled landmark or an off depth there moves the whole "
-                                    f"{dim} - add the {w} wall (a corner, a line or wall pixels) from another frame")
+                                    f"{dim} - add the {w} wall (a corner, a line or wall pixels) from another photo")
     for cid, at, e, behind in rows:
         if behind:
             warnings.append(f"photo {cid}: '{at}' is behind the camera - check the facing / landmark name")
-    warnings += seed_notes
-    relative = []
-    for i, rp in enumerate(req.relative):
-        bt_b = _cam_basis(p, rp.b)
-        d = {"a": rp.a, "b": rp.b, "turn_deg": round(_angle_deg(rp.rotation), 1),
-             "turn_error_deg": round(_turn_error(p, rp), 1), "used": i not in unused}
-        if rp.group is not None:
-            d["group"] = rp.group
-        if rp.direction is not None:
-            dv = _sub((p[f"{rp.a}.x"], p[f"{rp.a}.y"], p[f"{rp.a}.z"]), (p[f"{rp.b}.x"], p[f"{rp.b}.y"], p[f"{rp.b}.z"]))
-            n = math.sqrt(_dot(dv, dv))
-            m_ = math.sqrt(sum(v * v for v in rp.direction)) or 1.0
-            if n > 1e-6:
-                c = sum(_dot(bt_b[i], dv) / n * rp.direction[i] / m_ for i in range(3))
-                d["direction_error_deg"] = round(math.degrees(math.acos(max(-1.0, min(1.0, c)))), 1)
-        relative.append(d)
-        if d["turn_error_deg"] > DROP_DEG and i not in other_model:
-            warnings.append(f"relative {rp.a}->{rp.b}: the landmarks turn the camera {d['turn_error_deg']} deg away "
-                            "from what the video shows" + (" (left out)" if i in unused else "") +
-                            " - check the landmarks of these frames (or the field of view); on a rendered walk such "
-                            "a pair was the video's error (blank walls)")
-        if rp.hfov_deg is not None and abs(rp.hfov_deg - m.hfov(p, rp.a)) > 5:
-            warnings.append(f"relative {rp.a}->{rp.b} was measured with hfov {rp.hfov_deg} but the fit gives "
-                            f"{m.hfov(p, rp.a):.0f}: run video_poses again with hfov_deg={m.hfov(p, rp.a):.0f}")
     h_sd = sd("height", floor=1.0) if m.fit_H else None  # at least 1 px of noise: exact data still says if it is fixed
     loose = m.fit_H and _ceiling_seen(req) and (h_sd is None or h_sd > HEIGHT_LOOSE_M)
-    tied = _floor_and_ceiling_tied(req, unused) if loose else None
+    tied = _floor_and_ceiling_tied(req) if loose else None
     if tied:
-        # the shape is fixed and the room grows and shrinks as a whole: on ARKitScenes (run 2) height / width
-        # stayed 0.86-0.88 while the relative poses' weight moved the height 2.49-3.12 m
+        # the shape is fixed and the room grows and shrinks as a whole
         ds = [c["depth_scale"] for c in cams.values() if "depth_scale" in c]
         spread = f" (its scale per photo came out {min(ds):.2f}-{max(ds):.2f})" if len(ds) > 1 else ""
         warnings.append(f"the room's scale is loose (height ±{h_sd or 0:.2f} m, width ±{sigma.get('width', 0):.2f} m)"
-                        f": the floor and the ceiling are tied ({len(tied)} photos joined by video_poses, or one "
-                        "photo), so the shape is fixed, but the length comes only from the depth" + spread +
+                        f": the floor and the ceiling are tied (photo {tied[0]} sees both), so the shape is fixed, "
+                        "but the length comes only from the depth" + spread +
                         " - give the height if it is known (fit_height=false), or a shared point at a known "
                         "height (points: z)")
     elif loose:
         warnings.append(f"the wall height is not fixed by the photos (±{h_sd or 0:.2f} m), it stays near the guess "
-                        f"{req.height} m: no photo (nor photos joined by video_poses) sees both the floor and the "
-                        "ceiling, so the cameras' heights and the ceiling move together - pick a frame that sees a "
+                        f"{req.height} m: no photo sees both the floor and the ceiling, so the cameras' heights "
+                        "and the ceiling move together - pick a photo that sees a "
                         "ceiling corner and the floor below it, or give the height")
     if m.fit_H and not _ceiling_seen(req):
         warnings.append("fit_height: nothing at the ceiling is seen, the height stays near the guess - add a "
@@ -1477,7 +1308,7 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
         if abs(d["fitted"] - d["typical"]) > 2 * d["sigma"]:
             warnings.append(f"{d['of']} came out {d['fitted']} m against the typical {d['typical']} m: the scale is "
                             "off, or this one is not typical (give its `top` / `z_sigma`, or label the landmark again)")
-    scale = _scale_evidence(m, req, p, cams, unused, H)
+    scale = _scale_evidence(m, req, p, cams, H)
     warnings += scale.pop("warnings")
     worst = sorted(rows, key=lambda t: -t[2])[:5]
     return {
@@ -1493,7 +1324,6 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
         **({"objects": objects} if objects else {}),
         "worst": [{"photo": c, "landmark": a, "err_px": round(e, 1)} for c, a, e, _ in worst],
         "measurements": len(r), "unknowns": len(x),
-        **({"relative": relative} if relative else {}),
         **({"size_priors": size_priors} if size_priors else {}),
         **({"scale": scale} if scale["sources"] else {}),
         **({"outside": outside} if outside else {}),
@@ -1508,7 +1338,7 @@ def _median(v: list[float]) -> float:
     return s[len(s) // 2] if len(s) % 2 else (s[len(s) // 2 - 1] + s[len(s) // 2]) / 2
 
 
-def _scale_evidence(m: _Model, req: FitRequest, p, cams: dict, unused: set[int], H: float) -> dict[str, Any]:
+def _scale_evidence(m: _Model, req: FitRequest, p, cams: dict, H: float) -> dict[str, Any]:
     """Everything that says how big the room is, each turned into `scale` = the factor the fitted room would
     have to grow by to match that source alone (1.0 = it agrees with the fit), with the source's own error as
     `range`: the depth maps, door tops / typical heights, the eye height, the typical wall height, the given
@@ -1649,62 +1479,10 @@ def _cam_axes(p: dict, cid: str):
     return _axes(p[f"{cid}.yaw"], p[f"{cid}.pitch"], p[f"{cid}.roll"])
 
 
-def _cam_basis(p: dict, cid: str):
-    return _basis(p[f"{cid}.yaw"], p[f"{cid}.pitch"], p[f"{cid}.roll"])
-
-
-def _turn_error(p: dict, rp: RelativePose) -> float:
-    """Degrees between the measured turn and the turn of the fitted cameras."""
-    pred = _rel_rotation(_cam_basis(p, rp.a), _cam_basis(p, rp.b))
-    return _angle_deg(_matmul_t(rp.rotation, pred))
-
-
-def _pick_groups(req: FitRequest) -> tuple[set[int], list[str]]:
-    """A photo in the relative poses of two groups (two structure-from-motion models sharing a frame) is kept in
-    one: each choice is fitted and the one with the smallest landmark residual wins (on a handheld video the
-    wrong model's pose was 11.7 px off, the right one 2.6 px, both together 15.4 px). Returns the indices of the
-    relative poses left out and notes."""
-    groups: dict[str, set[str]] = {}
-    for rp in req.relative:
-        if rp.group is not None:
-            for k in (rp.a, rp.b):
-                groups.setdefault(k, set()).add(rp.group)
-    shared = sorted(k for k, g in groups.items() if len(g) > 1)
-    if not shared:
-        return set(), []
-    choices = [[]]
-    for k in shared:
-        choices = [c + [(k, g)] for c in choices for g in sorted(groups[k])]
-    notes = []
-    if len(choices) > MAX_GROUP_CHOICES:
-        notes.append(f"{len(shared)} photos are in two models: {len(choices)} choices, only the first "
-                     f"{MAX_GROUP_CHOICES} are tried")
-        choices = choices[:MAX_GROUP_CHOICES]
-    best = None
-    for c in choices:
-        keep = dict(c)
-        drop = {i for i, rp in enumerate(req.relative)
-                if rp.group is not None and any(k in keep and keep[k] != rp.group for k in (rp.a, rp.b))}
-        kept = req.model_copy(update={"relative": [rp for i, rp in enumerate(req.relative) if i not in drop]})
-        m, x, _, _, _ = _fit_once(kept, _Model(kept))
-        _, rows = m.residuals(x, detail=True)
-        errs = [e for _, _, e, kind in rows if kind not in ("relative", "depth")]
-        rms = math.sqrt(sum(e * e for e in errs) / max(1, len(errs)))
-        if best is None or rms < best[0]:
-            best = (rms, drop, c)
-    for k, g in best[2]:
-        notes.append(f"photo {k} is in {len(groups[k])} models ({', '.join(sorted(groups[k]))}): kept in {g}, "
-                     f"whose poses fit the landmarks best (rms {best[0]:.1f} px)")
-    return best[1], notes
-
-
 def _fit_once(req: FitRequest, m: _Model):
-    """Levenberg-Marquardt from a few starts (the video's turns, then pitches); the best of them."""
+    """Levenberg-Marquardt from a few starts (pitches); the best of them."""
     n_obs = sum(2 * len(c.points) + len(c.lines) for c in req.photos.values())
     starts = []
-    seeded, seed_notes = _seed(req, m)
-    if seeded is not None:
-        starts.append(seeded)
     for pitch in (8.0, 0.0, 20.0):  # a few starts; keep the best
         starts.append([pitch if n.endswith(".pitch") else v for n, v in zip(m.names, m.init)])
     best = None
@@ -1714,46 +1492,4 @@ def _fit_once(req: FitRequest, m: _Model):
             best = (x, cost, JtJ)
         if math.sqrt(cost / max(1, n_obs)) < 3:
             break
-    return m, *best, seed_notes
-
-
-def _seed(req: FitRequest, m: _Model):
-    """Starting yaw / pitch of the cameras from the measured turns: from the photo with the most landmarks
-    (its yaw from `facing`), through the relative poses. Returns (start vector or None, warnings)."""
-    if not req.relative:
-        return None, []
-    nobs = {cid: 2 * len(c.points) + len(c.lines) for cid, c in req.photos.items()}
-    links: dict[str, list[tuple[str, RelativePose, bool]]] = {}
-    for rp in req.relative:
-        links.setdefault(rp.a, []).append((rp.b, rp, True))
-        links.setdefault(rp.b, []).append((rp.a, rp, False))
-    x0 = list(m.init)
-    notes = []
-    done: set[str] = set()
-    for root in sorted(req.photos, key=lambda k: -nobs[k]):
-        if root in done or root not in links:
-            continue
-        bt = {root: _basis(x0[m.index[f"{root}.yaw"]], x0[m.index[f"{root}.pitch"]], x0[m.index[f"{root}.roll"]])}
-        queue = [root]
-        done.add(root)
-        while queue:
-            k = queue.pop(0)
-            for other, rp, forward in sorted(links[k], key=lambda t: -t[1].weight):
-                if other in done:
-                    continue
-                # B_b = B_a R^T  (forward: k is a);  B_a = B_b R  (k is b). Rows of B^T are the camera axes.
-                R = rp.rotation
-                cols = [[sum(bt[k][i][c] * (R[j][i] if forward else R[i][j]) for i in range(3)) for c in range(3)]
-                        for j in range(3)]
-                bt[other] = cols
-                yaw, pitch, roll = _yaw_pitch_roll(cols)
-                x0[m.index[f"{other}.yaw"]], x0[m.index[f"{other}.pitch"]] = yaw, pitch
-                x0[m.index[f"{other}.roll"]] = roll
-                given = m.init[m.index[f"{other}.yaw"]]
-                if abs((yaw - given + 180) % 360 - 180) > 60:
-                    notes.append(f"photo {other}: facing {req.photos[other].facing!r} is "
-                                 f"{abs((yaw - given + 180) % 360 - 180):.0f} deg from the turn the video shows "
-                                 f"from {k} (yaw {yaw:.0f})")
-                done.add(other)
-                queue.append(other)
-    return x0, notes
+    return m, *best

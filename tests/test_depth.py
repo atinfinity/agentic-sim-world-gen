@@ -8,11 +8,10 @@ from agentic_sim_world_gen import depth as dp
 from agentic_sim_world_gen import photo_fit as pf
 from agentic_sim_world_gen import service
 
-from test_photo_fit import CAMS, D, H, W, _no_ceiling, _proj, _relative, _request
+from test_photo_fit import CAMS, D, H, W, _no_ceiling, _proj, _request
 
 BIAS = {"s": 1.12, "ne": 0.9, "w": 1.05}  # the model's scale per photo (MoGe-2 is off by up to ~20 %)
 MEAN = math.exp(sum(math.log(b) for b in BIAS.values()) / len(BIAS))  # the scale the prior settles on
-VIDEO = [_relative("s", "ne", robust=False), _relative("ne", "w", robust=False)]  # poses held in full (robust=False)
 
 
 def _z(cid, X):
@@ -81,19 +80,8 @@ def test_depth_far_in_every_photo_without_ceiling():
     assert any("nothing of known length" in w for w in r["warnings"])
 
 
-def test_depth_scale_per_photo_needs_the_relative_poses():
-    """Each photo's depth is off by its own scale. A photo that sees one or two walls takes its scale by moving
-    its camera, so the depth alone does not fix the room; with the relative poses (one frame up to scale) the
-    room comes out at the photos' mean scale and each photo's depth_scale near its own."""
-    req = {**_no_ceiling(_request()), "eye_height": EYE * MEAN}  # the eye height of the room at the mean scale
-    for cid, c in req["photos"].items():
-        c["surfaces"] = _surfaces(cid)
-    r = service.fit_photos({**req, "relative": VIDEO})
-    assert r["ok"] and r["rms_px"] < 0.5, r
-    assert abs(r["room"]["width"] - W * MEAN) < 0.1 and abs(r["room"]["depth"] - D * MEAN) < 0.1, r["room"]
-    for cid in CAMS:
-        assert abs(r["cameras"][cid]["depth_scale"] - BIAS[cid] / MEAN) < 0.03, (cid, r["cameras"][cid])
-        assert r["cameras"][cid]["depth_rms"] < 0.02
+def test_unknown_surface():
+    req = _no_ceiling(_request())
     bad = {**req, "photos": {**req["photos"], "s": {**req["photos"]["s"], "surfaces": [{"on": "roof", "px": [1, 1],
                                                                                          "depth": 1.0}]}}}
     assert "surface 'roof'" in service.fit_photos(bad)["error"]
@@ -125,10 +113,11 @@ def test_fill_from_depth_map(tmp_path, monkeypatch):
     plain = service.fit_photos({**req, "eye_height": 2.0})  # surface pixels without a depth say nothing
     assert any("no depth and were ignored" in w for w in plain["warnings"])
     monkeypatch.delenv("AGENTIC_SIM_WORLD_GEN_DEPTH_PYTHON", raising=False)  # the maps exist: the model does not run
-    r = service.fit_photos({**req, "eye_height": EYE * MEAN, "relative": VIDEO}, depth=True)
+    r = service.fit_photos({**req, "eye_height": EYE * MEAN}, depth=True)
     assert r["ok"], r
     assert r["depth"]["photos"]["s"]["filled"] > 5 and r["depth"]["missing"] == []
-    assert abs(r["room"]["width"] - W * MEAN) < 0.15 and abs(r["room"]["depth"] - D * MEAN) < 0.15, r["room"]
+    # each photo's depth has its own scale, which photos alone tie only loosely: the room within ~6 %
+    assert abs(r["room"]["width"] - W * MEAN) < 0.3 and abs(r["room"]["depth"] - D * MEAN) < 0.2, r["room"]
     assert abs(r["cameras"]["ne"]["depth_scale"] - BIAS["ne"] / MEAN) < 0.05
     assert any("the depth model sees a field of view" in w for w in r["warnings"]), r["warnings"]
 
@@ -158,16 +147,6 @@ def test_depth_fits_the_wall_height():
     assert not plain["room"]["height_fitted"] and plain["room"]["height"] == H
 
 
-def test_fitted_height_with_biased_depth_and_video_poses():
-    """Biased depth per photo + relative poses: the height comes out at the photos' mean scale like the walls."""
-    req = {**_request(), "height": 2.1}
-    for cid, c in req["photos"].items():
-        c["surfaces"] = _surfaces(cid)
-    r = service.fit_photos({**req, "relative": VIDEO})
-    assert r["ok"] and r["rms_px"] < 1.0, r
-    assert abs(r["room"]["height"] - H * MEAN) < 0.1 and abs(r["room"]["width"] - W * MEAN) < 0.1, r["room"]
-
-
 def test_height_not_fixed_when_no_photo_sees_floor_and_ceiling():
     """Each photo sees only the floor or only the ceiling: camera heights and the ceiling move together."""
     req = _with_depth(_request(), {c: 1.0 for c in CAMS})
@@ -178,25 +157,8 @@ def test_height_not_fixed_when_no_photo_sees_floor_and_ceiling():
     r = service.fit_photos({**req, "height": 2.1})
     assert r["ok"] and r["room"]["height_fitted"]
     assert any("not fixed by the photos" in w for w in r["warnings"]), r["warnings"]
+    assert pf._floor_and_ceiling_tied(pf.FitRequest.model_validate(req)) is None
+    assert pf._floor_and_ceiling_tied(pf.FitRequest.model_validate(_request())) == ["s"]
     good = service.fit_photos({**_with_depth(_request(), {c: 1.0 for c in CAMS}), "height": 2.1})
     assert not any("not fixed by the photos" in w for w in good["warnings"])
 
-
-def test_loose_scale_when_floor_and_ceiling_are_tied():
-    """Floor-only and ceiling-only photos joined by the video's poses: the shape is fixed and only the depth's
-    scale is loose, so the warning says that and not that the floor and the ceiling are unseen together."""
-    req = {**_request(), "height": 2.1}
-    for cid, c in req["photos"].items():
-        keep = "floor" if cid == "s" else "ceiling"
-        c["points"] = [o for o in c["points"] if o["at"].endswith(keep)]
-        c["lines"] = [o for o in c["lines"] if o["along"].startswith(keep)]
-        c["surfaces"] = [o for o in _surfaces(cid) if o["on"] != "floor" or keep == "floor"]
-    tied = service.fit_photos({**req, "relative": VIDEO})
-    assert tied["ok"] and tied["room"]["height_fitted"]
-    # the eye height now joins the depth when nothing of known length is seen, so the scale is no longer loose
-    assert any("nothing of known length" in w for w in tied["warnings"]), tied["warnings"]
-    assert not any("not fixed by the photos" in w for w in tied["warnings"])
-    apart = service.fit_photos(req)
-    assert any("not fixed by the photos" in w for w in apart["warnings"]), apart["warnings"]
-    assert not pf._floor_and_ceiling_tied(pf.FitRequest.model_validate(req), set())
-    assert pf._floor_and_ceiling_tied(pf.FitRequest.model_validate({**req, "relative": VIDEO}), {0}) is None  # s alone

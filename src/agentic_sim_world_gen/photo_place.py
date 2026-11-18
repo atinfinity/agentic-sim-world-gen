@@ -22,7 +22,7 @@ TIE_M = 0.02  # two poses whose rms differ by less than this are a tie
 DISTINCT_DEG = 20.0  # tied poses this close are one
 MISFIT_M = 0.15  # an rms above this: the asset's size is not the real thing's (or a point is on something else)
 TURN_M = 0.05  # turn the object from its facing now only when that fits the points this much better: located points
-# are off by 0.1-0.3 m in real videos, and a slightly lower rms at another facing turned sofas by 80 deg
+# are off by 0.1-0.3 m in real rooms, and a slightly lower rms at another facing turned sofas by 80 deg
 
 
 def _local(p, c, th):

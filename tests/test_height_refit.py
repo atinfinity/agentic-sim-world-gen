@@ -15,7 +15,7 @@ from agentic_sim_world_gen import service
 def _scale_off(k, one_depth=False, **more):
     """A room k times as big as the photos' (they are the same for any size): each photo's depth and the camera
     height ask for k times the room; no door top, no shared point of known height. The height fits k x 2.4 m. That
-    is a classroom video whose depth was off, and a real high ceiling when it is right: the pixels do not tell
+    is a classroom whose depth was off, and a real high ceiling when it is right: the pixels do not tell
     them apart, the meters do. one_depth: the depth on photo `s` only (its scale ±15%: loose)."""
     req = _req(k)
     req.pop("points")

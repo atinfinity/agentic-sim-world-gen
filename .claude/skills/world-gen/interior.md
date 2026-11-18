@@ -107,7 +107,7 @@ ceiling equipment).
 ## Wall and ceiling equipment (「エアコン」「窓の下の暖房器」「壁のスピーカー」「天井の換気口」「コンセント」)
 
 Equipment fixed to the walls or the ceiling is neither furniture nor clutter, so it is easy to leave out (a
-classroom video lost its radiators under the windows, the wall speakers and the ceiling vents).
+rebuilt classroom lost its radiators under the windows, the wall speakers and the ceiling vents).
 **Place what is big enough to see in the render** (about 0.3 m or more): air conditioners, radiators / heaters,
 speakers, ceiling vents and diffusers, a wall clock, exit signs, a fire extinguisher. Skip outlets, switches,
 thermostats and smoke detectors unless the user asks or the world is for close-up work (a robot pressing a switch,
@@ -135,7 +135,7 @@ synthetic data of these things).
   own (`match.off_place`).
 - Wall equipment hangs: `layout: {against_wall: "<wall>", along: 0..1, wall_height: <m to its bottom>}` (no rigid
   body, nothing holds it up in physics). It is not floor furniture: do not locate it in fit_photos, and
-  `photo_placement` / place_from_photos leave it out. Read `along` off the frames (a radiator under a window:
+  `photo_placement` / place_from_photos leave it out. Read `along` off the photos (a radiator under a window:
   the window's center along that wall).
 - **No asset of that shape** (a radiator, a wall air conditioner, a wall speaker): do not stand in something of
   another shape or trade (a car radiator, a rooftop unit, a megaphone). Leave it out and name it in the report

@@ -9,8 +9,6 @@
   agentic-sim-world-gen fronts out/study                                      # each object from its front (Ubuntu)
   agentic-sim-world-gen photo out/living [--input photo]                      # photo vs render from its camera (Ubuntu)
   agentic-sim-world-gen fit-photos landmarks.json -o out/living               # room + cameras from several photos
-  agentic-sim-world-gen frames walk.mp4 -o out/living [--max 8]               # sharp frames of a video -> photo inputs
-  agentic-sim-world-gen video-poses out/living [--hfov 65]                    # turns between those frames (OpenCV)
   agentic-sim-world-gen sdg out/study --frames 50 [--coco] [--dry-run]         # Replicator synthetic data (Ubuntu)
   agentic-sim-world-gen index /data/usd_assets [--rebuild]                    # index a third-party USD folder
   agentic-sim-world-gen plan floor.dxf -o out/plan [--units mm] [--storey 1F]  # floor plan -> plan.json + plan.svg
@@ -258,28 +256,6 @@ def cmd_measure_photo(a: argparse.Namespace) -> int:
 
 def cmd_fit_photos(a: argparse.Namespace) -> int:
     r = service.fit_photos(json.loads(Path(a.file).read_text()), a.out, depth=a.depth, apply=a.apply)
-    print(json.dumps(r, ensure_ascii=False, indent=2))
-    return 0 if r["ok"] else 1
-
-
-def cmd_video_poses(a: argparse.Namespace) -> int:
-    r = service.video_poses(a.dir, a.hfov, a.video, a.rate)
-    if not r.get("ok"):
-        print(r.get("error"), file=sys.stderr)
-        return 1
-    for e in r["relative"]:
-        extra = f"  {e['steps']} steps" if e.get("steps") else ""
-        move = "  +direction" if e.get("direction") else ""
-        print(f"{e['a']} -> {e['b']}: turn {e['turn_deg']} deg  ({e['source']}, {e['inliers']} inliers{extra}){move}")
-    for w in r["warnings"]:
-        print(f"! {w}")
-    print(f"-> {r['file']} (put `relative` into the fit-photos request)")
-    return 0
-
-
-def cmd_frames(a: argparse.Namespace) -> int:
-    r = service.extract_frames(a.video, a.out, a.max, a.min, url=a.url, title=a.title, author=a.author,
-                               license=a.license, start_s=a.start, end_s=a.end, times=a.times, rotate=a.rotate)
     print(json.dumps(r, ensure_ascii=False, indent=2))
     return 0 if r["ok"] else 1
 
@@ -597,31 +573,6 @@ def main(argv: list[str] | None = None) -> int:
     fp.add_argument("--apply", action=argparse.BooleanOptionalAction, default=None,
                     help="write the room and cameras into the scene in --out (default: when --out is a scene folder)")
     fp.set_defaults(fn=cmd_fit_photos)
-
-    fr = sub.add_parser("frames", help="pick sharp frames of a walk-through video (inputs/ of the scene folder)")
-    fr.add_argument("video")
-    fr.add_argument("-o", "--out", required=True, help="scene folder (frames are recorded as inputs if it has a scene)")
-    fr.add_argument("--max", type=int, default=8, help="at most this many frames (default 8, cap 12)")
-    fr.add_argument("--min", type=int, default=4, help="at least this many frames (default 4)")
-    fr.add_argument("--start", type=float, help="only from this time (s): one room of a walk through several")
-    fr.add_argument("--end", type=float, help="only up to this time (s)")
-    fr.add_argument("--times", type=float, nargs="+", help="exactly the frames at these times (s) instead of choosing "
-                    "(e.g. to move a blurred frame)")
-    fr.add_argument("--rotate", type=int, choices=(0, 90, 180, 270),
-                    help="turn the frames clockwise (a video without rotation metadata that comes out on its side: "
-                    "90 if the floor is on the right, 270 if on the left); default: as the scene's frames of this video")
-    fr.add_argument("--url", help="where the video came from (else <video stem>.source.json)")
-    fr.add_argument("--title")
-    fr.add_argument("--author")
-    fr.add_argument("--license", help="e.g. CC0-1.0, own video")
-    fr.set_defaults(fn=cmd_frames)
-
-    vpz = sub.add_parser("video-poses", help="how the camera turned between the frames of `frames` (ORB; needs OpenCV)")
-    vpz.add_argument("dir", help="scene folder that holds inputs/ from `agentic-sim-world-gen frames`")
-    vpz.add_argument("--hfov", type=float, default=65.0, help="field of view of the video camera [deg] (default 65)")
-    vpz.add_argument("--video", help="only the frames of this video")
-    vpz.add_argument("--rate", type=float, help="samples per second between the frames (default 10)")
-    vpz.set_defaults(fn=cmd_video_poses)
 
     pl = sub.add_parser("plan", help="import a floor plan (.json/.dxf/.ifc) and preview it")
     pl.add_argument("file")

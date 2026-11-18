@@ -33,16 +33,16 @@ ifc = [
 mcp = [
     { name = "mcp" },
 ]
+photo = [
+    { name = "numpy" },
+    { name = "opencv-python-headless" },
+]
 taste = [
     { name = "torch", marker = "sys_platform == 'linux'" },
     { name = "transformers", marker = "sys_platform == 'linux'" },
 ]
 usd = [
     { name = "usd-core" },
-]
-video = [
-    { name = "numpy" },
-    { name = "opencv-python-headless" },
 ]
 
 [package.metadata]
@@ -51,8 +51,8 @@ requires-dist = [
     { name = "huggingface-hub", marker = "extra == 'hf'", specifier = ">=0.36" },
     { name = "ifcopenshell", marker = "extra == 'ifc'", specifier = ">=0.8" },
     { name = "mcp", marker = "extra == 'mcp'", specifier = ">=2.3,<3" },
-    { name = "numpy", marker = "extra == 'video'", specifier = ">=1.26" },
-    { name = "opencv-python-headless", marker = "extra == 'video'", specifier = ">=4.9,<6" },
+    { name = "numpy", marker = "extra == 'photo'", specifier = ">=1.26" },
+    { name = "opencv-python-headless", marker = "extra == 'photo'", specifier = ">=4.9,<6" },
     { name = "pillow", specifier = ">=10" },
     { name = "pydantic", specifier = ">=2.6" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
@@ -62,7 +62,7 @@ requires-dist = [
     { name = "transformers", marker = "sys_platform == 'linux' and extra == 'taste'", specifier = ">=4.49" },
     { name = "usd-core", marker = "extra == 'usd'", specifier = ">=25.5" },
 ]
-provides-extras = ["usd", "hf", "mcp", "dxf", "ifc", "taste", "video", "dev"]
+provides-extras = ["usd", "hf", "mcp", "dxf", "ifc", "taste", "photo", "dev"]
 
 [[package]]
 name = "annotated-doc"

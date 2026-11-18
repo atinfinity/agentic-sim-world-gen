@@ -5,7 +5,7 @@ import json
 
 import pytest
 
-np = pytest.importorskip("numpy")  # the `video` extra
+np = pytest.importorskip("numpy")  # the `photo` extra
 
 from agentic_sim_world_gen import depth, service
 from agentic_sim_world_gen.photo_measure import View, depth_floor

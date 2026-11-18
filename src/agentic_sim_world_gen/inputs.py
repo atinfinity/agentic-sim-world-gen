@@ -16,7 +16,6 @@ from pathlib import Path
 from agentic_sim_world_gen.scene.spec import InputRef, PhotoCamera, Screen, Taste
 
 SIDECAR_FIELDS = ("url", "title", "author", "license")
-FRAME_FIELDS = ("video", "time_s")  # a frame's sidecar also says which video and when (agentic_sim_world_gen.video)
 SENSOR_W_MM = 36.0  # horizontal aperture of the USD camera; focal length follows from the field of view
 
 
@@ -64,7 +63,7 @@ def resolve(ref: InputRef, base: Path | None = None) -> InputRef:
     side = sidecar_path(p)
     if side.exists():
         data = json.loads(side.read_text(encoding="utf-8"))
-        for k in SIDECAR_FIELDS + FRAME_FIELDS:
+        for k in SIDECAR_FIELDS:
             if getattr(ref, k) is None and data.get(k) not in (None, ""):
                 setattr(ref, k, data[k])
     return ref
@@ -84,18 +83,10 @@ def focal_mm(cam: PhotoCamera) -> float:
     return SENSOR_W_MM / 2 / math.tan(math.radians(cam.hfov_deg) / 2)
 
 
-def frame_note(ref: InputRef) -> str | None:
-    """'frame at 12.3 s of walk.mp4' for an input taken from a video, else None."""
-    if not ref.video:
-        return None
-    at = f" at {ref.time_s:.1f} s" if ref.time_s is not None else ""
-    return f"frame{at} of {Path(ref.video).name}"
-
-
 def provenance(ref: InputRef) -> dict[str, str | float]:
     """Source fields for USD customData / reports (no camera)."""
     d = {"id": ref.id, "kind": ref.kind}
-    for k in ("path", "url", "title", "author", "license", "video", "time_s"):
+    for k in ("path", "url", "title", "author", "license"):
         if (v := getattr(ref, k)) is not None:
             d[k] = v
     if ref.taste is not None and (t := taste_summary(ref.taste)):

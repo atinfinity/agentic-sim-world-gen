@@ -3638,7 +3638,7 @@ def _photo_placement(s: ResolvedScene, d: Path) -> dict[str, Any]:
         out["not_in_photos"] = exempt
     if not miss and not unknown and not unlocated:
         out["hint"] = ("one_point: these rest on one located point, a foot or corner, not their middle - add 1-3 "
-                       "more feet / corners (a diagonal one) in the frames, fit again and place_from_photos")
+                       "more feet / corners (a diagonal one) in the photos, fit again and place_from_photos")
         return out
     if not miss and not unknown:
         # a work order here was read past; finish lists them in report_must_include, compose_scene says how
@@ -3656,7 +3656,7 @@ def _photo_placement(s: ResolvedScene, d: Path) -> dict[str, Any]:
     return out
 
 
-PHOTO_EXEMPT = "not_in_photos.json"  # {object id: why the frames cannot locate it}, kept across fits
+PHOTO_EXEMPT = "not_in_photos.json"  # {object id: why the photos cannot locate it}, kept across fits
 
 
 def _photo_exempt(d: Path) -> dict[str, str]:
@@ -3678,7 +3678,7 @@ def _set_photo_exempt(d: Path, given: dict[str, str]) -> None:
 
 
 def _photo_gate(s: ResolvedScene, d: Path) -> str | None:
-    """Why compose_scene stops: furniture the photos (photo_fit.json) do not place yet. A video run saw
+    """Why compose_scene stops: furniture the photos (photo_fit.json) do not place yet. A run saw
     the warnings after every call and still placed by eye instead of fitting again."""
     pp = _photo_placement(s, d)
     why = [f"{k}: {', '.join(m['id'] if isinstance(m, dict) else m for m in pp[k])}"
@@ -3686,8 +3686,8 @@ def _photo_gate(s: ResolvedScene, d: Path) -> str | None:
     if not why:
         return None
     return ("the photos do not place all the furniture yet (" + "; ".join(why) + "). Pick 2-4 feet / corners of "
-            "each in the frames (locate with `object`, `edge` front / back), run fit_photos again with this scene folder "
-            "and place_from_photos (misplaced: it moves them there). Only for one the frames do not show on the floor, "
+            "each in the photos (locate with `object`, `edge` front / back), run fit_photos again with this scene folder "
+            "and place_from_photos (misplaced: it moves them there). Only for one the photos do not show on the floor, "
             "compose_scene(not_in_photos={id: why}) - say so in the report")
 
 
@@ -3977,136 +3977,6 @@ def place_from_photos(scene: str | Path, objects: list[str] | None = None, apply
         out["issues"] = st["issues"]
         if st.get("photo_placement"):
             out["photo_placement"] = st["photo_placement"]
-    return out
-
-
-def extract_frames(video: str | Path, out_dir: str | Path, max_frames: int = 8, min_frames: int = 4,
-                   url: str | None = None, title: str | None = None, author: str | None = None,
-                   license: str | None = None, start_s: float | None = None,
-                   end_s: float | None = None, times: list[float] | None = None,
-                   rotate: int | None = None) -> dict[str, Any]:
-    """Pick 4-8 sharp frames of a walk-through video where the view changed (agentic_sim_world_gen.video), write them to
-    <out_dir>/inputs/<video stem>_tNNN_NN.jpg with a <stem>.source.json (the video's source + video + time_s)
-    and a contact sheet. start_s / end_s: only that part of the video (one room of a walk through several).
-    times: write exactly the frames at these seconds instead of choosing (all of them: the scene's frames of this
-    video are replaced by them; e.g. the earlier times with a frame video_poses calls weak moved to its better_s).
-    rotate: turn the frames 90 / 180 / 270 degrees clockwise (a video that comes out lying on its side or upside
-    down: no rotation metadata in the file); None keeps the turn of the frames of this video already in
-    <out_dir>/inputs (0 if none). If out_dir already holds a scene, the frames are recorded as photo inputs
-    (replacing earlier frames of the same video); otherwise `inputs` is ready for create_scene's spec.inputs."""
-    from agentic_sim_world_gen import video as vid
-    from agentic_sim_world_gen.inputs import missing_source, resolve
-
-    d = Path(out_dir).expanduser()
-    if rotate is None:
-        rotate = _frames_rotate(d / "inputs", video)
-    try:
-        r = vid.extract(video, d / "inputs", max_frames, min_frames,
-                        source={"url": url, "title": title, "author": author, "license": license},
-                        start_s=start_s, end_s=end_s, times=times, rotate=rotate)
-    except (vid.FfmpegMissing, FileNotFoundError, ValueError) as e:
-        return {"ok": False, "error": str(e)}
-    refs = [resolve(InputRef(id=f["id"], kind="photo", path=f["path"])) for f in r["frames"]]
-    missing = sorted({k for i in refs for k in missing_source(i)})
-    out: dict[str, Any] = {"ok": True, **r, "inputs": [i.model_dump(mode="json", exclude_none=True) for i in refs]}
-    if missing:
-        out["missing_source"] = missing
-        out["hint_source"] = (f"the video's {', '.join(missing)} is not recorded: ask the user where it came from and "
-                              f"put {Path(r['video']).stem}.source.json next to the video (or pass url / license), "
-                              "then extract again")
-    if _resolved_path(d).exists():
-        s = load(d)
-        cams = {i.id: i.camera for i in s.spec.inputs if i.camera is not None}
-        for i in refs:  # the same frame extracted again keeps the camera set for it
-            i.camera = cams.get(i.id)
-        s.spec.inputs = [i for i in s.spec.inputs if i.video != r["video"] and i.id not in {x.id for x in refs}] + refs
-        _save(s, d, f"動画 {Path(r['video']).name} から {len(refs)} コマを入力に記録")
-        out["recorded"] = True
-    else:
-        out["recorded"] = False
-    if r.get("people_frames"):
-        out["hint_people"] = (f"the people detector ({r['people_check']}) found people in "
-                              f"{', '.join(r['people_frames'])}: do not use these frames / this video")
-    elif r.get("people_check") == "none":
-        out["hint_people"] = "no people detector is installed (opencv): check the frames for people yourself"
-    turned = f" (turned {r['rotate']} degrees clockwise)" if r["rotate"] else ""
-    out["hint"] = ('PEOPLE: look at the sheet and every frame (Read) before using them. If anyone is visible in any frame, stop: do not use the video (or pick a start_s/end_s range without people and extract again) and tell the user'
-                   f". UPRIGHT: check on the sheet that the frames{turned} stand upright (floor at the bottom, door "
-                   "frames and wall corners vertical). A phone video without rotation metadata comes out on its side: "
-                   "extract again with rotate added to the turn so far (+90 if the floor is on the right, +270 if it "
-                   "is on the left, +180 if upside down); fit_photos and video_poses need upright frames. Frames with notes (sky / close-up / dark) are weak views of the room; if they are not the room, "
-                   "narrow start_s/end_s and extract again. The first frame "
-                   "sets the room's orientation; pick landmarks per frame and run fit_photos for the room and every "
-                   "frame's camera, put each object seen in several frames into the room once, then set_input "
-                   "(camera) per frame and compare_photo")
-    return out
-
-
-def _frames_rotate(inputs: Path, video: str | Path) -> int:
-    """The turn (degrees clockwise) the frames of `video` in `inputs` were extracted with (0 if none)."""
-    want = str(Path(video).expanduser().resolve())
-    for side in sorted(inputs.glob("*.source.json")) if inputs.is_dir() else []:
-        try:
-            meta = json.loads(side.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            continue
-        if meta.get("video") == want and meta.get("time_s") is not None:
-            return int(meta.get("rotate") or 0)
-    return 0
-
-
-def video_poses(scene_dir: str | Path, hfov_deg: float = 65.0, video: str | None = None,
-                rate: float | None = None) -> dict[str, Any]:
-    """How the camera turned (and which way it moved) between the frames extract_frames wrote into
-    <scene_dir>/inputs, measured from the video between them (agentic_sim_world_gen.video_pose: ORB features; needs OpenCV).
-    Returns `relative` for fit_photos' request (frames of one video only; with several videos, each on its own) and
-    writes video_poses.json. hfov_deg: the video camera's field of view (fit_photos estimates it: run again
-    with that value if it differs by more than 5 degrees)."""
-    from agentic_sim_world_gen import video_pose as vp
-    from agentic_sim_world_gen.inputs import sidecar_path
-
-    d = Path(scene_dir).expanduser()
-    if not vp.available():
-        return {"ok": False, "error": "OpenCV is not installed: uv sync again with --extra video added "
-                "(or pip install opencv-python-headless). Without it fit the frames from landmarks only"}
-    groups: dict[str, list[dict[str, Any]]] = {}
-    # a scene's recorded frames only: frames extracted again at other times leave the old files in inputs/
-    recorded = {i.id for i in load(d).spec.inputs} if _resolved_path(d).exists() else None
-    for jpg in sorted((d / "inputs").glob("*.jpg")):
-        side = sidecar_path(jpg)
-        if not side.exists() or recorded is not None and jpg.stem not in recorded:
-            continue
-        meta = json.loads(side.read_text(encoding="utf-8"))
-        if meta.get("video") and meta.get("time_s") is not None:
-            groups.setdefault(meta["video"], []).append({"id": jpg.stem, "time_s": float(meta["time_s"]),
-                                                         "path": str(jpg), "rotate": int(meta.get("rotate") or 0)})
-    if video is not None:
-        want = str(Path(video).expanduser().resolve())
-        groups = {k: v for k, v in groups.items() if k == want or Path(k).name == Path(video).name}
-    if not groups:
-        return {"ok": False, "error": f"no video frames in {d / 'inputs'} (run extract_frames first)"}
-    out: dict[str, Any] = {"ok": True, "hfov_deg": hfov_deg, "relative": [], "videos": [], "warnings": [],
-                           "matcher": {"name": "orb"}}
-    for v, frames in groups.items():
-        try:
-            r = vp.relative_poses(v, frames, hfov_deg, rate or vp.RATE)
-        except (vp.CvMissing, FileNotFoundError, ValueError) as e:
-            out["warnings"].append(f"{Path(v).name}: {e}")
-            continue
-        info = {k: r[k] for k in ("video", "size", "rate", "samples", "breaks", "checks", "dropped")}
-        out["relative"] += r["relative"]
-        out["warnings"] += r["warnings"]
-        out["videos"].append(info)
-    if not out["relative"]:
-        out["ok"] = False
-        out["error"] = "no relative pose could be measured: " + "; ".join(out["warnings"] or ["too few matches"])
-        return out
-    f = d / "video_poses.json"
-    f.write_text(json.dumps(out, ensure_ascii=False, indent=1))
-    out["file"] = str(f)
-    out["hint"] = ("put `relative` into the fit_photos request as it is (same photo ids as the frames). Check "
-                   "fit_photos' `relative` (turn_error_deg) and warnings: a frame whose landmarks disagree with the "
-                   "video by more than 5 degrees has a mislabeled landmark (or the field of view is off)")
     return out
 
 
@@ -5772,7 +5642,7 @@ def _row_key(i: InputRef) -> str:
 
 
 def _changed_rows(d: Path, photos: list[InputRef], jobs: list[dict[str, Any]]) -> dict[str, Any]:
-    """The compare sheets of a video were 7 rows a round, and most rows did not change between rounds. The
+    """The compare sheets of a long run were 7 rows a round, and most rows did not change between rounds. The
     MCP tool shows only the rows that changed since the agent last saw them (compare_changed.jpg); compare.png keeps
     every row. Each row is compared with the render last shown (render_<id>.shown.png): a hidden row keeps its
     baseline, so many small changes add up and come back; a failed round moves nothing."""

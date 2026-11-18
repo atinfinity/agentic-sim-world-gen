@@ -88,7 +88,7 @@ tool).
 3. **Orient the room.** The camera stands near the **south** wall looking **north**: the far wall is
    north (y = depth), the left wall west (x = 0), the right wall east (x = width). Things behind the camera
    are unknown: leave that part of the room empty or make a sensible guess, and say so.
-   **Several photos of one room** (from different sides, or frames of a walk-through): the first photo
+   **Several photos of one room** (from different sides): the first photo
    (or the one showing the most) sets the room as above. For each other photo:
    - Find landmarks it shares with photos already placed: doors, windows, large furniture, corners,
      a distinctive floor or ceiling pattern. From them, say which wall it faces (e.g. 「写真2は窓が右、
@@ -106,14 +106,14 @@ tool).
        about them (e.g. `z`).
 
      Mark every window / door you see by its corners (all four when visible, in each photo that shows it):
-     an opening without them stays at its guessed place and size (details in [videos.md](videos.md) step 4).
+     an opening without them stays at its guessed place and size (details in **Fit details** below).
      Read pixels off the image carefully (overlay a grid when needed). Aim for 6+ measurements per photo.
      Check `rms_px` (a few px is good), `worst` and `warnings`. A large error is usually a mislabeled landmark
      (start/end swapped, wrong corner); a camera with ± > 0.3 m needs more landmarks at different depths.
      With `out_dir` = the scene dir, the room and each input's `camera` are written into the scene
      (`applied`). With `apply=false` it only fits (e.g. before the scene exists): then pass `room` to
      create_scene and the cameras as each input's `camera`. The wall height sets the scale: use a known one
-     (2.4 m is the default) and say it is assumed (with depth it is fitted, see [videos.md](videos.md)).
+     (2.4 m is the default) and say it is assumed (with depth it is fitted, see **Fit details** below).
    - **Locate every piece of furniture you see** in the same fit_photos request (`locate`). Per object, give
      2-4 pixels where it meets the floor (feet, base corners - at least two diagonal ones; z = 0) or a top
      corner at its height. Give each pixel `object` = the object id you will use in the scene (`desk`, `bed`;
@@ -156,7 +156,7 @@ tool).
    points without `edge`. Its warnings name an asset whose size does not fit the points (fix min_size /
    max_size or the asset, then run it again) and a facing it could not tell (mark `edge`).
    Place by relations (against_wall + along 0..1, next_to, in_front_of) only what no photo shows on the floor
-   (relations put the desk where the wardrobe stood; on a handheld video, 0.85 m off where the chair
+   (relations put the desk where the wardrobe stood; in another room, 0.85 m off where the chair
    stood). The scene folder's photo_fit.json lets status / compare_photo flag what is still off
    (`photo_placement`), and **compose_scene stops while any of these is left** (a run that only moved things by
    eye put the desk on the chair):
@@ -248,3 +248,103 @@ tool).
 8. Report: what was reproduced, what was substituted or left out (and why), the size estimates (room width and
    depth, aisle widths, each with how you got it: counted units, fit_photos, floor_pairs), and the photo's
    source. license_report lists the photo under "Inputs".
+
+## Fit details
+
+More on fit_photos (step 3).
+
+**Images fill the context**: Read each photo once (one grid overlay per photo at most), and write its
+landmarks to `<scene>/landmarks.json` (Write) as soon as you have them. Do not look at the photos again while
+a tool runs. After a compaction, read `landmarks.json` (or the request fit_photos kept in
+`<scene>/photo_fit.json`), not the photos. Photos that share many landmarks make the fit stable. With
+`out_dir` = the scene folder fit_photos writes the fit into the scene (`apply`: the room, the fitted openings
+and each photo's input camera; the photo ids must be the input ids; recorded as assumptions「写真から当てはめ」), so no set_room / set_input per photo is needed. Read
+`applied` and the warnings: a camera "inside" an object or "outside the room" means a misplaced object or
+wrong landmarks.
+**Give each wall landmarks in at least two photos**: a wall only one photo sees carries the room's width or
+depth alone (fit_photos warns "rests on one photo for the east wall"; in one room a single photo's
+east wall moved the width 3.0 → 3.85 m). Look through the other photos for that wall's corner, its floor /
+ceiling line or plain wall pixels (`surfaces`), and if none shows it, report the warning's ± with the size.
+**Scale**: if no landmark at the ceiling is seen (ceiling corner / ceiling line / a shared point with a known
+height above the floor), the room's size comes from the camera height. Give `eye_height` (a hand-held phone
+is about 1.4–1.6 m; 1.4 is the default) and say it is assumed. A 6 % wrong height makes the room 6 % wrong.
+**Typical sizes pull the scale** toward them, but they do not always override the camera-height guess: with photos alone, a wrong `eye_height` can still set the scale with the door tops fitted at 2.0 m. Read the result's `scale`; when the eye height set it, report the size as assumed. Mark the **top corners of every
+door** you see (`<door>:start:top`, `<door>:end:top`, or the line `<door>:top`): each seen door top is held
+near `door_top` (2.0 m, ±0.1; give 2.03 for a US room, `null` to turn it off). A door that is not a standard
+one (a sliding door to the ceiling, a low closet) takes its own `openings.<id>.top` / `top_sigma`. A flat top
+of standard height seen in two or more photos can be a shared point with `z` and `z_sigma` (a kitchen counter
+0.9 ±0.03, a desk 0.72 ±0.03); a dining table's top seen in one photo did not help. The result lists
+`size_priors` (typical vs fitted) and warns when one is more than 2 σ off: check that landmark, or the door is
+not typical.
+**Depth, if AGENTIC_SIM_WORLD_GEN_DEPTH_PYTHON is set**: give each photo its `image` (the photo's path) and call
+fit_photos with `depth=true`. It fills the depth of every landmark pixel from a monocular depth model
+(MoGe-2), and also of `surfaces`: a few pixels on plain floor / ceiling / each wall (`on`: floor, ceiling,
+wall:north ...; not on furniture or rugs), about 10 per surface. It replaces the eye_height guess, but a
+photo that sees only one or two walls absorbs its depth's scale: it helps most when the photos share
+landmarks. Each camera's `depth_scale` far from 1 (a warning)
+means that photo's depth is off: say so. If it says the model is missing, ask before downloading it
+(141 MB, AGENTIC_SIM_WORLD_GEN_DEPTH_DOWNLOAD=1).
+- With depth, the wall height is fitted too (`room.height_fitted`; `request.height` is only the start): do
+  not record the height as an assumption then. Pick ceiling corners / lines **and** the floor in the same
+  photos (a handheld photo seldom sees both).
+- Warning that the height is not fixed by the photos: the cameras and the ceiling move together. Add a
+  photo that sees a ceiling corner and the floor below it, or keep the height as an assumption and
+  say so.
+- Warning that the room's **scale** is loose (the floor and the ceiling are tied): the shape is right and
+  only the overall size comes from the depth. Say the size is ± that much, and give the height
+  (fit_height=false) if the user knows it.
+- Warning "height: the fitted wall height ... is suspect" (`scale.height_suspect`): the room's size holds
+  without it, so a ceiling corner or line is on a soffit or a beam. Do not use that height: relabel the
+  ceiling in the listed photos, or fit again with fit_height=false and the real or a typical height.
+- `height_refit`: a fitted height outside the room's range (by `place`: home, office, school, lab,
+  hospital, cafe, restaurant, or `height_range`; the scene's with out_dir; none for no place or a shop / hall)
+  or suspect was already fitted again held at the given or a typical height in the same call - do not fit
+  again for that. `adopted: held` = that fit is the result (the scale was off; apply keeps the scene's height
+  unless you gave `height`); `adopted: fitted` = the landmarks did not fit the held height (misread ceiling
+  landmarks: relabel them), or `metric_worse` lists the depth / door top that fit it worse (the ceiling may
+  really be that high: ask, or give `height`). Give `height` in the request when the user knows it (it is the
+  one held).
+- Warning "nothing of known length is seen" (no ceiling seen with the height given, no shared point at a
+  known height): the size comes from the depth and the camera height together, and a depth model can be off
+  by 10–15 % in every photo (a rendered room came out 13 % big from the depth alone). Before fitting, ask the
+  user how high the camera was held (or the room's height) when you can; else keep `eye_height` 1.4 and
+  record it as an assumption with the size as ±5 %.
+
+**What set the scale** (the result's `scale`): each source (depth, door top, eye height, the
+typical 2.4–2.7 m wall height) as the factor it alone would grow the fitted room by (1.0 = it agrees). Read
+the "scale: ..." warnings: one names a source that stands apart while the others agree (`outlier`) and what
+to do - `depth`: fit without depth=true; `door top` / `eye height`: give the door's `top` / the
+`eye_height` if the user knows them. When the fit moved to a wrong source, the size is off by about as much
+as the others' scales say (others at 1.3 = the room is about 1.3 times too small). Tell the user the
+`median` ± `pm` when it is more than 5 % off 1.0.
+**A camera outside the room** (the result's `outside`): each such photo gets a `verdict`. When you
+know a camera stood in the room, pass its photo id in `inside` (held 0.1 m inside every wall).
+
+| verdict | Means | What to do |
+|---|---|---|
+| `doorway` | it sees the room only through an opening (`through`, pixels per opening): it stood in that door or in the hallway | fine if that is where the photo was taken, but never name the hallway's own corners / floor as this room's |
+| `wall` | it sees pixels through the wall itself (`solid`) or floor / ceiling pixels beyond it (`floor_beyond`): the wall is likely placed too far in. The fit is redone with that wall moved out past the camera (`wall_moved_out`: rms / depth rms before and after, the room) | "about as good" → the wall is the error: find the landmarks that hold that wall (its corners, `floor:<wall>` lines, `wall:<wall>` surfaces in every photo), fix them and fit again (until then trust the moved-out size more). "much worse" → the other photos do see the wall there: check this photo's own landmarks, or it stood beyond the wall |
+| `loose` | the photo has fewer `measurements` than a camera's 6 unknowns: nothing holds the camera, so its place says nothing about the walls (no refit) | add points / lines to that photo, or leave it out; do not move a wall for it |
+
+**Windows and doors are fitted only from their own landmarks**: an opening with no marked corner stays at
+the guess (warning "not seen in any photo"), and compare_photo then shows it in the wrong place and size (in
+one room the window came out narrower than the real one, which reaches further east). For every
+window give all four corners (`win_n:start:top`, `win_n:end:top`, `win_n:start:bottom`, `win_n:end:bottom`)
+in the photos that show them, at least two photos each, and an edge (`win_n:top`, `win_n:start` ...) where a
+corner is cut off by the photo's edge or hidden by furniture; the same for doors (`top`; `bottom` is the floor).
+Their offset, width, sill and top are their own unknowns, and the corners also lie on the wall, so they help
+place a wall that few photos see. If the fit gets worse with them, check start / end (start = the west end of
+a north/south wall, the south end of an east/west wall) and top / bottom before leaving them out, and say in
+the report when a window was left at the guess.
+**Both edges, or the width is a guess**: an opening with only one edge marked keeps its width near the
+guess (door 0.9, window 1.2; warning "only its end edge is marked"): mark the other edge, or ask / record the
+width as an assumption. A door or window under 0.4 m wide is warned, and the fit is tried with its start / end
+swapped (the result's opening `swapped`). "likely swapped" → fix the labels; "labelled right" → check that
+both marks are this opening's edges (not the frame of a hallway door beyond it) and the scale. Never copy a
+width under 0.4 m into the scene without checking.
+**Landmarks on something else** (the result's `suspects`): when the rms is over 10 px, the fit is redone
+without each of the worst objects of one photo (an opening, a corner, a shared point, a wall's line). A
+suspect = without that photo's marks on it, the rest agree (rms and the room before / after). In one
+room, a wardrobe door 0.8 m in front of the wall marked as the room's door made the depth 0.39 m short. Look
+at that photo: if the marks are on furniture, a door frame or another wall, relabel or remove them (all of them,
+the lines too) and fit again; if they are right, keep them and say so. Never drop them without looking.
