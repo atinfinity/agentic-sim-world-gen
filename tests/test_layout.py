@@ -59,7 +59,7 @@ def test_study_relations(tmp_path):
     o = objs(st)
     assert o["desk"]["position"] == pytest.approx((1.82, 2.73 - 0.35 - 0.02))
     assert o["desk"]["yaw_deg"] == 0  # front (-Y) faces into the room
-    # chair faces the desk, NEAR_GAP in front of it (no automatic tuck: it explodes in PhysX)
+    # chair faces the desk, NEAR_GAP in front of it (fake assets have no parts to measure: no tuck)
     assert o["chair"]["yaw_deg"] == 180
     assert o["chair"]["position"][0] == pytest.approx(1.82)
     assert o["chair"]["position"][1] == pytest.approx(2.36 - (0.35 + 0.275 + 0.10))

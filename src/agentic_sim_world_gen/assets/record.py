@@ -50,6 +50,9 @@ class AssetRecord:
     shelves: list[dict[str, Any]] | None = None
     # hooks found with the shelves (agentic_sim_world_gen.assets.shelves): pegboards, hook racks
     hooks: list[dict[str, Any]] | None = None
+    # height grids of the parts (agentic_sim_world_gen.layout.knee), filled in for a chair in front of a desk and that
+    # desk: how far the chair goes under. None = not measured; {} = could not be read
+    knee: dict[str, Any] | None = None
     # screens and printed pictures whose image ObjectSpec.screen can replace (asset.json `screen` / `picture`):
     # [{"kind": "screen", "material": "ScreenMat", "image": "<abs path of the original texture>",
     #   "off": "ScreenMat_Off", "variant_set": "Screen", "on": "On", "off_variant": "Off", "places": [...]}]

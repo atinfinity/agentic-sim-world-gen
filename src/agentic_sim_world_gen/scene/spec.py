@@ -392,7 +392,8 @@ class Layout(BaseModel):
         "brackets); with against_wall, gap default 0.005",
     )
     gap: float | None = Field(
-        default=None, description="distance to the wall/target [m]; negative = tuck under (only if the knee space is open, else PhysX explodes)"
+        default=None, description="distance to the wall/target [m]; negative = tuck under (only if the knee space is open, else PhysX "
+        "explodes). Left out, a chair in_front_of a desk goes under as far as their measured parts allow"
     )
 
     @model_validator(mode="after")
