@@ -478,7 +478,7 @@ depth ┌──────────── Wall_N ─────────
 - [src/agentic_sim_world_gen/usd/compose.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/usd/compose.py)：`compose`・`build_room`・`build_site`・`_add_asset`・`add_box_collider`・`build_inputs`
 - [src/agentic_sim_world_gen/usd/look.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/usd/look.py)：マテリアルと照明（`build_lights`）
 - [src/agentic_sim_world_gen/materials.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/materials.py)・[pbr.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/pbr.py)・[scene/moods.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/scene/moods.py)：床・壁の材質の検索、雰囲気の見本
-- [src/agentic_sim_world_gen/usd/door.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/usd/door.py)・[screen.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/usd/screen.py)：自動ドア、画面に画像（宣言の無いテレビは光るテクスチャのマテリアルを画面とみなす）
+- [src/agentic_sim_world_gen/usd/door.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/usd/door.py)・[screen.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/usd/screen.py)：自動ドア、画面に画像（宣言の無いテレビは光るテクスチャのマテリアルを画面とみなす。オフィス・教室・ラボのモニター・テレビは黒い画像で消す）
 - [src/agentic_sim_world_gen/license.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/license.py)・[origin.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/origin.py)：ライセンスと入手先
 
 ## 7. Isaac Sim側

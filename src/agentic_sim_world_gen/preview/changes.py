@@ -163,6 +163,7 @@ def snapshot(scene: ResolvedScene, issues: list[dict[str, Any]]) -> dict[str, An
             "variants": dict(o.variants or {}),
             "fill": o.fill.on if o.fill else None,
             "screen": _screen(o.screen),
+            "screen_on": getattr(o, "screen_on", None),
             "tint": "、".join(t.color + (f"（{'・'.join(t.materials)}）" if t.materials else "") for t in o.tint),
         }
     return {
@@ -275,6 +276,9 @@ def _object(a: dict[str, Any], b: dict[str, Any]) -> list[str]:
         parts.append(f"バリアント → {v}")
     if a.get("screen") != b.get("screen"):
         parts.append(f"画面 → {b.get('screen') or 'アセットの画像'}")
+    if a.get("screen_on") != b.get("screen_on"):  # set_screen "off" / "on" / null
+        on = b.get("screen_on")
+        parts.append(f"画面 → {'消す' if on is False else 'つける' if on else '場所の既定'}")
     if a.get("tint", "") != b.get("tint", ""):
         parts.append(f"色 → {b.get('tint') or 'アセットの色'}")
     if a["fill"] != b["fill"]:

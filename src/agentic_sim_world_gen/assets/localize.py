@@ -25,9 +25,10 @@ def parse_hf_url(url: str) -> tuple[str, str, str] | None:
 
 
 def localize(scene: ResolvedScene, cache_dir: str | Path | None = None,
-             only: set[str] | None = None) -> dict[str, str]:
+             only: set[str] | None = None, cached_only: bool = False) -> dict[str, str]:
     """Download the selected asset of every placement (or of the objects in `only`). Returns {url: local_path}.
-    An asset already in the cache is used without asking the Hub."""
+    An asset already in the cache is used without asking the Hub; cached_only: nothing is downloaded, an asset not
+    in the cache is left out."""
     from huggingface_hub import snapshot_download  # optional dependency: pip install .[hf]
 
     out: dict[str, str] = {}
@@ -48,17 +49,31 @@ def localize(scene: ResolvedScene, cache_dir: str | Path | None = None,
         except Exception:  # not in the cache yet
             pass
         if local is None or not local.exists():
+            if cached_only:
+                continue
             local = Path(snapshot_download(**kw)) / path
         out[a.uri] = str(local)
     return out
 
 
-def screened_remote(scene: ResolvedScene) -> set[str]:
-    """Objects with a screen image whose asset declares no screen and is a Hugging Face URL: compose finds the
-    screen in the asset's materials, so the asset must be local like a tinted one."""
-    shown = {o.id for o in scene.spec.objects if o.screen is not None}
+def screened_remote(scene: ResolvedScene, by_place: bool = False) -> set[str]:
+    """Objects whose asset declares no screen and is a Hugging Face URL, with a screen image or switched off with
+    set_screen "off" (ObjectSpec.screen_on false): compose finds the screen in the asset's materials,
+    so the asset must be local like a tinted one. by_place: those switched off only by room.place
+    (validate.screen_dark): compose_scene takes them from the cache, never downloads them."""
+    from agentic_sim_world_gen.layout.validate import screen_dark
+
+    objs = {o.id: o for o in scene.spec.objects}
+    place = scene.spec.room.place
+
+    def wanted(o, a) -> bool:
+        if by_place:
+            return o.screen is None and o.screen_on is None and bool(screen_dark(o, a, place))
+        return o.screen is not None or o.screen_on is False
+
     return {p.object_id for p in scene.placements
-            if p.object_id in shown and p.asset is not None and not p.asset.screens and parse_hf_url(p.asset.uri)}
+            if (o := objs.get(p.object_id)) is not None and p.asset is not None and not p.asset.screens
+            and wanted(o, p.asset) and parse_hf_url(p.asset.uri)}
 
 
 def tinted_remote(scene: ResolvedScene) -> set[str]:

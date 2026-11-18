@@ -9,6 +9,7 @@ Room surfaces and lights: agentic_sim_world_gen.usd.look (relative texture paths
 from __future__ import annotations
 
 import contextlib
+import dataclasses
 import math
 import os
 import re
@@ -538,20 +539,43 @@ def _stock_sdf(uri: str | None) -> list[dict]:
     return reset_parts.scan_sdf(uri, reset_parts.cache_dir())
 
 
-def _add_screen(stage: Usd.Stage, paths: list[str], a, o, scene_dir: Path) -> None:
-    """ObjectSpec.screen: the image on the asset's screens (agentic_sim_world_gen.usd.screen); the result as customData."""
-    if o.screen is None:
-        return
-    from agentic_sim_world_gen.usd.screen import apply_screen, detect_screens, find_material, screen_faces
+def _add_screen(stage: Usd.Stage, paths: list[str], a, o, scene_dir: Path, place: str | None = None) -> None:
+    """ObjectSpec.screen: the image on the asset's screens (agentic_sim_world_gen.usd.screen); the result as customData.
+    A screen switched off (validate.screen_dark: ObjectSpec.screen_on false, or a monitor / TV in an office, school
+    or lab) gets an all-black image, `off` in the customData."""
+    from agentic_sim_world_gen.layout.validate import screen_dark
 
+    off = bool(screen_dark(o, a, place))  # None when an image is set
+    if o.screen is None and not off:
+        return
+    from agentic_sim_world_gen.usd.screen import (apply_screen, black_image, detect_screens, find_material,
+                                                  printed_screens, screen_faces, uninstance)
+
+    by_place = off and o.screen_on is None
+    if off:
+        from agentic_sim_world_gen.scene.spec import Screen
+
+        o = o.model_copy(update={"screen": Screen(image=str(black_image(scene_dir)), fit="stretch")})
+        for path in paths:  # an instanced material takes no override (NVIDIA's SimReady monitors)
+            if (ref := stage.GetPrimAtPath(f"{path}/{ASSET_CHILD}")) and ref.IsValid():
+                uninstance(ref)
     top = stage.GetPrimAtPath(f"/World/Objects/{o.id}")
+    if a.screens and off:  # a declared one: its screens, not its printed pictures
+        a = dataclasses.replace(a, screens=[x for x in a.screens if x.get("kind") != "picture"])
     detected = not a.screens
     if detected:  # no screen declared: a material that emits a texture is one
-        import dataclasses
-
         first = stage.GetPrimAtPath(f"{paths[0]}/{ASSET_CHILD}")
         found = detect_screens(first) if first and first.IsValid() else []
+        if not found and off and first and first.IsValid():  # a picture without light (NVIDIA's office monitor)
+            found = printed_screens(first)
         if not found:
+            if off:  # no lit screen: dark already (a Hugging Face asset is known only here); its other lights go off
+                lit = _lights_off(stage, paths)
+                if lit or not by_place:  # by place, a monitor with nothing lit gets nothing
+                    top.SetCustomDataByKey("agentic_sim_world_gen:screen", {
+                        "off": "place" if by_place else "screen_on", **({"lights_off": lit} if lit else {}),
+                        "note": "no material lights up a texture: the screen is dark already"})
+                return
             top.SetCustomDataByKey("agentic_sim_world_gen:screen", {
                 "error": "the asset declares no screen and no material emits a local texture (asset not fetched, "
                          "or no lit screen)"})
@@ -561,24 +585,43 @@ def _add_screen(stage: Usd.Stage, paths: list[str], a, o, scene_dir: Path) -> No
                     for s in found if (m := find_material(first, s["material"]))}
             found = [max(found, key=lambda s: area.get(s["material"], 0.0))]
         a = dataclasses.replace(a, screens=found)
-    done = apply_screen(stage, paths, a, o, scene_dir)
+    # off: a found screen's emissive texture all black, its base color black on the screen's faces only
+    # (apply_screen whole); a declared one is an atlas, painted on its front face only (the panel's back keeps its
+    # color)
+    done = apply_screen(stage, paths, a, o, scene_dir, whole=off and detected)
+    lit = _lights_off(stage, paths) if off else []  # after apply_screen: detect_screens looks for a lit texture
     # a dict image naming materials the asset does not have: validate tells for a declared asset (bad_screen),
     # compose for a found one
     names = {x["material"] for x in a.screens}
     unknown = sorted(set(o.screen.images(sorted(names))) - names) if detected else []
     err = {"error": f"no screen found for {', '.join(unknown)} (found: {', '.join(sorted(names))})"} if unknown else {}
     if not done:
-        if err:
-            top.SetCustomDataByKey("agentic_sim_world_gen:screen", err)
+        if err or lit:
+            off_data = {"off": "place" if by_place else "screen_on", "lights_off": lit} if lit else {}
+            top.SetCustomDataByKey("agentic_sim_world_gen:screen", {**err, **off_data})
         return
     from agentic_sim_world_gen.inputs import screen_source
 
     screens = {}
     for d in done:
-        src = screen_source(o.screen, d["image"]) if d.get("image") else {}
+        src = screen_source(o.screen, d["image"]) if d.get("image") and not off else {}
         screens[d["material"]] = {k: str(v) for k, v in {**d, **src}.items() if k != "material" and v is not None}
-    top.SetCustomDataByKey("agentic_sim_world_gen:screen", {"fit": o.screen.fit, "screens": screens,
-                                                            **({"detected": True} if detected else {}), **err})
+    top.SetCustomDataByKey("agentic_sim_world_gen:screen", {
+        "fit": o.screen.fit, "screens": screens, **({"detected": True} if detected else {}),
+        **({"off": "place" if by_place else "screen_on"} if off else {}), **({"lights_off": lit} if lit else {}), **err})
+
+
+def _lights_off(stage: Usd.Stage, paths: list[str]) -> list[str]:
+    """screen.lights_off on every unit's Asset: the materials switched off (the first unit's list)."""
+    from agentic_sim_world_gen.usd.screen import lights_off
+
+    names: list[str] = []
+    for path in paths:
+        ref = stage.GetPrimAtPath(f"{path}/{ASSET_CHILD}")
+        if ref and ref.IsValid():
+            got = lights_off(ref)
+            names = names or got
+    return names
 
 
 def build_inputs(stage: Usd.Stage, scene: ResolvedScene, root: str = "/World/Cameras") -> None:
@@ -699,7 +742,7 @@ def _compose(scene: ResolvedScene, out_path: Path, uri_map: dict[str, str] | Non
                 x, y, z = op.Get()
                 op.Set(Gf.Vec3d(x, y, z - (a.size_m[2] - COVER_TOP)))
                 _make_static(stage, f"/World/Objects/{o.id}", uri, "agentic_sim_world_gen:floor_cover")
-            _add_screen(stage, [f"/World/Objects/{o.id}"], a, o, out_path.parent)
+            _add_screen(stage, [f"/World/Objects/{o.id}"], a, o, out_path.parent, scene.spec.room.place)
             _add_tint(stage, [f"/World/Objects/{o.id}"], a, o)
             continue
         # array: /World/Objects/<id> (group) / <id>_r<row>c<col> (one reference each);
@@ -725,7 +768,7 @@ def _compose(scene: ResolvedScene, out_path: Path, uri_map: dict[str, str] | Non
                 _make_static(stage, path, uri)
             elif o.fill is None and _hung(o):
                 _make_static(stage, path, uri, "agentic_sim_world_gen:hung")
-        _add_screen(stage, paths, a, o, out_path.parent)
+        _add_screen(stage, paths, a, o, out_path.parent, scene.spec.room.place)
         _add_tint(stage, paths, a, o)
 
     stage.GetRootLayer().Save()
