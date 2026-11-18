@@ -1,7 +1,7 @@
 """Claude Code hooks that catch a message to the user written in the wrong language.
 
 The skill, every tool result, the summary's first line and the hook right after a compaction all say to keep
-writing in the user's language, and still the notes between tool calls and the final report of a long video run
+writing in the user's language, and still the notes between tool calls and the final report of a long run
 came out in English: the thinking, the tool results and the summary's body are English, and the notes drift towards
 them. These hooks look at what the agent actually wrote instead:
 

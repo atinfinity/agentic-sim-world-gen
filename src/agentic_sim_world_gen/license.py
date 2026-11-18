@@ -135,14 +135,11 @@ def report(scene: ResolvedScene) -> dict[str, Any]:
                 "license_url": c.get("license_url"), "subject": c.get("subject"), "used_by": []})
             if label not in item["used_by"]:
                 item["used_by"].append(label)
-    from agentic_sim_world_gen.inputs import frame_note
-
     inputs = []
     for i in scene.spec.inputs:
         lic = normalize(i.license)
         name, needs_attr, _ = KNOWN.get(lic, (lic, True, ""))
         title = i.title or (i.path and i.path.rsplit("/", 1)[-1]) or i.id
-        title += f" ({note})" if (note := frame_note(i)) else ""  # a video frame: which video, when
         inputs.append({"id": i.id, "kind": i.kind, "title": title, "author": i.author, "license": lic,
                        "source": i.url or i.path,
                        "credit": f'"{title}" by {i.author or "unknown"} ({i.url or i.path}), {name}'})

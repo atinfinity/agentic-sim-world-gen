@@ -111,10 +111,10 @@ Below, replace `<gpu-host>` with the host you ssh to the GPU machine with (`user
 
 ## 4. Passing inputs and fetching results
 
-When building a room from photos, Claude crops the photos and reads pixel positions. It cannot read paths on your computer, so put photos, videos and drawings on the GPU machine first and give Claude that path.
+When building a room from photos, Claude crops the photos and reads pixel positions. It cannot read paths on your computer, so put photos and drawings on the GPU machine first and give Claude that path.
 
 ```bash
-# Photos, videos and drawings to the GPU machine (give Claude that path)
+# Photos and drawings to the GPU machine (give Claude that path)
 scp -r ~/photos/living <gpu-host>:~/agentic_sim_world_gen_inputs/living
 # The finished scene to your computer. To open it in a local Isaac Sim, first re-export it with the assets bundled
 ssh <gpu-host> 'cd agentic-sim-world-gen && .venv/bin/agentic-sim-world-gen compose ~/agentic-sim-world-gen-ws/scenes/study/scene.resolved.json --localize'

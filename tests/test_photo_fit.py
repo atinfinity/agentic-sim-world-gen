@@ -170,53 +170,6 @@ def test_a_photo_too_thin_to_hold_its_camera_does_not_set_the_scale(monkeypatch)
     assert not pf._Model(pf.FitRequest.model_validate(req)).scale_seen
     r = service.fit_photos(req)
     assert r["ok"] and abs(r["room"]["width"] - W) < 0.2 and abs(r["room"]["depth"] - D) < 0.2, r["room"]
-    tied = pf.FitRequest.model_validate({**req, "relative": [{**_relative("s", "ne"), "b": "c"}]})
-    assert pf._Model(tied).scale_seen  # tied to another photo by a relative pose: its ceiling counts
-
-def _axes(cid):
-    """Camera axes (OpenCV: right, down, forward) in room coordinates: rows of room -> camera."""
-    pos, la, _ = CAMS[cid]
-    d0 = [la[i] - pos[i] for i in range(3)]
-    n = math.sqrt(sum(v * v for v in d0))
-    fw = [v / n for v in d0]
-    rn = math.hypot(fw[0], fw[1])
-    rt = [fw[1] / rn, -fw[0] / rn, 0.0]
-    up = pf._cross(rt, fw)
-    return [rt, [-v for v in up], fw]
-
-
-def _relative(a, b, turn_off_deg=0.0, **kw):
-    """True relative pose of photos a -> b (b's pose turned by turn_off_deg about its forward axis)."""
-    Ba, Bb = _axes(a), _axes(b)
-    c, s = math.cos(math.radians(turn_off_deg)), math.sin(math.radians(turn_off_deg))
-    Bb = [[c * Bb[0][i] + s * Bb[1][i] for i in range(3)], [-s * Bb[0][i] + c * Bb[1][i] for i in range(3)], Bb[2]]
-    R = [[sum(Bb[i][k] * Ba[j][k] for k in range(3)) for j in range(3)] for i in range(3)]
-    d = [CAMS[a][0][i] - CAMS[b][0][i] for i in range(3)]
-    n = math.sqrt(sum(v * v for v in d))
-    return {"a": a, "b": b, "rotation": R, "direction": [sum(Bb[i][k] * d[k] / n for k in range(3)) for i in range(3)],
-            "hfov_deg": CAMS[a][2], **kw}
-
-
-def test_relative_exact_and_robust():
-    r = service.fit_photos({**_request(), "relative": [_relative("s", "ne"), _relative("ne", "w")]})
-    assert r["ok"] and r["rms_px"] < 0.1 and all(p["used"] and p["turn_error_deg"] < 0.1 for p in r["relative"]), r
-    # a pair 10 deg off: given up by default, kept in full when robust=False
-    bad = service.fit_photos({**_request(), "relative": [_relative("s", "ne", 10)]})
-    assert not bad["relative"][0]["used"] and bad["rms_px"] < 0.1
-    kept = service.fit_photos({**_request(), "relative": [_relative("s", "ne", 10, robust=False)]})
-    assert kept["relative"][0]["used"] and kept["rms_px"] > 1
-
-
-def test_photo_in_two_groups():
-    """ne (and s) are in two models; model b's pose of ne is 10 deg off: ne is kept in model a."""
-    rel = [_relative("s", "ne", robust=False, group="a"), _relative("ne", "w", 10, robust=False, group="b"),
-           _relative("w", "s", robust=False, group="b")]
-    r = service.fit_photos({**_request(), "relative": rel})
-    assert r["ok"] and r["rms_px"] < 0.5, r
-    used = {(p["a"], p["b"]): p["used"] for p in r["relative"]}
-    assert used[("s", "ne")] and not used[("ne", "w")]
-    assert any("photo ne is in 2 models (a, b): kept in a" in w for w in r["warnings"])
-    assert not any("deg away" in w for w in r["warnings"])
 
 
 def test_sigma_with_an_opening_no_photo_sees():
@@ -238,11 +191,12 @@ def test_wall_seen_by_one_photo():
     assert any("depth" in x and "one photo for the south wall (ne)" in x for x in r["warnings"]), r["warnings"]
 
 
+@pytest.mark.xfail(strict=True, reason="photos alone: the door's top is fitted at 2.0 m but does not move the "
+                   "scale from the eye height here; it held the scale only with the relative poses of a video (#72)")
 def test_door_top_holds_the_scale():
     """No ceiling seen and the eye height 20% off: a door's top (2.0 m, seen) sets the scale."""
-    rel = [_relative("s", "ne", robust=False), _relative("ne", "w", robust=False), _relative("s", "w", robust=False)]
     for eye in (1.2, 1.75):
-        req = {**_no_ceiling(_request()), "eye_height": eye, "relative": rel}
+        req = {**_no_ceiling(_request()), "eye_height": eye}
         off = service.fit_photos({**req, "door_top": None})
         assert abs(off["room"]["width"] - W) > 0.6 and "size_priors" not in off, off["room"]
         on = service.fit_photos(req)
@@ -280,7 +234,7 @@ def test_untypical_door_warns():
 
 
 def test_camera_in_the_doorway(monkeypatch):
-    """A frame taken from beyond the door, looking in through it: outside, but told apart as a doorway."""
+    """A photo taken from beyond the door, looking in through it: outside, but told apart as a doorway."""
     monkeypatch.setitem(CAMS, "h", ((0.7, -0.6, 1.45), (0.9, 3.6, 1.2), 75.0))
     monkeypatch.setitem(FACING, "h", "north")
     req = _request()
@@ -306,8 +260,8 @@ def test_camera_in_the_doorway(monkeypatch):
 
 
 def test_camera_beyond_a_misplaced_wall(monkeypatch):
-    """A frame fitted beyond the south wall that sees the room through the wall itself: the wall is placed wrong
-    (or the frame's landmarks are). The fit held inside is compared in the warning."""
+    """A photo fitted beyond the south wall that sees the room through the wall itself: the wall is placed wrong
+    (or the photo's landmarks are). The fit held inside is compared in the warning."""
     monkeypatch.setitem(CAMS, "s", ((2.6, -0.35, 1.45), (2.3, 3.6, 0.9), 75.0))
     r = service.fit_photos(_request())
     (o,) = r["outside"]
@@ -324,8 +278,8 @@ def test_camera_beyond_a_misplaced_wall(monkeypatch):
 
 
 def test_a_thin_camera_beyond_a_wall_is_loose(monkeypatch):
-    """A camera with fewer measurements than unknowns and no relative pose is free: beyond a wall it is `loose`,
-    with no wall advice and no refit; tied to another photo by a relative pose it is judged as usual (#28)."""
+    """A camera with fewer measurements than unknowns is free: beyond a wall it is `loose`, with no wall advice
+    and no refit."""
     monkeypatch.setitem(CAMS, "s", ((2.6, -0.35, 1.45), (2.3, 3.6, 0.9), 75.0))
     req = _request()
     req["photos"]["s"]["points"] = req["photos"]["s"]["points"][:2]
@@ -334,8 +288,6 @@ def test_a_thin_camera_beyond_a_wall_is_loose(monkeypatch):
     (o,) = r["outside"]
     assert (o["photo"], o["verdict"], o["measurements"]) == ("s", "loose", 4) and "wall_moved_out" not in o, o
     assert any("leave the camera free" in w for w in r["warnings"]) and not any("too far in" in w for w in r["warnings"])
-    tied = service.fit_photos({**req, "relative": [_relative("s", "ne")]})
-    assert all(o["verdict"] != "loose" for o in tied.get("outside", [])), tied.get("outside")
 
 
 def test_swapped_opening_ends_stay_positive():

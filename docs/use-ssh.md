@@ -109,10 +109,10 @@ GPU機に入ってくる通信はsshだけでよい。
 
 ## 4. 入力を渡す・結果を持ってくる
 
-写真から部屋を作るとき、Claudeは写真を切り出して画素の位置を読む。手元のパスは読めないので、写真・動画・図面はGPU機に置いてから、そのパスをClaudeに渡す。
+写真から部屋を作るとき、Claudeは写真を切り出して画素の位置を読む。手元のパスは読めないので、写真・図面はGPU機に置いてから、そのパスをClaudeに渡す。
 
 ```bash
-# 写真・動画・図面を GPU 機へ（Claude にはそのパスを渡す）
+# 写真・図面を GPU 機へ（Claude にはそのパスを渡す）
 scp -r ~/photos/living <gpu-host>:~/agentic_sim_world_gen_inputs/living
 # できたシーンを手元へ。手元の Isaac Sim で開くなら、アセットも同梱して出し直してから
 ssh <gpu-host> 'cd agentic-sim-world-gen && .venv/bin/agentic-sim-world-gen compose ~/agentic-sim-world-gen-ws/scenes/study/scene.resolved.json --localize'

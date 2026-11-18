@@ -1,4 +1,4 @@
-"""Camera tilt from the photo's own lines: needs OpenCV and numpy (the `video` extra), no Isaac Sim.
+"""Camera tilt from the photo's own lines: needs OpenCV and numpy (the `photo` extra), no Isaac Sim.
 
 measure_photo turns pixels into floor meters with the camera's tilt; 6 degrees off reads a 3.3 m aisle as 1.7 m,
 and the tilt came from a look_at height somebody guessed. A room's photo carries the tilt itself:
@@ -175,7 +175,7 @@ def estimate_from(segs: list[tuple[float, float, float, float]], size: tuple[int
 
 def estimate(path: str | Path, hfov_deg: float | None = None) -> dict[str, Any]:
     if not available():
-        return {"ok": False, "why": "needs OpenCV and numpy (uv sync again with --extra video added)"}
+        return {"ok": False, "why": "needs OpenCV and numpy (uv sync again with --extra photo added)"}
     try:
         segs, size = segments(path)
     except Exception as e:  # unreadable file

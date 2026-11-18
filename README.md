@@ -9,7 +9,7 @@ the Isaac Sim bundled assets, [Poly Haven](https://polyhaven.com/models) CC0 mod
 
 ```mermaid
 flowchart TB
-  IN["<b>Input</b><br/>text (Japanese or English)<br/>floor plan: JSON / DXF / IFC / image<br/>photos / video"]
+  IN["<b>Input</b><br/>text (Japanese or English)<br/>floor plan: JSON / DXF / IFC / image<br/>photos"]
   CC["<b>Claude Code</b><br/>reads the request, decides which tools to call"]
   subgraph WG["agentic-sim-world-gen (this repository): MCP server + skill, the same operations from the CLI"]
     direction LR
@@ -54,7 +54,7 @@ Blue with a thick frame: this repository. Dashed: outside it (orange: Claude Cod
 > redistribution.
 
 > [!CAUTION]
-> Do not use photos or videos that show people as input.
+> Do not use photos that show people as input.
 
 ## Demo: a warehouse
 
@@ -83,8 +83,8 @@ One run end to end (the example in [Getting Started](docs/en/getting-started.md#
 
 ## Features
 
-- **MCP server + skill for Claude Code** (63 tools); the same operations from the CLI `agentic-sim-world-gen`
-- Input: text (rooms, warehouses, outdoor sites), floor plans (JSON / DXF / IFC, or traced from an image), photos and walk-through videos
+- **MCP server + skill for Claude Code** (61 tools); the same operations from the CLI `agentic-sim-world-gen`
+- Input: text (rooms, warehouses, outdoor sites), floor plans (JSON / DXF / IFC, or traced from an image) and photos
 - Layout: relations (against a wall, in front of, next to, on, facing), arrays (rack rows with aisles), stocking shelves, overlap / out-of-room / door clearance checks
 - Look: floor and wall materials (Isaac Sim MDL or CC0 PBR), lighting presets, moods, outdoor ground / roads / buildings / sky
 - Review: candidate thumbnails and a top-down layout in a browser preview; physics check and screenshots in Isaac Sim 6.1 (headless or live)

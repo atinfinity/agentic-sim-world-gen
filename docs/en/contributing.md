@@ -10,7 +10,7 @@ To only use the tool, [Getting started](getting-started.md) is enough. This page
 ```bash
 git clone https://github.com/atinfinity/agentic-sim-world-gen.git
 cd agentic-sim-world-gen
-uv sync --extra usd --extra mcp --extra dxf --extra ifc --extra video --extra hf --extra dev
+uv sync --extra usd --extra mcp --extra dxf --extra ifc --extra photo --extra hf --extra dev
 uv run pytest -q              # offline tests (about 2 minutes)
 uv run pytest -q -m network   # optional: calls the real SimReady Central / Poly Haven APIs
 ```
@@ -65,7 +65,7 @@ If you change an MCP tool's signature or docstring, regenerate the reference:
 ## 4. Reporting problems
 
 Use the issue templates. Please include the request text, the asset sources (`AGENTIC_SIM_WORLD_GEN_SOURCES`),
-the version and the OS. Do not attach photos or videos that show people, or screenshots of assets you may not
+the version and the OS. Do not attach photos that show people, or screenshots of assets you may not
 share. Security problems: see [SECURITY.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/SECURITY.md).
 
 ## 5. Project page

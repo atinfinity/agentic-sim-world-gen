@@ -35,9 +35,8 @@ ifc = ["ifcopenshell>=0.8", "shapely>=2"]
 # transformers by hand). The model is
 # not downloaded unless AGENTIC_SIM_WORLD_GEN_TASTE_DOWNLOAD=1; without these packages the check is skipped.
 taste = ["torch>=2.4; sys_platform == 'linux'", "transformers>=4.49; sys_platform == 'linux'"]
-# video frames (agentic_sim_world_gen.video_pose): how the camera turned / moved between the chosen frames (ORB +
-# essential matrix), and the people check (HOG; gone from the main module in OpenCV 5)
-video = ["opencv-python-headless>=4.9,<6", "numpy>=1.26"]
+# photo input (agentic_sim_world_gen.photo_vanish): line segments and vanishing points of a photo, for the camera's tilt
+photo = ["opencv-python-headless>=4.9,<6", "numpy>=1.26"]
 dev = ["pytest>=8"]
 
 [project.urls]

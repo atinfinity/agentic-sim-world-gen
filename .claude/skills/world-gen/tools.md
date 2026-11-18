@@ -155,7 +155,7 @@ Write scene.usda. Assets are referenced by URL; localize=True downloads them and
 could not be painted (no material matched, asset not fetched) - fix the materials or say so in the report.
 With photos fitted (photo_fit.json in the scene) it stops while floor furniture is not placed by them
 (status photo_placement: misplaced, unlocated, one_point, located_unknown): locate 2-4 feet of each and
-fit_photos again. not_in_photos={id: why} only for an object no frame shows on the floor (kept; "" removes).
+fit_photos again. not_in_photos={id: why} only for an object no photo shows on the floor (kept; "" removes).
 
 - `scene_dir`: str
 - `localize`?: bool
@@ -222,45 +222,6 @@ Move it from there. Not for arrays, shelf stock, door / window assets.
 - `scene_dir`: str
 - `object_id`: str
 
-## extract_frames
-
-Walk-through video -> a few sharp, different frames as photos (max_frames default 8, at most 12; start_s /
-end_s for one room). Writes <out_dir>/inputs/*.jpg with source sidecars (url/title/author/license needed like a
-photo's; in a scene they become photo inputs) and a contact sheet. Never use a video with people. times = exact
-frames (to move a weak frame); rotate 90/180/270 for a sideways phone video.
-
-Walk-through video of a room -> a few good frames to use as photos. Not evenly spaced: the
-best frame of each view where the picture changed a lot (sharpness normalized by contrast; blurred
-stretches dropped; sky / close-up / dark views down-weighted, see each frame's room score and notes), first frame
-always kept (it sets the room's orientation). start_s / end_s: only that part of the video (one
-room of a walk through several; look at the sheet and narrow it). max_frames (default 8, at most 12; cost grows with the
-count) / min_frames (4). Writes <out_dir>/inputs/<stem>_tNNN_NN.jpg, each with <stem>.source.json =
-the video's source (from <video stem>.source.json next to the video, or url/title/author/license
-here; required like a photo's) + video + time_s. If out_dir is a scene the frames become photo inputs
-(no camera yet); otherwise put the returned `inputs` into create_scene's spec.inputs. Returns the frames
-(id, path, time_s, sharpness, room, notes, why) and a contact sheet image. Do not use a video showing
-people: look at every frame; people_check says whether a detector ran (usually "none").
-times: write exactly the frames at these seconds instead of choosing (all of them; they replace the scene's
-frames of this video). Use it to move a frame (blurred, or one video_poses loses the track at): the same times
-with it moved; pick the new frame's landmarks.
-rotate (0/90/180/270, degrees clockwise): a phone video whose file has no rotation metadata comes out lying on
-its side. Look at the sheet: if the floor is not at the bottom, extract again with rotate (+90: floor on the
-right, +270: on the left, +180: upside down). None keeps the turn of this video's frames already in the scene.
-It is recorded in each frame's sidecar, so video_poses decodes the video turned the same way.
-
-- `video`: str
-- `out_dir`: str
-- `max_frames`?: int
-- `min_frames`?: int
-- `url`?: str
-- `title`?: str
-- `author`?: str
-- `license`?: str
-- `start_s`?: num
-- `end_s`?: num
-- `times`?: [num]
-- `rotate`?: int
-
 ## fill_windows
 
 Put a window asset in every empty window opening (stretched to fit; opening_fit beyond 0.75-1.33x), chosen
@@ -314,8 +275,8 @@ windows_not_found, unlocated (furniture no photo placed).
 ## fit_photos
 
 Several photos of one room -> room size, openings and each photo's camera, by least squares over landmarks you
-read off the photos (corners, wall lines, opening edges, shared points; video_poses' `relative` for video
-frames; depth=true for monocular depth). `locate` turns pixels into floor positions (give `object` ids for
+read off the photos (corners, wall lines, opening edges, shared points;
+depth=true for monocular depth). `locate` turns pixels into floor positions (give `object` ids for
 place_from_photos). Read `worst`, `warnings`, `suspects`, `outside`. With out_dir = the scene folder it writes
 photo_fit.json and (apply, default) the fitted room and cameras into the scene. Read the details before the
 first call: the landmark names and request fields are there.
@@ -350,20 +311,19 @@ give each its `object` (the scene object id) and the result's `objects` has each
 `edge` front / back for a foot on the side it faces / its back (place_from_photos then knows the front).
 With out_dir = the scene folder, place_from_photos puts each object there, and status / compare_photo flag
 objects placed away from their located feet (photo_placement).
-Frames of a video: pass video_poses' `relative` (measured turns / moves between the frames) as well.
 Read `worst` and `warnings`: a large error usually means a mislabeled landmark (start/end swapped,
 wrong corner). Returns room (Room fields), cameras (PhotoCamera fields + yaw/pitch, rms, ±sigma),
 points, located, and `outside` for a camera fitted beyond a wall: verdict doorway (it looks in through an
 opening - a hallway frame) or wall (it sees through the wall: the wall is likely too far in; `wall_moved_out`
 is the fit with that wall moved out - about as good means fix that wall's landmarks) or loose (too few
-measurements and no relative pose: the camera is free, say nothing of the walls). `inside` = photo ids
+measurements: the camera is free, say nothing of the walls). `inside` = photo ids
 whose camera stood in the room. Mark both edges of each opening: one edge alone leaves its width at the guess
 (warned), and an opening under 0.4 m wide is refitted with start / end swapped (`swapped`) to tell a swap. Writes photo_fit.json into out_dir (e.g. the scene folder) when given.
 depth=true (needs AGENTIC_SIM_WORLD_GEN_DEPTH_PYTHON, a venv with MoGe-2): give each photo its `image` path; every point /
 line gets the monocular depth at its pixel, and `surfaces` [{on: floor|ceiling|wall:<side>, px}] - pixels on a
 plain, unoccluded part of the floor / ceiling / a wall (5-10 per surface seen) - get one too. The depth sets
 the scale (no ceiling landmark needed). Each photo's depth scale is fitted (`depth_scale`, the model is
-off by up to ~20 % per photo); without relative poses a photo that sees only one or two walls cannot fix
+off by up to ~20 % per photo); a photo that sees only one or two walls cannot fix
 the room's size by depth alone. Pick only landmarks you can see (not hidden behind furniture).
 apply (default: when out_dir is a scene folder) writes the fitted room (size, the fitted openings, the height
 when fitted) and every photo's camera into that scene - the photo ids must be its input ids - and records them
@@ -693,7 +653,7 @@ Two more, each only when its condition holds and asked before the draft in `ask_
 (the purpose is amr / manipulation and the request names no machine or size; options with their `radius`;
 `robot.radius` when the request says it; `after_purpose` = ask it together with the purpose's answer when that
 is amr / manipulation, or call again with purpose=<the answer>) -> create_scene / set_purpose robot_radius;
-and whether there is a plan / photo / video (`existing_place`: the request is about a place that exists, e.g.
+and whether there is a plan / photo (`existing_place`: the request is about a place that exists, e.g.
 うちの / 実際の / この店, and comes with none) -> with one, read it first (set_input) instead of drafting from words.
 
 - `request`: str
@@ -1195,23 +1155,6 @@ Ask for the one tool you are about to call; do not read tools.md.
 - `name`: str
 - `model`?: str
 
-## video_poses
-
-After extract_frames: the camera's turns (and move directions) between the frames, measured on the video.
-Put the returned `relative` into the fit_photos request. hfov_deg: the camera's field of view (phone ~65).
-
-After extract_frames: how the camera turned (and which way it moved) between the frames, measured from
-the video between them (ORB feature tracking with OpenCV, ~10-30 s). Returns `relative`: put it into the
-fit_photos request as it is. It ties the frames together, so a frame with few or far landmarks still gets
-its view direction, and fit_photos starts each camera from the measured turns. hfov_deg: the video
-camera's field of view (guess 65 for a phone, then run again with fit_photos' hfov if it differs by more
-than 5 degrees). Needs OpenCV (the `video` extra); without it fit from landmarks only. The camera's
-positions are not solved over the whole video: the frames are fitted as photos, from their landmarks.
-
-- `scene_dir`: str
-- `hfov_deg`?: num
-- `video`?: str
-
 ## view_candidates
 
 Show candidate thumbnails so you can judge them by eye, then select_asset. One id: every candidate of that
@@ -1406,7 +1349,6 @@ Shelf boards are found from the fixture's geometry (agentic_sim_world_gen.assets
 - `openings`?: {str: OpeningGuess}
 - `points`?: {str: SharedPoint}
 - `locate`?: [Locate]
-- `relative`?: [RelativePose] — relative poses of video frames (video_poses): constrain and seed the cameras' view directions
 - `place`?: str — what the room is (Room.place: home, office, school ...): the wall heights it may have (CEILING_RANGE_BY_PLACE: home, office, school, lab, hospital, cafe, restaurant); a fitted height outside is fitted again held at a typical one. Other places (shops, factories, halls) and none: not held, only warned of. fit_photos takes it from the scene folder
 - `height_range`?: [num,num] — wall heights this room may have [m] (0 < low < high), in place of the place's (a hall: (3, 6))
 - `inside`?: [str] — photos whose camera stood in the room: held at least 0.1 m inside every wall (the fit may move the camera or the walls; when a wall is placed wrong, fix its landmarks instead - see the result's `outside`)
@@ -1456,8 +1398,6 @@ not rendered by compare_photo.
 - `author`?: str
 - `license`?: str — e.g. CC0-1.0, public domain, own photo
 - `size_px`?: [int,int] — image width, height (read from the file)
-- `video`?: str — a frame taken from a video (extract_frames): the video file; url/title/author/license are the video's
-- `time_s`?: num — a video frame: its time in the video [s]
 - `camera`?: PhotoCamera — viewpoint of the photo, for compare_photo
 - `taste`?: Taste — reference images: the look read off the image
 
@@ -1660,20 +1600,6 @@ What the scene is for (agentic_sim_world_gen.scene.purpose): its defaults are re
 - `robot_radius`?: num — the robot's footprint radius [m] (amr / manipulation; default 0.3)
 - `aisle`?: num — walking width the robot needs [m]; the usability check uses it when wider than the place's own
 - `targets`?: [str] — sdg: what the detector should find (English words, e.g. 'mug', 'chair')
-
-## RelativePose
-
-Relative pose of two photos measured from the video between them (agentic_sim_world_gen.video_pose). OpenCV camera
-axes (x right, y down, z forward): a point's coordinates in b = rotation @ (its coordinates in a) + t.
-
-- `a`: str
-- `b`: str
-- `rotation`: [[num]] — 3x3 rotation from a's camera axes to b's
-- `direction`?: [num,num,num] — t normalized: from b's camera to a's, in b's camera axes (None: the camera only turned, or the move was too small to tell)
-- `weight`?: num — 1 for a direct match of the two frames, less for a chain
-- `hfov_deg`?: num — field of view the rotation was measured with
-- `robust`?: bool — true: a pair far off the landmarks is given up (Cauchy) and left out of the second pass; false: kept in full (poses known to be more accurate than a few picked landmarks)
-- `group`?: str — poses measured in one frame (one reconstruction). A photo in two groups is kept in the one whose poses fit its landmarks best (the edge of a model can be off)
 
 ## RenderSpec
 

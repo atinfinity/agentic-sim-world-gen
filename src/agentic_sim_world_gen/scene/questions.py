@@ -267,9 +267,9 @@ def _robot_question() -> Question:
 
 # asked before the draft when the purpose has a robot and the request does not say its size
 ROBOT = _robot_question()
-# asked before the draft when the request is about a place that exists and comes with no plan / photo / video
+# asked before the draft when the request is about a place that exists and comes with no plan / photo
 SOURCE = Question("source", "source", "その場所の図面か写真はありますか？",
-                  ("ない（文章から作る）", "写真がある", "間取り図・図面がある", "動画がある"),
+                  ("ない（文章から作る）", "写真がある", "間取り図・図面がある"),
                   "実在の場所は、文章から部屋を作るより図面・写真から始める方が早く、やり直しが少ない")
 # the request is about a place that exists (kept narrow: a made-up room is never asked)
 # 「再現」「私の」 alone are left out: 「昭和の喫茶店を再現」「私の理想の書斎」 are made up
@@ -277,8 +277,8 @@ EXISTING_WORDS = ("うちの", "我が家", "わが家", "弊社", "当社", "�
                   "この店", "この部屋", "この倉庫", "この工場", "このオフィス", "既存の", "今ある",
                   "デジタルツイン", r"\bour\b", r"\bexisting\b", "digital twin")
 # ... and already comes with something to read it from
-INPUT_WORDS = ("写真", "画像", "図面", "間取り図", "間取図", "平面図", "見取り図", "動画", "ビデオ", "スキャン", "点群",
-               "cad", "dxf", "dwg", "ifc", "photo", "picture", "floor plan", "floorplan", "drawing", "video", "scan")
+INPUT_WORDS = ("写真", "画像", "図面", "間取り図", "間取図", "平面図", "見取り図", "スキャン", "点群",
+               "cad", "dxf", "dwg", "ifc", "photo", "picture", "floor plan", "floorplan", "drawing", "scan")
 
 # words that name the place (checked in order: more specific first)
 PLACE_WORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -551,8 +551,8 @@ def plan_questions(request: str = "", place: str | None = None, known: list[str]
         out["ask_now"] = out.get("ask_now", []) + extra
         tail = "ask `ask_now` before building (" + "; ".join(
             "the robot's size decides the aisles" if q["key"] == "robot" else
-            "a place that exists: with a plan / photo / video, read it first (set_input, plans.md / photos.md / "
-            "videos.md) instead of drafting from words" for q in extra) + ")"
+            "a place that exists: with a plan / photo, read it first (set_input, plans.md / photos.md) instead "
+            "of drafting from words" for q in extra) + ")"
         out["hint"] = tail if out["hint"].startswith("nothing to ask") else out["hint"] + "; " + tail
     if "after_purpose" in out:
         out["hint"] += ("; when the purpose is answered amr / manipulation, ask `after_purpose.ask` (the robot's size) "

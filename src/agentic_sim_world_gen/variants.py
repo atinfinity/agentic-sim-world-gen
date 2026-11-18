@@ -45,7 +45,7 @@ WALLS = {
 }
 SHOPS = {"shop", *STORE_PLACES}
 WALL_JA = {"north": "北の壁", "south": "南の壁", "east": "東の壁", "west": "西の壁", "any": "壁"}
-PATH_KEYS = {"path", "texture", "roughness_texture", "normal_texture", "image", "underlay", "plan_file", "video"}
+PATH_KEYS = {"path", "texture", "roughness_texture", "normal_texture", "image", "underlay", "plan_file"}
 
 
 def _pool(table: dict[str, tuple[str, ...]], place: str | None) -> tuple[str, ...]:

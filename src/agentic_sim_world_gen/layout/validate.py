@@ -448,7 +448,7 @@ def place_fits(place: str | None, fits) -> bool:
 
 # in these places a monitor / TV stands switched off (black) unless told otherwise (ObjectSpec.screen_on):
 # the lit wallpaper of an LG monitor from SimReady Central glowed purple on every desk of a PC classroom, where
-# the video showed black screens
+# the real room's screens were black
 SCREEN_OFF_PLACES = ("office", "school", "lab")
 SCREEN_WORDS = {"monitor", "tv", "television", "laptop"}  # not "display" / "screen": a display case, a projection screen
 # furniture for a screen: "TV stand", "monitor arm", "television cabinet" are no screen

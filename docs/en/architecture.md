@@ -15,7 +15,7 @@ Contents
 6. [Composing the USD](#6-composing-the-usd)
 7. [The Isaac Sim side](#7-the-isaac-sim-side)
 8. [The conversation](#8-the-conversation)
-9. [Rooms from photos and videos](#9-rooms-from-photos-and-videos)
+9. [Rooms from photos](#9-rooms-from-photos)
 
 ---
 
@@ -25,13 +25,13 @@ Contents
 flowchart TD
     subgraph inputs["Inputs"]
         nl["Text instruction"]
-        photo["Photos / video"]
+        photo["Photos"]
         plan["Floor plan JSON / DXF / IFC"]
         ref["Reference image"]
     end
 
     nl -->|"plan_questions defaults + Claude writes it in English"| spec["SceneSpec"]
-    photo -->|"extract_frames / video_poses / fit_photos"| spec
+    photo -->|"fit_photos"| spec
     plan -->|"import_floor_plan → room.plan_file"| spec
     ref -->|"taste of InputRef kind=reference"| spec
 
@@ -227,8 +227,8 @@ A scene is "the directory that contains `scene.resolved.json`". The main files c
   layout_options/       top views of layout options and the 3 drafts, plus summary.json
   taste_pool.json       candidates compared by the taste check
   plan.json / plan.svg  when a floor plan was imported
-  inputs/               input photos and video frames (source in <stem>.source.json)
-  photo_fit.json / video_poses.json / compare.png   results of estimating from photos/video, and the side-by-side
+  inputs/               input photos (source in <stem>.source.json)
+  photo_fit.json / compare.png   results of estimating from photos, and the side-by-side
   nav/                  navigation map for robots (map.pgm, map.yaml, nav_map)
   variants/             scene variations (make_variants)
   sdg/                  synthetic data
@@ -537,7 +537,7 @@ The worker closes the stage after each job and reloads the layers of that job's 
 - `view_fronts` (`front_views.py`): photographs each object from its assumed front. It opens a layer `front_views_stage.usda` with the other objects deactivated, so only the assets being photographed are loaded.
 - `compare_photo` (`render_view.py`): renders from the same viewpoint as a photo.
 - `nav_map(isaac=true)` (`nav_map.py`): makes a navigation map with Isaac Sim's Occupancy Map.
-- `front_views.py`, `render_view.py` and `render_path.py` do not shoot after a fixed number of frames. They shoot again every 20 frames and stop when two shots in a row look the same (`view.capture_settled`, at most 900 frames), so a model whose shaders are still compiling is not missing from the picture.
+- `front_views.py` and `render_view.py` do not shoot after a fixed number of frames. They shoot again every 20 frames and stop when two shots in a row look the same (`view.capture_settled`, at most 900 frames), so a model whose shaders are still compiling is not missing from the picture.
 
 Like check, all of these run with Isaac Sim's Python.
 
@@ -654,23 +654,17 @@ Related files
 - [src/agentic_sim_world_gen/notes.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/notes.py): describes the location of preview notes in words
 - [src/agentic_sim_world_gen/preview/page.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/preview/page.py), [changes.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/preview/changes.py): the page and change history
 
-## 9. Rooms from photos and videos
+## 9. Rooms from photos
 
-There are two stages. First, the room dimensions and cameras are estimated from photos or video (`fit_photos`). Then the result goes into the scene, where it places furniture and is compared with the photos.
+There are two stages. First, the room dimensions and cameras are estimated from photos (`fit_photos`). Then the result goes into the scene, where it places furniture and is compared with the photos.
 
 ### Estimating the room and cameras
 
 ```mermaid
 flowchart TD
-    video["Video"] -->|"extract_frames"| frames["Selected frames<br/>inputs/stem_tNNN_NN.jpg + .source.json"]
-    photos["Photos"] --> lm
-    frames --> lm["Claude picks landmarks<br/>room corners, wall seams, opening corners"]
-    frames -->|"video_poses"| orb["video_pose.py<br/>OpenCV ORB"]
-    orb --> rel["Rotation and motion direction between frames<br/>relative"]
+    photos["Photos"] --> lm["Claude picks landmarks<br/>room corners, wall seams, opening corners"]
     photos -->|"depth.run"| dep["MoGe-2 depth<br/>stem.depth.npz"]
-    frames -->|"depth.run"| dep
     lm --> fit["fit_photos<br/>photo_fit.fit least squares"]
-    rel --> fit
     dep -->|"depth=true"| fit
     fit --> res["Room size, openings, each camera"]
 ```
@@ -680,7 +674,6 @@ The room is treated as a box. For each photo, Claude picks the pixels of visible
 The wall height sets the scale. If there are no ceiling landmarks, the camera height (`eye_height`) sets it.
 The wall height is fitted too; when it falls outside the range for the kind of room (`place`) or is suspect (`height_suspect`), the same call fits again with the height held, and takes the held fit when the landmarks fit it about as well and nothing measured in meters (the depth, a door top) fits it worse (`height_refit`; a room with no place, or one not listed, is not refitted).
 
-For video, `extract_frames` first selects sharp frames where the view changes. Then `video_poses` measures how much the camera rotated between frames (OpenCV ORB features, `video_pose.py`) and adds that to `fit_photos`.
 Adding monocular depth (MoGe-2) helps fix the dimensions even for photos that show only 1–2 walls.
 
 ### Putting it into the scene and checking
@@ -704,9 +697,7 @@ flowchart TD
    - If an object of known size (one shelf unit, a door, floor tiles, etc.) is in the photo, pass its pixels with `known`. Widths and the camera height are then also given using that object as a ruler.
 
 Related files
-- [src/agentic_sim_world_gen/photo_fit.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_fit.py): `fit` (the result's `scale` = the list of scale evidence, from `_scale_evidence`; the height refit is `_height_refit`), `FitRequest`, `PointObs`, `LineObs`, `SurfaceObs`, `RelativePose`
-- [src/agentic_sim_world_gen/video.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/video.py): `extract` (frame extraction)
-- [src/agentic_sim_world_gen/video_pose.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/video_pose.py): `relative_poses` (rotation and motion direction between frames with ORB)
+- [src/agentic_sim_world_gen/photo_fit.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_fit.py): `fit` (the result's `scale` = the list of scale evidence, from `_scale_evidence`; the height refit is `_height_refit`), `FitRequest`, `PointObs`, `LineObs`, `SurfaceObs`
 - [src/agentic_sim_world_gen/photo_refine.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_refine.py): `refine` (minimizes the pixel difference between the projected box and the foot points and outline)
 - [src/agentic_sim_world_gen/photo_place.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_place.py), [photo_measure.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_measure.py): furniture positions from photos, width comparison with photos (widths come with an error range). [photo_vanish.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_vanish.py): camera pitch and roll from the vanishing point of vertical lines in the photo
 - [src/agentic_sim_world_gen/depth.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/depth.py), [scripts/depth/moge_depth.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/scripts/depth/moge_depth.py): monocular depth

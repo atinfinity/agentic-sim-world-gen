@@ -52,7 +52,7 @@ def test_the_one_source_apart_is_named():
 
 
 def test_landmarks_only():
-    """The height given, no depth, no video: the door's top and the eye height are listed beside it, nothing to name."""
+    """The height given, no depth: the door's top and the eye height are listed beside it, nothing to name."""
     r = service.fit_photos(_request())
     by, warns = _scale(r)
     assert set(by) == {"door top", "eye height", "height (given)"} and by["height (given)"]["used"], by

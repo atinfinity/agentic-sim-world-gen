@@ -28,7 +28,7 @@ The sections below apply to both setups (install, environment variables, workflo
 | Ubuntu + RTX GPU, Isaac Sim 6.1 (tested with the pip version; the standalone `python.sh` is untested) | Physics checks, screenshots, photo comparison, synthetic data |
 | Python 3.12 or later, [uv](https://docs.astral.sh/uv/) | agentic-sim-world-gen itself (search, preview, USD output) |
 | [Claude Code](https://claude.com/claude-code) | Building scenes from natural-language instructions (MCP server + skill) |
-| ffmpeg (optional; Ubuntu `apt install ffmpeg`, Mac `brew install ffmpeg`) | Extracting frames from videos (`extract_frames`) |
+| ffmpeg (optional; Ubuntu `apt install ffmpeg`, Mac `brew install ffmpeg`) | Recording the physics check as a GIF (`check --gif`) |
 
 On a Mac or PC without a GPU you can still search, preview and write USD. Only the operations that need Isaac Sim fail, with "Isaac Sim not found".
 
@@ -209,15 +209,14 @@ Examples of scene files are in `examples/`. Their format, and calling the Isaac 
 
 ## 6. Other inputs
 
-Besides text, you can build from floor plans, photos and videos.
+Besides text, you can build from floor plans and photos.
 
 | Input | Example | Details |
 |---|---|---|
 | Floor plan (JSON / DXF / IFC) | `agentic-sim-world-gen plan examples/plans/1ldk.json -o out/1ldk_plan` into plan.json, then set it as `room.plan_file`. To Claude: "Use the floor plan in examples/plans/1ldk.json, with a sofa in the LDK and a low table in the Japanese-style room" (the Japanese-style room gets a tatami floor, the washroom a tile floor) | [Data](architecture.md#2-data), `src/agentic_sim_world_gen/scene/plan.py` |
 | Floor plan (image / PDF) | Give Claude the image; it traces it into JSON (units in px, plus the image as an underlay) | [plans.md in the skill](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/plans.md) |
 | Photos | "Make the room in examples/photos/living_room.jpg". The source is in the neighboring `<stem>.source.json`. `agentic-sim-world-gen photo <scene>` shows it side by side with a render from the same viewpoint | [photos.md in the skill](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/photos.md) |
-| Depth for photos and videos | Create the venv from "Monocular depth" below, then run `agentic-sim-world-gen fit-photos req.json --depth` (photos in `image`). Room dimensions are easier to pin down | [Monocular depth](#monocular-depth-optional) below |
-| Video | "Make the room in walk.mp4" (a video taken while walking through the room, with no people in it). The source is in the neighboring `walk.source.json`. `agentic-sim-world-gen frames walk.mp4 -o <scene>` picks frames to use as input photos (needs ffmpeg) | [videos.md in the skill](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/.claude/skills/world-gen/videos.md) |
+| Depth for photos | Create the venv from "Monocular depth" below, then run `agentic-sim-world-gen fit-photos req.json --depth` (photos in `image`). Room dimensions are easier to pin down | [Monocular depth](#monocular-depth-optional) below |
 
 ### Other features
 

@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        English or Japanese is fine. **Do not attach photos or videos that show people, or screenshots of
+        English or Japanese is fine. **Do not attach photos that show people, or screenshots of
         assets you may not share.** Security problems: use Private vulnerability reporting (see SECURITY.md).
   - type: textarea
     id: request

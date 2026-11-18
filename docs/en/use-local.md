@@ -49,7 +49,7 @@ There are two ports, both on 127.0.0.1 (not exposed to the network).
 | Isaac Sim 6.1 (pip or standalone) | Physics checks, screenshots, photo comparison, synthetic data |
 | Python 3.12 or later and [uv](https://docs.astral.sh/uv/) | agentic-sim-world-gen itself |
 | [Claude Code](https://claude.com/claude-code) (logged in) | Building scenes from your instructions |
-| ffmpeg (optional, `sudo apt install ffmpeg`) | Extracting frames from videos |
+| ffmpeg (optional, `sudo apt install ffmpeg`) | Recording the physics check as a GIF (`check --gif`) |
 
 ## 2. Install
 
@@ -129,7 +129,7 @@ python_server runs arbitrary code, so keep it on 127.0.0.1.
 
 ## 5. Inputs and results
 
-- Pass photos, videos and drawings by their local path as is ("make the room in ~/photos/living.jpg"). Sources go in the `<stem>.source.json` next to them ([Getting Started "6. Other inputs"](getting-started.md#6-other-inputs)).
+- Pass photos and drawings by their local path as is ("make the room in ~/photos/living.jpg"). Sources go in the `<stem>.source.json` next to them ([Getting Started "6. Other inputs"](getting-started.md#6-other-inputs)).
 - You can open the finished scene in the local Isaac Sim as is. To hand it to another PC, first write a USD that bundles the assets, then hand over the whole folder:
   "re-export the USD with local references" (MCP `compose_scene(localize=true)`, CLI `agentic-sim-world-gen compose <scene>/scene.resolved.json --localize`).
 

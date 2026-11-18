@@ -10,7 +10,7 @@ Issue・プルリクエストは日本語でも英語でも歓迎します。
 ```bash
 git clone https://github.com/atinfinity/agentic-sim-world-gen.git
 cd agentic-sim-world-gen
-uv sync --extra usd --extra mcp --extra dxf --extra ifc --extra video --extra hf --extra dev
+uv sync --extra usd --extra mcp --extra dxf --extra ifc --extra photo --extra hf --extra dev
 uv run pytest -q              # オフラインのテスト（約 2 分）
 uv run pytest -q -m network   # 任意：SimReady Central・Poly Haven の実 API を呼ぶ
 ```
@@ -63,7 +63,7 @@ MCPツールの引数やdocstringを変えたら、一覧を作り直す：`uv r
 ## 4. 問題の報告
 
 Issueのテンプレートを使ってほしい。指示の文、アセット源（`AGENTIC_SIM_WORLD_GEN_SOURCES`）、バージョン、OSを書く。
-人の写った写真・動画や、共有してよいか分からないアセットのスクリーンショットは添付しない。セキュリティの問題は
+人の写った写真や、共有してよいか分からないアセットのスクリーンショットは添付しない。セキュリティの問題は
 [SECURITY.md](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/SECURITY.md)。
 
 ## 5. プロジェクトページ

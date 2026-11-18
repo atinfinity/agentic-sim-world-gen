@@ -10,7 +10,7 @@ and GitHub Actions.
 
 In short:
 
-- `uv sync --extra usd --extra mcp --extra dxf --extra ifc --extra video --extra hf --extra dev`, then `uv run pytest -q`.
+- `uv sync --extra usd --extra mcp --extra dxf --extra ifc --extra photo --extra hf --extra dev`, then `uv run pytest -q`.
 - One topic per pull request, with tests; a screenshot or GIF for a change you can see.
 - **Never commit asset files** of a third party, or any material you may not redistribute.
 - Contributions are licensed under the Apache License 2.0 (see LICENSE). No CLA, no sign-off.

@@ -104,14 +104,6 @@ room. Record it as an input with kind "reference" (no camera; the source is requ
 `taste` {floor, walls, ceiling, lighting, light_kelvin, lighting_scale, furniture {kind: color/material},
 style, density, note} read off the image, then apply it with set_room and the queries (see the skill).
 
-Videos (a walk-through of the room): extract_frames picks 4-8 sharp frames where the view changed and records
-them as photo inputs (each with the video's source and its time); start_s/end_s limit it to one room.
-Look at every frame first: if anyone is visible, stop and do not use the video (no detector is guaranteed).
-Then treat them as several photos of one room: video_poses (if OpenCV is installed) measures how the camera
-turned between the frames - pass its `relative` to fit_photos - then fit_photos for the room and every frame's
-camera (the first frame sets the orientation), one object per real object even if several frames show it,
-compare_photo.
-
 Synthetic data: generate_data runs Replicator on the scene (Isaac Sim): random camera poses in free floor
 space aimed at objects, light intensity / color temperature (optionally floor/wall colors), and writes
 RGB, 2D boxes, segmentation, depth (BasicWriter; COCO / KITTI on request). Labels are the objects'
@@ -292,7 +284,7 @@ def plan_questions(request: str, place: str | None = None, known: list[str] | No
     (the purpose is amr / manipulation and the request names no machine or size; options with their `radius`;
     `robot.radius` when the request says it; `after_purpose` = ask it together with the purpose's answer when that
     is amr / manipulation, or call again with purpose=<the answer>) -> create_scene / set_purpose robot_radius;
-    and whether there is a plan / photo / video (`existing_place`: the request is about a place that exists, e.g.
+    and whether there is a plan / photo (`existing_place`: the request is about a place that exists, e.g.
     うちの / 実際の / この店, and comes with none) -> with one, read it first (set_input) instead of drafting from words."""
     from agentic_sim_world_gen.scene.questions import plan_questions as plan
 
@@ -904,7 +896,7 @@ def compose_scene(scene_dir: str, localize: bool = False,
     could not be painted (no material matched, asset not fetched) - fix the materials or say so in the report.
     With photos fitted (photo_fit.json in the scene) it stops while floor furniture is not placed by them
     (status photo_placement: misplaced, unlocated, one_point, located_unknown): locate 2-4 feet of each and
-    fit_photos again. not_in_photos={id: why} only for an object no frame shows on the floor (kept; "" removes)."""
+    fit_photos again. not_in_photos={id: why} only for an object no photo shows on the floor (kept; "" removes)."""
     r = service.compose_scene(scene_dir, localize=localize, not_in_photos=not_in_photos)
     return service.with_language(scene_dir, r)
 
@@ -1197,8 +1189,8 @@ def set_input(scene_dir: str, input: InputRef, seen_in: list[str] | None = None)
 def fit_photos(request: FitRequest, out_dir: str | None = None, depth: bool = False,
                apply: bool | None = None) -> dict[str, Any]:
     """Several photos of one room -> room size, openings and each photo's camera, by least squares over landmarks you
-    read off the photos (corners, wall lines, opening edges, shared points; video_poses' `relative` for video
-    frames; depth=true for monocular depth). `locate` turns pixels into floor positions (give `object` ids for
+    read off the photos (corners, wall lines, opening edges, shared points;
+    depth=true for monocular depth). `locate` turns pixels into floor positions (give `object` ids for
     place_from_photos). Read `worst`, `warnings`, `suspects`, `outside`. With out_dir = the scene folder it writes
     photo_fit.json and (apply, default) the fitted room and cameras into the scene. Read the details before the
     first call: the landmark names and request fields are there.
@@ -1233,78 +1225,25 @@ def fit_photos(request: FitRequest, out_dir: str | None = None, depth: bool = Fa
     `edge` front / back for a foot on the side it faces / its back (place_from_photos then knows the front).
     With out_dir = the scene folder, place_from_photos puts each object there, and status / compare_photo flag
     objects placed away from their located feet (photo_placement).
-    Frames of a video: pass video_poses' `relative` (measured turns / moves between the frames) as well.
     Read `worst` and `warnings`: a large error usually means a mislabeled landmark (start/end swapped,
     wrong corner). Returns room (Room fields), cameras (PhotoCamera fields + yaw/pitch, rms, ±sigma),
     points, located, and `outside` for a camera fitted beyond a wall: verdict doorway (it looks in through an
     opening - a hallway frame) or wall (it sees through the wall: the wall is likely too far in; `wall_moved_out`
     is the fit with that wall moved out - about as good means fix that wall's landmarks) or loose (too few
-    measurements and no relative pose: the camera is free, say nothing of the walls). `inside` = photo ids
+    measurements: the camera is free, say nothing of the walls). `inside` = photo ids
     whose camera stood in the room. Mark both edges of each opening: one edge alone leaves its width at the guess
     (warned), and an opening under 0.4 m wide is refitted with start / end swapped (`swapped`) to tell a swap. Writes photo_fit.json into out_dir (e.g. the scene folder) when given.
     depth=true (needs AGENTIC_SIM_WORLD_GEN_DEPTH_PYTHON, a venv with MoGe-2): give each photo its `image` path; every point /
     line gets the monocular depth at its pixel, and `surfaces` [{on: floor|ceiling|wall:<side>, px}] - pixels on a
     plain, unoccluded part of the floor / ceiling / a wall (5-10 per surface seen) - get one too. The depth sets
     the scale (no ceiling landmark needed). Each photo's depth scale is fitted (`depth_scale`, the model is
-    off by up to ~20 % per photo); without relative poses a photo that sees only one or two walls cannot fix
+    off by up to ~20 % per photo); a photo that sees only one or two walls cannot fix
     the room's size by depth alone. Pick only landmarks you can see (not hidden behind furniture).
     apply (default: when out_dir is a scene folder) writes the fitted room (size, the fitted openings, the height
     when fitted) and every photo's camera into that scene - the photo ids must be its input ids - and records them
     in the history and as assumptions (「写真から当てはめ」); no set_room / set_input needed. `applied` says what,
     and warnings name a camera inside an object or outside the room. apply=false only fits."""
     return service.fit_photos(request, out_dir, depth, apply)
-
-
-@mcp.tool(structured_output=False)  # returns text + image
-def extract_frames(video: str, out_dir: str, max_frames: int = 8, min_frames: int = 4, url: str | None = None,
-                   title: str | None = None, author: str | None = None, license: str | None = None,
-                   start_s: float | None = None, end_s: float | None = None,
-                   times: list[float] | None = None, rotate: int | None = None) -> list[Any]:
-    """Walk-through video -> a few sharp, different frames as photos (max_frames default 8, at most 12; start_s /
-    end_s for one room). Writes <out_dir>/inputs/*.jpg with source sidecars (url/title/author/license needed like a
-    photo's; in a scene they become photo inputs) and a contact sheet. Never use a video with people. times = exact
-    frames (to move a weak frame); rotate 90/180/270 for a sideways phone video.
-
-    Walk-through video of a room -> a few good frames to use as photos. Not evenly spaced: the
-    best frame of each view where the picture changed a lot (sharpness normalized by contrast; blurred
-    stretches dropped; sky / close-up / dark views down-weighted, see each frame's room score and notes), first frame
-    always kept (it sets the room's orientation). start_s / end_s: only that part of the video (one
-    room of a walk through several; look at the sheet and narrow it). max_frames (default 8, at most 12; cost grows with the
-    count) / min_frames (4). Writes <out_dir>/inputs/<stem>_tNNN_NN.jpg, each with <stem>.source.json =
-    the video's source (from <video stem>.source.json next to the video, or url/title/author/license
-    here; required like a photo's) + video + time_s. If out_dir is a scene the frames become photo inputs
-    (no camera yet); otherwise put the returned `inputs` into create_scene's spec.inputs. Returns the frames
-    (id, path, time_s, sharpness, room, notes, why) and a contact sheet image. Do not use a video showing
-    people: look at every frame; people_check says whether a detector ran (usually "none").
-    times: write exactly the frames at these seconds instead of choosing (all of them; they replace the scene's
-    frames of this video). Use it to move a frame (blurred, or one video_poses loses the track at): the same times
-    with it moved; pick the new frame's landmarks.
-    rotate (0/90/180/270, degrees clockwise): a phone video whose file has no rotation metadata comes out lying on
-    its side. Look at the sheet: if the floor is not at the bottom, extract again with rotate (+90: floor on the
-    right, +270: on the left, +180: upside down). None keeps the turn of this video's frames already in the scene.
-    It is recorded in each frame's sidecar, so video_poses decodes the video turned the same way."""
-    r = service.extract_frames(video, out_dir, max_frames, min_frames, url=url, title=title, author=author,
-                               license=license, start_s=start_s, end_s=end_s, times=times, rotate=rotate)
-    if not r.get("ok"):
-        return [json.dumps(r, ensure_ascii=False)]
-    with open(r["sheet"], "rb") as f:
-        return [json.dumps(r, ensure_ascii=False), Image(data=f.read(), format="jpeg")]
-
-
-@mcp.tool()
-def video_poses(scene_dir: str, hfov_deg: float = 65.0, video: str | None = None) -> dict[str, Any]:
-    """After extract_frames: the camera's turns (and move directions) between the frames, measured on the video.
-    Put the returned `relative` into the fit_photos request. hfov_deg: the camera's field of view (phone ~65).
-
-    After extract_frames: how the camera turned (and which way it moved) between the frames, measured from
-    the video between them (ORB feature tracking with OpenCV, ~10-30 s). Returns `relative`: put it into the
-    fit_photos request as it is. It ties the frames together, so a frame with few or far landmarks still gets
-    its view direction, and fit_photos starts each camera from the measured turns. hfov_deg: the video
-    camera's field of view (guess 65 for a phone, then run again with fit_photos' hfov if it differs by more
-    than 5 degrees). Needs OpenCV (the `video` extra); without it fit from landmarks only. The camera's
-    positions are not solved over the whole video: the frames are fitted as photos, from their landmarks."""
-    r = service.video_poses(scene_dir, hfov_deg, video)
-    return service.with_language(scene_dir, r)
 
 
 @mcp.tool(structured_output=False)  # returns text + image
