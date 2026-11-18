@@ -81,7 +81,7 @@ cd ~/agentic-sim-world-gen-ws && claude
 ```
 
 `workspace` creates these in the folder: `.mcp.json` (the agentic-sim-world-gen MCP server), the world-gen skill (a link into the repository),
-a short CLAUDE.md, and a hook that keeps the reply language after the conversation is compacted. Scenes go to `~/agentic-sim-world-gen-ws/scenes`.
+a short CLAUDE.md, a hook that keeps the reply language after the conversation is compacted, and hooks that check the notes and the final report were written in the user's language. Scenes go to `~/agentic-sim-world-gen-ws/scenes`.
 `.mcp.json` sets `AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=1`: Isaac Sim stays up, so check and compare_photo are faster from the second call on (compare_photo about 90 → 70 s). While waiting it holds several GB of GPU memory (it is stopped by itself before MoGe's monocular depth runs). To turn it off: `--env AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=0` (the value in `.mcp.json` wins, so a shell variable does not turn it off).
 
 Create the workspace **outside the repository** (creating it inside is an error). Starting `claude` inside the repository also works,

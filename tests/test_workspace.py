@@ -24,6 +24,19 @@ def test_workspace(tmp_path, monkeypatch):
     before = settings["hooks"]["PreCompact"][0]["hooks"][0]["command"]
     assert before.endswith("--compact 2>/dev/null || true")  # exit 2 would block the compaction
     assert subprocess.run(before.replace("reply-language", "no-such-command"), shell=True, capture_output=True).returncode == 0
+    for event, arg in (("PostToolUse", "post-tool"), ("Stop", "stop")):  # the language the agent wrote in
+        guard = settings["hooks"][event][0]["hooks"][0]["command"]
+        assert guard.endswith(f"-I -m agentic_sim_world_gen.lang_guard {arg} 2>/dev/null || true")
+        assert subprocess.run(guard, shell=True, input="{}", capture_output=True, text=True).stdout == ""
+        t = tmp_path / "t.jsonl"  # the command itself (without `|| true`) runs and answers
+        t.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in (
+            {"type": "user", "message": {"content": "書斎のワールドを作ってください。机と本棚を置いて。"}},
+            {"type": "assistant", "message": {"content": [{"type": "text", "text": "The study is ready with a desk."},
+                                                           {"type": "tool_use", "id": "a", "name": "x", "input": {}}]}})))
+        ran = subprocess.run(guard.removesuffix(workspace.SAFE), shell=True, capture_output=True, text=True,
+                             input=json.dumps({"transcript_path": str(t), "tool_use_id": "a",
+                                               "last_assistant_message": "The study is ready with a desk."}))
+        assert ran.returncode == 0 and "日本語" in ran.stdout, ran.stderr
     md = (d / "CLAUDE.md").read_text()
     assert str(workspace.REPO) in md and len(md) < 1300
     assert md.index("日本語") < md.index("Make Isaac Sim worlds") and "# Compact instructions" in md
