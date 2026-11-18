@@ -57,6 +57,12 @@
 ## 開発の進め方
 
 - 手順は [docs/contributing.md](docs/contributing.md)（英語 [docs/en/contributing.md](docs/en/contributing.md)、CONTRIBUTING.md はその案内）。変更ごとにブランチを切って PR を作る（PR に GIF・画像などの動作の様子を貼る）。
+- **聞かずに進める**：見つけた問題は Issue にしてそのまま着手する。ターンを「〜なら言ってください」「〜しますか？」で終えない
+  （判断を返したターンでは、次に人が見るまで作業が何時間も止まる）。利用者にしか決められないこと（公開リポジトリへの push・名前・
+  費用・利用者のファイルを消す）だけを聞き、その間も他の作業を進める。Stop フック `scripts/hooks/ask_guard.py`（`.claude/settings.json`）が、
+  判断の依頼で終わるターンを 1 回止める。
+- **順番**：実装 → 関係するテスト → レビューと指摘の修正 → push → CI（`gh pr checks --watch`）→ マージ。CI はその時点のコミットを試すので、
+  レビューの修正より前に push しない。長い処理を始めたら終わる見込みの時刻を書き、終わったら聞かれる前に結果を報告する。
 - 仕組みを変えたら docs/architecture.md も直す。MCP ツールの説明を変えたら `python scripts/make_tool_reference.py` で
   `.claude/skills/world-gen/tools.md` を作り直す（`tests/test_mcp_schema.py` が確かめる）。
 - Isaac Sim での確認は RTX GPU の Linux 機（pip 版なら `ISAACSIM_PYTHON=<Isaac Sim の venv>/bin/python`、`OMNI_KIT_ACCEPT_EULA=YES`）。
