@@ -308,7 +308,7 @@ def test_report_names_the_empty_windows_from_the_spec(tmp_path, monkeypatch):
     from agentic_sim_world_gen import missing
     from agentic_sim_world_gen.scene.spec import ObjectSpec
 
-    monkeypatch.setenv("WORLDGEN_CACHE", str(tmp_path / "cache"))
+    monkeypatch.setenv("AGENTIC_SIM_WORLD_GEN_CACHE", str(tmp_path / "cache"))
     d = tmp_path / "s"
     service.start_scene({**SPEC, "room": {**SPEC["room"], "openings": [WINDOW]}}, d, skip=["draft", "preview", "windows"])
     s = service.load(d)
@@ -319,7 +319,7 @@ def test_report_names_the_empty_windows_from_the_spec(tmp_path, monkeypatch):
     service.move_object(d, "chair", position=[1.2, 1.4])  # any save keeps the curtain's row
     assert [r["id"] for r in missing.windows(d)] == ["curtain_w1"]
     service.set_assumptions(d, [{"item": "window_view", "value": "窓はカーテンで隠れて映らない"}])
-    monkeypatch.setenv("WORLDGEN_MISSING", "0")  # the report does not need the log
+    monkeypatch.setenv("AGENTIC_SIM_WORLD_GEN_MISSING", "0")  # the report does not need the log
     assert service.finish(d)["report_must_include"]["windows_not_found"] == ["curtain / blind (w1)"]
 
 
