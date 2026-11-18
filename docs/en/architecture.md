@@ -361,6 +361,7 @@ An object whose center is on a raised level is placed at that height by the solv
 Related files
 - [src/agentic_sim_world_gen/layout/room.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/room.py): `RoomGeometry`, `Wall`, `Face`, `Obstacle`
 - [src/agentic_sim_world_gen/layout/solver.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/solver.py): `solve`
+- [src/agentic_sim_world_gen/layout/knee.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/knee.py): how deep a chair goes under a desk (height grids of the parts)
 - [src/agentic_sim_world_gen/layout/frame.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/frame.py): front direction (`asset_front_deg`, `yaw_for_facing`)
 - [src/agentic_sim_world_gen/layout/array.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/array.py), [fill.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/fill.py), [assets/shelves.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/shelves.py)
 - [src/agentic_sim_world_gen/scene/decor.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/scene/decor.py): `plan`, `PRODUCTS`, `fits_goods`
@@ -511,7 +512,7 @@ flowchart TD
 ### Isaac worker
 
 Starting Kit takes most of the roughly 40 s of a draft check. With `AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=1`, the headless Isaac Sim started by the first call (`scripts/isaac/worker.py`) keeps running, and later `check_scene.py`, `front_views.py` and `render_view.py` runs go to it one after another.
-It is off by default (while waiting, one Kit holds several GB of GPU memory).
+The server's default is off, but a work folder made with `agentic-sim-world-gen workspace` turns it on. While waiting, one Kit holds several GB of GPU memory (3.8–7.9 GB), so `isaac_worker.free_gpu()` stops it before MoGe (monocular depth) runs (a running job is let finish; the next Isaac Sim call starts it again, about 11 s).
 
 ```mermaid
 flowchart TD

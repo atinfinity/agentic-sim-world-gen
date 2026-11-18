@@ -101,6 +101,9 @@ def _write(path: Path, text: str, force: bool) -> str:
     return str(path)
 
 
+SERVER_DEFAULTS = {"AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER": "1"}  # --env AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=0 turns it off
+
+
 def make(
     folder: str | Path,
     out: str | Path | None = None,
@@ -114,6 +117,7 @@ def make(
 
     out: where scenes go (AGENTIC_SIM_WORLD_GEN_OUT; default <folder>/scenes, or $AGENTIC_SIM_WORLD_GEN_OUT when set).
     env: more variables for the MCP server (e.g. AGENTIC_SIM_WORLD_GEN_SOURCES); the server also inherits Claude Code's.
+        They override SERVER_DEFAULTS (AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=1).
     copy_skill: copy the skill instead of linking it (a link follows `git pull` in the repository).
     allow_tools: let the agentic-sim-world-gen tools run without a permission prompt (.claude/settings.json).
     model: the model Claude Code uses in this folder (settings.json `model`, e.g. "sonnet": cheaper per token); None leaves Claude Code's own choice.
@@ -125,7 +129,8 @@ def make(
         raise ValueError(f"make the workspace outside the agentic-sim-world-gen repository ({REPO})")
     d.mkdir(parents=True, exist_ok=True)
     out_dir = Path(out or os.environ.get("AGENTIC_SIM_WORLD_GEN_OUT") or d / "scenes").expanduser().absolute()
-    server_env = {"AGENTIC_SIM_WORLD_GEN_OUT": str(out_dir), **(env or {})}
+    # Isaac Sim stays up between calls: compare_photo 90 -> 70 s, check 113 -> 78 s from the 2nd call on
+    server_env = {"AGENTIC_SIM_WORLD_GEN_OUT": str(out_dir), **SERVER_DEFAULTS, **(env or {})}
     files = [_write(d / ".mcp.json", json.dumps(
         {"mcpServers": {"agentic-sim-world-gen": {"command": _mcp_command(), "args": [], "env": server_env}}},
         indent=2, ensure_ascii=False) + "\n", force)]

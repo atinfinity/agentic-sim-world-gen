@@ -7,7 +7,9 @@ Part of the world-gen skill ([SKILL.md](SKILL.md)); read it when the request nee
 Looking at the photo with Read is not enough. Record it with `set_input` (with its camera), and after every
 compose compare it with `compare_photo` until the scene matches. Status `photo_compare_hint` says when that
 comparison is missing or out of date, and `compose_scene` returns it as `next`. `finish` stops on it
-(`stopped: compare`) while compare rounds are left and Isaac Sim's Python is at hand. When compare_photo
+(`stopped: compare`) while compare rounds are left and Isaac Sim's Python is at hand - but not when the
+only change since the comparison is small moves (up to 15 cm / 10°, e.g. the physics fixes): `photo_compare.small_moves`
+lists them, and they are not compared again. When compare_photo
 cannot run (it failed twice, or the photo files are not on this machine) finish goes on; to say so yourself:
 `set_assumptions([{item: "photo_compare", value: <why>}])`.
 With several photos, compare_photo shows only the rows that changed since you last saw them (`unchanged`

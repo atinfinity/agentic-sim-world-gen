@@ -1468,7 +1468,7 @@ Walls: south y=0, north y=depth, west x=0, east x=width. "Front" is the side a p
 - `center`?: bool — room center
 - `ceiling`?: bool — hang from the ceiling: top at the room height (ceiling signage, lamps); combine with against_wall / center / position for x-y
 - `wall_height`?: num — hang on the wall: bottom this high above the floor [m] (posters, POP, clocks, shelves on brackets); with against_wall, gap default 0.005
-- `gap`?: num — distance to the wall/target [m]; negative = tuck under (only if the knee space is open, else PhysX explodes)
+- `gap`?: num — distance to the wall/target [m]; negative = tuck under (only if the knee space is open, else PhysX explodes). Left out, a chair in_front_of a desk goes under as far as their measured parts allow
 
 ## LayoutOption
 
