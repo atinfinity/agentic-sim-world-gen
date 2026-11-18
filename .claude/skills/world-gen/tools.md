@@ -337,7 +337,13 @@ room that source alone asks for (1.0 = agrees), `median`, `pm` and `outlier` (th
 others agree, also a "scale: ..." warning saying what to do). When the fitted wall height is that outlier,
 `height_suspect` {height_m, typical, photos} (and `room.height_suspect`, a "height: ..." warning) says the
 ceiling's landmarks in those photos are likely misread (a soffit, a beam): apply keeps the scene's height;
-check them, or fit again with fit_height=false and the real (or a typical) height. Aim for 6+
+check them, or fit again with fit_height=false and the real (or a typical) height. A fitted height outside
+the room's range (`place`: home, office, school 2.4-3.3 m, lab, hospital, cafe, restaurant; or
+`height_range`; the scene's place with out_dir; no place / a shop, factory, hall: no range, only warned of) or
+suspect is fitted again held (the given height, else 2.4 / 2.7 m) inside the same call: `height_refit`
+{adopted: held | fitted, reason, fitted, held, metric_worse} - held when the landmarks fit it about as well and
+the depth / door top do not fit it worse (the scale was off); fitted otherwise (misread ceiling landmarks, or
+a ceiling the depth says is that high). apply writes a held height only when given. Aim for 6+
 measurements per photo and at least one landmark shared with another photo (a corner, an opening).
 `locate` turns pixels into floor positions afterwards (furniture feet at z=0, a table top at its height);
 give each its `object` (the scene object id) and the result's `objects` has each one's floor center, and
@@ -1397,6 +1403,8 @@ Shelf boards are found from the fixture's geometry (agentic_sim_world_gen.assets
 - `points`?: {str: SharedPoint}
 - `locate`?: [Locate]
 - `relative`?: [RelativePose] — relative poses of video frames (video_poses): constrain and seed the cameras' view directions
+- `place`?: str — what the room is (Room.place: home, office, school ...): the wall heights it may have (CEILING_RANGE_BY_PLACE: home, office, school, lab, hospital, cafe, restaurant); a fitted height outside is fitted again held at a typical one. Other places (shops, factories, halls) and none: not held, only warned of. fit_photos takes it from the scene folder
+- `height_range`?: [num,num] — wall heights this room may have [m] (0 < low < high), in place of the place's (a hall: (3, 6))
 - `inside`?: [str] — photos whose camera stood in the room: held at least 0.1 m inside every wall (the fit may move the camera or the walls; when a wall is placed wrong, fix its landmarks instead - see the result's `outside`)
 
 ## Fixtures
