@@ -251,8 +251,13 @@ def _axes(yaw_deg: float, pitch_deg: float, roll_deg: float = 0.0):
 
 # ---------- the model ----------
 
+def _has_depth(c: PhotoObs) -> bool:
+    """The photo has a landmark or surface pixel with a depth."""
+    return any(o.depth for o in [*c.points, *c.lines, *c.surfaces])
+
+
 def _depth_seen(req: FitRequest) -> bool:
-    return any(o.depth for c in req.photos.values() for o in [*c.points, *c.lines, *c.surfaces])
+    return any(_has_depth(c) for c in req.photos.values())
 
 
 def _sees(c: PhotoObs, level: str) -> bool:
@@ -447,7 +452,7 @@ class _Model:
             for k, v, s in (("x", x, 1), ("y", y, 1), ("z", req.eye_height, 1), ("yaw", float(f), 30),
                             ("pitch", 8.0, 10), ("roll", 0.0, 3)):
                 self._add(f"{cid}.{k}", v, s)
-            if any(o.depth for o in [*c.points, *c.lines, *c.surfaces]):
+            if _has_depth(c):
                 self._add(f"{cid}.dscale", 0.0, 0.1)  # log of (model depth / true depth) for this photo
         self.index = {n: i for i, n in enumerate(self.names)}
         self.inside = [cid for cid in req.inside if cid in req.photos]
@@ -477,8 +482,9 @@ class _Model:
         camera heights: the room came out 3x (#27)."""
         if _depth_seen(self.req):
             return True
+        held = _cameras_held(self.req)
         for cid, c in self.req.photos.items():
-            if _n_obs(c) < MIN_OBS:
+            if cid not in held:
                 continue
             if any(o.at.startswith("corner:") and o.at.endswith(":ceiling") for o in c.points):
                 return True
@@ -1281,6 +1287,15 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
                         + (" (a door's top or a typical height held it too)" if m.size_priors else
                            " - a door's top (seen) or a shared point at a typical height (a desk or counter top, "
                            "points: z with z_sigma) holds it within a few %"))
+    scale = _scale_evidence(m, req, p, cams, H)  # its warnings join below, after the size priors'
+    on_eye = scale.pop("on_eye")
+    if not m.scale_seen:  # the typical sizes are named only when they reach the width or depth
+        held = any(s.get("used") for s in scale["sources"] if s["by"] in ("door top", "typical height"))
+        warnings.append(f"no landmark at the ceiling is seen: the room's scale comes from the camera height "
+                        f"{req.eye_height} m (eye_height)"
+                        + (" and the typical sizes (size_priors)" if held else "")
+                        + (f"; the camera height alone holds the {' and '.join(on_eye)} (see below)" if on_eye else "")
+                        + " - add a ceiling corner / line, a door's top, or give eye_height if known")
     if rms > 6:
         warnings.append(f"rms {rms:.1f} px is high: a landmark may be mislabeled (see worst)")
     if len(r) < len(x):
@@ -1320,15 +1335,6 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
         if abs(d["fitted"] - d["typical"]) > 2 * d["sigma"]:
             warnings.append(f"{d['of']} came out {d['fitted']} m against the typical {d['typical']} m: the scale is "
                             "off, or this one is not typical (give its `top` / `z_sigma`, or label the landmark again)")
-    scale = _scale_evidence(m, req, p, cams, H)
-    on_eye = scale.pop("on_eye")
-    if not m.scale_seen:  # the typical sizes are named only when they reach the width or depth
-        held = any(s.get("used") for s in scale["sources"] if s["by"] in ("door top", "typical height"))
-        warnings.append(f"no landmark at the ceiling is seen: the room's scale comes from the camera height "
-                        f"{req.eye_height} m (eye_height)"
-                        + (" and the typical sizes (size_priors)" if held else "")
-                        + (f"; the camera height alone holds the {' and '.join(on_eye)} (see below)" if on_eye else "")
-                        + " - add a ceiling corner / line, a door's top, or give eye_height if known")
     warnings += scale.pop("warnings")
     worst = sorted(rows, key=lambda t: -t[2])[:5]
     return {
@@ -1356,13 +1362,20 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
 def _holds_camera(c: PhotoObs) -> bool:
     """A photo with enough measurements to hold its camera (MIN_OBS), or with a depth: thinner ones can sit
     anywhere and neither measure the room nor carry a scale."""
-    return _n_obs(c) >= MIN_OBS or any(o.depth for o in [*c.points, *c.lines, *c.surfaces])
+    return _n_obs(c) >= MIN_OBS or _has_depth(c)
+
+
+def _cameras_held(req: FitRequest) -> set[str]:
+    """The photos whose camera is held (_holds_camera). One rule for whether the scale is seen
+    (_Model._scale_seen) and where it reaches (_scale_reach)."""
+    return {cid for cid, c in req.photos.items() if _holds_camera(c)}
 
 
 DIM_WALLS = {"width": ("west", "east"), "depth": ("south", "north")}
 
 
-def _scale_reach(m: _Model, req: FitRequest) -> tuple[dict[str, set[str]], dict[str, tuple[list[str], bool]]]:
+def _scale_reach(m: _Model, req: FitRequest
+                 ) -> tuple[dict[str, set[str]], dict[str, tuple[list[str], bool]], dict[str, set[str]]]:
     """Which photos each source of the scale holds, and which photos measure the width / depth.
 
     Without a ceiling at a known height every photo can carry its own scale (the camera height trades off with
@@ -1370,27 +1383,36 @@ def _scale_reach(m: _Model, req: FitRequest) -> tuple[dict[str, set[str]], dict[
     a shared point with a fixed z, a size prior (a door's top, a typical height), a depth, a fitted ceiling (its
     height held near the guess: without a depth that holds the scale, not the eye height) - and, to a fixed
     point, every photo that shares something whose size the held ones fix: an opening, a shared point, the
-    ceiling (when its height is fitted), the width or depth (measured by both photos). A dimension's photos are
-    those that hold their camera and see both of its walls; when none does, those that see one of them
-    (`one_wall` True), and it is held only when the held ones among them see both walls.
-    Returns ({source: held photos}, {dimension: (its photos, one_wall)})."""
-    photos = {cid: c for cid, c in req.photos.items() if _holds_camera(c)}
+    ceiling (when its height is fitted), the width or depth (measured by both photos). A room corner or a floor
+    line seen by both is not such a link: it fixes where each camera is, not its scale (a fit: a window's top in
+    photo w set the depth, the width of photo s, which shares the north-east corner with w, stayed at the eye
+    height's). A dimension's photos are those whose camera is held (_cameras_held) and that see both of its
+    walls; when none does, those that see one of them (`one_wall` True), and it is held only when the held ones
+    among them see both walls.
+    Returns ({source: held photos}, {dimension: (its photos, one_wall)}, {photo: its walls})."""
+    held_cams = _cameras_held(req)
+    photos = {cid: c for cid, c in req.photos.items() if cid in held_cams}
     walls = {cid: _walls_of(req, c) for cid, c in photos.items()}
     dims: dict[str, tuple[list[str], bool]] = {}
     for d, pair in DIM_WALLS.items():
         both = [cid for cid, w in walls.items() if set(pair) <= w]
         dims[d] = (both, False) if both else ([cid for cid, w in walls.items() if w & set(pair)], True)
-    shared: dict[str, set[str]] = {}  # per photo: what it shares with the others that a held photo sizes
+    links: dict[str, set[str]] = {}  # what a held photo sizes -> the photos that share it
     for cid, c in photos.items():
         objs = {_landmark_object(req, n) for n in [o.at for o in c.points] + [o.along for o in c.lines]}
         sh = {o for o in objs if o in req.openings or o in req.points}
         if m.fit_H and _sees(c, "ceiling"):
             sh.add("ceiling")
         sh |= {"dim:" + d for d, (ph, one) in dims.items() if not one and cid in ph}
-        shared[cid] = sh
+        for t in sh:
+            links.setdefault(t, set()).add(cid)
+    by_photo: dict[str, set[str]] = {cid: set() for cid in photos}
+    for t, ph in links.items():
+        for cid in ph:
+            by_photo[cid].add(t)
     seeds: dict[str, set[str]] = {}
     for cid, c in photos.items():
-        if any(o.depth for o in [*c.points, *c.lines, *c.surfaces]):
+        if _has_depth(c):
             seeds.setdefault("depth", set()).add(cid)
         if _sees(c, "ceiling"):  # the height given; a fitted one is held near the guess (HEIGHT_PX_PER_M)
             seeds.setdefault("height (guess)" if m.fit_H else "ceiling", set()).add(cid)
@@ -1399,35 +1421,38 @@ def _scale_reach(m: _Model, req: FitRequest) -> tuple[dict[str, set[str]], dict[
     for u, seen in _prior_photos(req).items():
         if seen & photos.keys():
             seeds[u] = seen & photos.keys()
-    held_by = {}
-    for k, held in seeds.items():
-        held = set(held)
-        while True:
-            reached = set().union(*(shared[cid] for cid in held))
-            more = {cid for cid in photos if cid not in held and shared[cid] & reached}
-            if not more:
-                break
-            held |= more
-        held_by[k] = held
-    return held_by, dims
+
+    def spread(start: set[str]) -> set[str]:
+        held, todo, done = set(start), list(start), set()
+        while todo:
+            for t in by_photo[todo.pop()] - done:
+                done.add(t)
+                for o in links[t] - held:
+                    held.add(o)
+                    todo.append(o)
+        return held
+
+    return {k: spread(v) for k, v in seeds.items()}, dims, walls
 
 
 def _dims_on_eye(m: _Model, req: FitRequest):
     """({source: held photos}, {source: the dimensions it reaches}, {dimension: (its photos, one_wall)} for the
-    measured dimensions no source reaches: those rest on the camera height). A dimension measured only by
+    measured dimensions no source reaches: those rest on the camera height, only when something of known height
+    is seen; else the general warning says it), whether any dimension is measured. A dimension measured only by
     photos on one of its walls is reached when the held ones among them see both walls."""
-    metric, dim_photos = _scale_reach(m, req)
+    metric, dim_photos, walls = _scale_reach(m, req)
     dims = {d: v for d, v in dim_photos.items() if v[0]}
 
     def reaches(held: set[str], d: str) -> bool:
         ph, one = dims[d]
         if not one:
             return bool(held & set(ph))
-        seen = set().union(*(_walls_of(req, req.photos[cid]) for cid in held & set(ph)))
+        seen = set().union(*(walls[cid] for cid in held & set(ph)))
         return set(DIM_WALLS[d]) <= seen
 
     reach = {k: [d for d in dims if reaches(held, d)] for k, held in metric.items()}
-    return metric, reach, {d: v for d, v in dims.items() if not any(d in r for r in reach.values())}
+    on_eye = {d: v for d, v in dims.items() if not any(d in r for r in reach.values())} if metric else {}
+    return metric, reach, on_eye, bool(dims)
 
 
 def _median(v: list[float]) -> float:
@@ -1452,7 +1477,7 @@ def _scale_evidence(m: _Model, req: FitRequest, p, cams: dict, H: float) -> dict
 
     # which sources reach the photos that measure the width / depth; a dimension none reaches rests on the
     # camera height (each photo's own, near eye_height), whatever else is seen elsewhere
-    metric, reach, on_eye = _dims_on_eye(m, req)
+    metric, reach, on_eye, measured = _dims_on_eye(m, req)
     held_srcs = []  # the sources that hold the fit, for the outlier below: as before the per-dimension reach
     ds = [c["depth_scale"] for c in cams.values() if "depth_scale" in c]
     if ds:
@@ -1461,15 +1486,17 @@ def _scale_evidence(m: _Model, req: FitRequest, p, cams: dict, H: float) -> dict
         held_srcs.append(src[-1])
     for u, v, sg in m.size_priors:
         if p[u] > 0.05:
+            # nothing measures the width or depth: a prior in a held photo is used as before
+            ok = bool(reach.get(u)) or (not measured and u in metric)
             add("door top" if u.endswith(".top") else "typical height", v / p[u], sg / v, of=u,
-                used=bool(reach.get(u)), **({} if reach.get(u) else {"holds": "only the photos it is in"}))
+                used=ok, **({} if ok else {"holds": "only the photos it is in"}))
             held_srcs.append(src[-1])
     zs = [p[f"{cid}.z"] for cid in req.photos]
     mean_z = sum(zs) / len(zs)
     if mean_z > 0.05:  # always listed; it holds the fit only when nothing better is seen
         add("eye height", req.eye_height / mean_z, SCALE_ERR["eye height"], camera_height_m=round(mean_z, 2),
             used=bool(not m.scale_seen or m.depth_only or on_eye),
-            **({"sets": sorted(on_eye)} if on_eye and metric else {}))
+            **({"sets": sorted(on_eye)} if on_eye else {}))
         if not m.scale_seen or m.depth_only:
             held_srcs.append(src[-1])
     if _ceiling_seen(req):
@@ -1479,18 +1506,17 @@ def _scale_evidence(m: _Model, req: FitRequest, p, cams: dict, H: float) -> dict
                         "range": [round(lo / H, 3), round(hi / H, 3)], "height_m": round(H, 2), "used": False})
         else:
             src.append({"by": "height (given)", "scale": 1.0, "range": [1.0, 1.0], "height_m": round(H, 2), "used": True})
-    out: dict[str, Any] = {"sources": src, "warnings": [], "on_eye": sorted(on_eye) if metric else []}
-    if metric:  # something of known height is seen, but not by the photos that measure these
-        for d, (ph, one) in on_eye.items():
-            far = " and ".join(DIM_WALLS[d]) + " walls"
-            if one:
-                who = f"only photos that see one of its walls measure it ({', '.join(ph)})"
-            else:
-                who = (f"photos {', '.join(ph)} measure it but see" if len(ph) > 1 else
-                       f"photo {ph[0]} measures it but sees") + " nothing of known height"
-            out["warnings"].append(
-                f"the room's {d} rests on the camera height (eye_height {req.eye_height} m): {who} - give "
-                f"eye_height if known, or mark a door's top / a ceiling corner in a photo that also sees the {far}")
+    out: dict[str, Any] = {"sources": src, "warnings": [], "on_eye": sorted(on_eye)}
+    for d, (ph, one) in on_eye.items():  # something of known height is seen, but not by the photos measuring these
+        far = " and ".join(DIM_WALLS[d]) + " walls"
+        if one:
+            who = f"only photos that see one of its walls measure it ({', '.join(ph)})"
+        else:
+            who = (f"photos {', '.join(ph)} measure it but see" if len(ph) > 1 else
+                   f"photo {ph[0]} measures it but sees") + " nothing of known height"
+        out["warnings"].append(
+            f"the room's {d} rests on the camera height (eye_height {req.eye_height} m): {who} - give "
+            f"eye_height if known, or mark a door's top / a ceiling corner in a photo that also sees the {far}")
     if not src:
         return out
     free = [s for s in src if s["by"] != "height (given)"]  # the given height is the fit itself
