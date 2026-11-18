@@ -498,6 +498,44 @@ def _ensure_shelves(scene: ResolvedScene) -> None:
                     c["hooks"] = sh.find_hooks(c["uri"], _cache_dir())
                 except Exception:
                     c["hooks"] = []
+    _ensure_knees(scene)
+
+
+KNEE_RETRY_S = 3600  # an asset that could not be read is tried again after this long (offline for a while)
+
+
+def _ensure_knees(scene: ResolvedScene) -> None:
+    """Measure the parts of each chair in front of a desk and of that desk (how far it goes under; once per
+    selected asset, kept in the candidate so the solver needs no USD). Arrays are not tucked, so not measured.
+    Unreadable: {"v", "failed"} (no tuck), measured again after KNEE_RETRY_S or with a new knee.VERSION."""
+    import time
+
+    from agentic_sim_world_gen.layout import knee
+    from agentic_sim_world_gen.layout.validate import tuck_pair
+
+    by = {p.object_id: p for p in scene.placements}
+    now, done = time.time(), {}
+    for o in scene.spec.objects:
+        lay = o.layout
+        if (lay is None or not lay.in_front_of or lay.gap is not None or lay.in_front_of not in by
+                or o.array is not None or scene.obj(lay.in_front_of).array is not None):
+            continue
+        mine, theirs = by.get(o.id), by[lay.in_front_of]
+        if mine is None or mine.asset is None or theirs.asset is None:
+            continue
+        if not tuck_pair(o, mine.asset, scene.obj(lay.in_front_of), theirs.asset):
+            continue
+        for p in (mine, theirs):
+            c = p.candidates[p.selected]
+            k = c.get("knee")
+            if k and k.get("v") == knee.VERSION and ("lo" in k or now - k.get("failed", 0) < KNEE_RETRY_S):
+                continue
+            if c["uri"] not in done:
+                try:
+                    done[c["uri"]] = knee.scan(c["uri"], _cache_dir())
+                except Exception:
+                    done[c["uri"]] = None
+            c["knee"] = done[c["uri"]] or {"v": knee.VERSION, "failed": round(now)}
 
 
 def _hooks_view(hooks: list[dict]) -> dict[str, Any]:
@@ -5144,7 +5182,7 @@ def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bo
         res["screens_off_not_applied_hint"] = (
             "monitors / TVs room.place would switch off, left as the asset has them: a Hugging Face asset not "
             "fetched yet (its screen may glow); set_screen(object_id, \"off\") fetches it and switches it off")
-    if log and (h := st.get("photo_compare_hint")):
+    if log and (h := st.get("photo_compare_hint")) and "small_moves" not in st.get("photo_compare", {}):
         res["next"] = h
     return res
 
@@ -5653,8 +5691,6 @@ def compare_photo(scene: str | Path, input_id: str | None = None, timeout_s: int
     jobs = []
     for i in photos:
         render = d / f"render_{i.id}.png"
-        if render.exists():
-            render.unlink()
         jobs.append({"camera": f"/World/Cameras/{i.id}", "out": str(render), "photo": i.path,
                      "size": list(i.size_px) if i.size_px else None})
     if sheet.exists():
@@ -5678,6 +5714,8 @@ def compare_photo(scene: str | Path, input_id: str | None = None, timeout_s: int
         result.update(renders={i.id: j["out"] for i, j in zip(photos, jobs)}, image=str(sheet))
         if len(photos) == 1:
             result["render"] = jobs[0]["out"]
+        if result["ok"]:  # only a round the agent sees moves what it last saw
+            result.update(_changed_rows(d, photos, jobs))
         full_m: dict[str, Any] = {}
         for i in photos:  # sizes to compare, not only colors
             m = measure_photo(d, i.id)
@@ -5699,6 +5737,105 @@ def compare_photo(scene: str | Path, input_id: str | None = None, timeout_s: int
         result.update(_isaac_failure(proc))
         _compare_failed(d, result)
     return result
+
+
+RENDER_DIFF_LEVEL = 24  # a pixel differs from the render last shown by more than this (0-255, gray) ...
+RENDER_DIFF_FRAC = 0.001  # ... in more than this fraction of the render (RENDER_DIFF_W wide): the render changed
+RENDER_DIFF_W = 256
+CHANGED_SHEET = "compare_changed.jpg"
+SHOWN_JSON = "compare_shown.json"  # per input: what its last shown row was made of (camera, photo file)
+
+
+def _render_diff(prev: Path, now: Path) -> float | None:
+    """The fraction of the render that changed since it was last shown, None when they cannot be compared."""
+    from PIL import Image, ImageChops
+
+    try:
+        a, b = Image.open(prev).convert("L"), Image.open(now).convert("L")
+    except OSError:
+        return None
+    if a.size != b.size:
+        return None
+    size = (RENDER_DIFF_W, max(1, round(RENDER_DIFF_W * a.height / a.width)))
+    diff = ImageChops.difference(a.resize(size), b.resize(size))
+    hist = diff.histogram()
+    return sum(hist[RENDER_DIFF_LEVEL + 1:]) / (size[0] * size[1])
+
+
+def _row_key(i: InputRef) -> str:
+    """What else makes a row: its camera and its photo file (a camera turned toward a bare wall changes few pixels;
+    set_input can swap the photo under the same id)."""
+    p = Path(i.path) if i.path else None
+    st = p.stat() if p and p.exists() else None
+    return json.dumps([i.camera.model_dump() if i.camera else None, i.path,
+                       st and st.st_size, st and st.st_mtime_ns], sort_keys=True)
+
+
+def _changed_rows(d: Path, photos: list[InputRef], jobs: list[dict[str, Any]]) -> dict[str, Any]:
+    """The compare sheets of a video were 7 rows a round, and most rows did not change between rounds. The
+    MCP tool shows only the rows that changed since the agent last saw them (compare_changed.jpg); compare.png keeps
+    every row. Each row is compared with the render last shown (render_<id>.shown.png): a hidden row keeps its
+    baseline, so many small changes add up and come back; a failed round moves nothing."""
+    f = d / SHOWN_JSON
+    try:
+        keys = json.loads(f.read_text()) if f.exists() else {}
+    except (OSError, ValueError):
+        keys = {}
+    same = []
+    if len(photos) >= 2:
+        for i, j in zip(photos, jobs):
+            shown = Path(j["out"]).with_suffix(".shown.png")
+            if keys.get(i.id) != _row_key(i) or not shown.exists():
+                continue
+            v = _render_diff(shown, Path(j["out"]))
+            if v is not None and v <= RENDER_DIFF_FRAC:
+                same.append(i.id)
+    show = [(i, j) for i, j in zip(photos, jobs) if i.id not in same]
+    for i, j in show:  # what the agent sees now
+        if Path(j["out"]).exists():
+            shutil.copyfile(j["out"], Path(j["out"]).with_suffix(".shown.png"))
+            keys[i.id] = _row_key(i)
+    f.write_text(json.dumps(keys, indent=1))
+    sheet = d / CHANGED_SHEET
+    if sheet.exists():
+        sheet.unlink()
+    if not same:
+        return {}
+    out: dict[str, Any] = {"unchanged": same,
+                           "unchanged_hint": f"the renders of {', '.join(same)} did not change since you last saw them: "
+                                             "only the other rows are shown"
+                                             + (f" ({CHANGED_SHEET})" if show else " (none changed)")
+                                             + "; compare.png has every row (Read it after a compaction)"}
+    if any(Path(j["out"]).exists() for _, j in show):
+        _side_by_side([(i.id, Path(i.path), Path(j["out"])) for i, j in show if Path(j["out"]).exists()], sheet)
+        out["image_changed"] = str(sheet)
+    return out
+
+
+def _side_by_side(rows: list[tuple[str, Path, Path]], out: Path, h: int = 360) -> Path:
+    """One row per photo: the photo and its render, labeled (the rows of compare.png without the credits)."""
+    from PIL import Image, ImageDraw
+
+    blocks = []
+    for rid, photo, render in rows:
+        tiles = [Image.open(x).convert("RGB") for x in (photo, render)]
+        tiles = [t.resize((round(h * t.width / t.height), h)) for t in tiles]
+        b = Image.new("RGB", (sum(t.width for t in tiles) + 8, h + 22), "white")
+        draw = ImageDraw.Draw(b)
+        x = 0
+        for t, label in zip(tiles, (f"photo: {rid}", "render")):
+            b.paste(t, (x, 22))
+            draw.text((x + 6, 5), label, fill="black")
+            x += t.width + 8
+        blocks.append(b)
+    sheet = Image.new("RGB", (max(b.width for b in blocks), sum(b.height for b in blocks) + 10 * (len(blocks) - 1)),
+                      "white")
+    y = 0
+    for b in blocks:
+        sheet.paste(b, (0, y))
+        y += b.height + 10
+    sheet.save(out, quality=85)
+    return out
 
 
 COMPARE_JSON = "compare.json"
@@ -5758,9 +5895,65 @@ def _photo_inputs(s: ResolvedScene) -> list[InputRef]:
     return [i for i in s.spec.inputs if i.kind != "reference" and i.camera is not None]
 
 
+SMALL_MOVE_M = 0.15  # moves up to this far (and turns up to SMALL_TURN_DEG) since compare_photo do not stop finish
+SMALL_TURN_DEG = 10.0
+POSE_KEYS = ("position", "z", "yaw_deg", "facing_deg")
+# object fields that do not change what the photos' renders show: who placed it, where it was seen, its label, and
+# the layout relation (the solver writes its result into position / z / yaw; moving an object drops the relation)
+NOT_SEEN = ("label", "seen_in", "placed_by_user", "alt_queries", "layout")
+
+
+def _layout_shape(d: Path) -> dict[str, Any] | None:
+    """The scene as compare_photo saw it, split in two: each object's pose (position, z, yaw, facing) and a hash
+    of everything else that shows in a render (the room, the assets, the objects' other fields)."""
+    from agentic_sim_world_gen.preview.page import NOT_IN_USD
+
+    try:
+        data = json.loads((d / "scene.resolved.json").read_text(encoding="utf-8"))
+        spec = data.get("spec", {})
+        for k in NOT_IN_USD:
+            spec.pop(k, None)
+        poses, arrays = {}, []
+        for o in spec.get("objects", []):
+            poses[o["id"]] = [o.get(k) for k in POSE_KEYS]
+            if o.get("array"):
+                arrays.append(o["id"])
+            if isinstance(o.get("fill"), dict) and isinstance(o["fill"].get("slots"), list):
+                # the products' places are in world coordinates, written again when their shelf moves: the shelf's
+                # own pose is compared; here only how many there are
+                o["fill"]["slots"] = len(o["fill"]["slots"])
+            for k in (*POSE_KEYS, *NOT_SEEN):
+                o.pop(k, None)
+    except (OSError, ValueError, AttributeError, KeyError, TypeError):
+        return None
+    rest = hashlib.sha1(json.dumps(data, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
+    return {"rest": rest, "poses": poses, "arrays": arrays}
+
+
+def _small_moves(was: dict[str, Any] | None, now: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    """The objects that moved a little since the comparison, or None when anything else changed: an object
+    added / removed / swapped, the room, an asset, a move over SMALL_MOVE_M or a turn over SMALL_TURN_DEG."""
+    if not was or not now or was.get("rest") != now.get("rest") or set(was.get("poses", {})) != set(now["poses"]):
+        return None
+    out = []
+    for oid, (p1, z1, yaw1, f1) in now["poses"].items():
+        p0, z0, yaw0, f0 = was["poses"][oid]
+        if [p0, z0, yaw0, f0] == [p1, z1, yaw1, f1]:
+            continue
+        if (p0 is None) != (p1 is None) or (f0 is None) != (f1 is None):
+            return None
+        dist = math.dist((*(p0 or (0, 0)), z0 or 0.0), (*(p1 or (0, 0)), z1 or 0.0))
+        turn = max(abs((a - b + 180) % 360 - 180) for a, b in ((yaw0 or 0.0, yaw1 or 0.0), (f0 or 0.0, f1 or 0.0)))
+        # a row of units turns about its middle: a few degrees move its far ends a lot (8 racks, 9 deg: 0.6 m)
+        if dist > SMALL_MOVE_M or turn > SMALL_TURN_DEG or (turn and oid in now.get("arrays", [])):
+            return None
+        out.append({"id": oid, "moved_m": round(dist, 3), **({"turned_deg": round(turn, 1)} if turn else {})})
+    return out
+
+
 def _record_compare(d: Path, photos: list[InputRef]) -> int:
-    """What compare_photo last compared: the scene it rendered and each photo's camera then, and how many
-    rounds of comparing there were. Returns that count."""
+    """What compare_photo last compared: the scene it rendered (and its layout) and each photo's camera then, and
+    how many rounds of comparing there were. Returns that count."""
     from agentic_sim_world_gen.preview.page import scene_hash
 
     f = d / COMPARE_JSON
@@ -5772,7 +5965,8 @@ def _record_compare(d: Path, photos: list[InputRef]) -> int:
     made = scene_hash(d)
     # the same scene and cameras again (a retry) is not a new round
     n = int(old.get("rounds", 0)) + (0 if old.get("made_from") == made and old.get("cameras") == cams else 1)
-    f.write_text(json.dumps({"made_from": made, "cameras": cams, "rounds": max(n, 1)}, indent=1))
+    f.write_text(json.dumps({"made_from": made, "cameras": cams, "rounds": max(n, 1), "shape": _layout_shape(d)},
+                            indent=1))
     return max(n, 1)
 
 
@@ -5808,14 +6002,23 @@ def _compare_state(s: ResolvedScene, d: Path) -> dict[str, Any]:
         out["camera_moved"] = moved
     if never:
         out["not_compared"] = never
+    small = None
     if rec.get("made_from") != scene_hash(d):
         out["stale"] = True
+        small = None if moved or never else _small_moves(rec.get("shape"), _layout_shape(d))
+        if small:
+            out["small_moves"] = small
     hint = ""
     if moved:
         hint = (f"the camera of {', '.join(moved)} moved after the last comparison. A photo's camera is where the photo "
                 "was taken: to change where things are, move the objects, not the camera (set it back unless you were "
                 "fixing its pose to the photo). ")
-    if moved or never or out.get("stale"):
+    if small:  # a few cm off what was compared (a nudge, the physics fixes) - not worth a render
+        hint += ("since the last compare_photo only small moves: " + ", ".join(
+            f"{m['id']} {m['moved_m'] * 100:.0f} cm" + (f" {m['turned_deg']:g} deg" if m.get("turned_deg") else "")
+            for m in small[:8]) + (f" and {len(small) - 8} more" if len(small) > 8 else "")
+            + " (within " + f"{SMALL_MOVE_M * 100:.0f} cm / {SMALL_TURN_DEG:g} deg; not compared again)")
+    elif small is None and (moved or never or out.get("stale")):  # [] - only labels and the like changed
         hint += "The scene changed since the last compare_photo: compose_scene and compare_photo again before reporting"
         if out["rounds"] >= COMPARE_ROUNDS:
             hint += (f" (round {out['rounds'] + 1}: the last one - then report what still differs instead of fixing "
@@ -6112,7 +6315,11 @@ def fit_photos(request: dict[str, Any] | Any, out_dir: str | Path | None = None,
     up inside an object or outside the room.
     depth=true: the photos with `image` get a depth map (agentic_sim_world_gen.depth, MoGe-2 in AGENTIC_SIM_WORLD_GEN_DEPTH_PYTHON; kept as
     <stem>.depth.npz) and their points / lines / surfaces the depth at their pixel; it sets the scale without a
-    ceiling landmark."""
+    ceiling landmark.
+    A fitted height outside the room's range (FitRequest.place / height_range; the scene's place when out_dir is a
+    scene folder; no place or one not listed: no range) or suspect is fitted again held at a typical one;
+    `height_refit` has both fits and the one taken (the held one when the landmarks fit it about as well and nothing
+    measured in meters fits it worse). apply writes a held height only when the request gave it."""
     from agentic_sim_world_gen.photo_fit import FitRequest, fit
 
     info = None
@@ -6132,6 +6339,15 @@ def fit_photos(request: dict[str, Any] | Any, out_dir: str | Path | None = None,
         req = request if isinstance(request, FitRequest) else FitRequest.model_validate(request)
     except Exception as e:  # pydantic ValidationError: say what is wrong, do not raise
         return {"ok": False, "error": str(e)}
+    scene = None  # loaded once: its place for the fit, then apply
+    if out_dir is not None and _resolved_path(out_dir).exists():
+        try:
+            scene = load(out_dir)
+        except Exception as e:  # a broken scene: say so, do not raise
+            return {"ok": False, "error": f"out_dir: the scene could not be read ({e})"}
+        if req.place is None and scene.spec.room.place is not None:
+            # the scene's place sets the wall heights a fitted height is held to
+            req = req.model_copy(update={"place": scene.spec.room.place})
     r = fit(req)
     if info is not None and r.get("ok"):
         from agentic_sim_world_gen import depth as dp
@@ -6153,12 +6369,12 @@ def fit_photos(request: dict[str, Any] | Any, out_dir: str | Path | None = None,
         f.write_text(json.dumps({"request": req.model_dump(mode="json"), "result": r}, ensure_ascii=False, indent=1))
         r["file"] = str(f)
     if apply is None:
-        apply = out_dir is not None and _resolved_path(out_dir).exists()
+        apply = scene is not None
     if apply and r.get("ok"):
-        if out_dir is None or not _resolved_path(out_dir).exists():
+        if scene is None:
             r["warnings"].append("apply: out_dir is not a scene folder (no scene.resolved.json) - nothing applied")
         else:
-            r["applied"] = _apply_fit(out_dir, req, r)
+            r["applied"] = _apply_fit(out_dir, req, r, scene)
             r["warnings"] += r["applied"].pop("warnings")
     return r
 
@@ -6166,15 +6382,16 @@ def fit_photos(request: dict[str, Any] | Any, out_dir: str | Path | None = None,
 FIT_BASIS = "写真から当てはめ"  # the assumptions fit_photos(apply) records
 
 
-def _apply_fit(scene: str | Path, req: Any, r: dict[str, Any]) -> dict[str, Any]:
+def _apply_fit(scene: str | Path, req: Any, r: dict[str, Any], s: Any = None) -> dict[str, Any]:
     """fit_photos' room and cameras into the scene: Room width / depth (and height when fitted), the fitted
     openings merged by id (style / clearance kept, the scene's other openings left alone), each photo input's
-    camera; one save with one history line, and the room size, openings and cameras as guessed assumptions."""
+    camera; one save with one history line, and the room size, openings and cameras as guessed assumptions.
+    s: the scene already loaded."""
     from agentic_sim_world_gen.scene.plan import Opening
     from agentic_sim_world_gen.scene.spec import PhotoCamera, Room
     from agentic_sim_world_gen.scene.walls import WALL_JA
 
-    s = load(scene)
+    s = s if s is not None else load(scene)
     d = _resolved_path(scene).parent
     room, warnings, done = r["room"], [], {}
     parts = []
@@ -6185,11 +6402,17 @@ def _apply_fit(scene: str | Path, req: Any, r: dict[str, Any]) -> dict[str, Any]
         data = s.spec.room.model_dump()
         data.update(width=room["width"], depth=room["depth"])
         suspect = room.get("height_fitted") and room.get("height_suspect")
+        # held at the height the request gave: the size was fitted at it, so the scene gets both; a typical
+        # height held does not replace the scene's (set_room's, say): kept, as any height the fit did not fit
+        held = ((r.get("height_refit") or {}).get("adopted") == "held" and "height" in req.model_fields_set
+                and abs(req.height - room["height"]) <= 0.01)
         if suspect:  # the ceiling's landmarks are likely misread: the room's size is used, its height not
             warnings.append(f"apply: the fitted height {room['height']} m is suspect (see scale.height_suspect) - the "
                             f"scene's {s.spec.room.height} m was kept; fit again with fit_height=false, or set_room(height="
                             f"{room['height']}) if the ceiling really is that high")
         elif room.get("height_fitted"):
+            data["height"] = room["height"]
+        elif held:
             data["height"] = room["height"]
         elif abs(room["height"] - s.spec.room.height) > 0.01:
             warnings.append(f"apply: the fit used the height {room['height']} m but the scene's room is "
@@ -6205,7 +6428,8 @@ def _apply_fit(scene: str | Path, req: Any, r: dict[str, Any]) -> dict[str, Any]
         done["room"] = {"width": room["width"], "depth": room["depth"], "height": h,
                         "openings": [o["id"] for o in room["openings"]]}
         parts.append(f"部屋 {room['width']:.2f} × {room['depth']:.2f} m・天井 {h:.2f} m"
-                     + ("（高さも推定）" if room.get("height_fitted") and not suspect else ""))
+                     + ("（高さも推定）" if room.get("height_fitted") and not suspect else
+                        "（推定した高さが外れたので高さを固定）" if held else ""))
         if room["openings"]:
             parts.append(f"開口 {len(room['openings'])}")
     inputs = {i.id: i for i in s.spec.inputs}

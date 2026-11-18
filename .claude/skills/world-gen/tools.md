@@ -142,6 +142,8 @@ Run compose_scene first. layout.svg shows every photo camera (position and field
 `round` counts the comparisons and `hint` says what to do next: fix every difference of one round
 together, about 3 rounds, then report what still differs. `measure` has the free widths each
 camera sees and what bounds them; the gaps of each line are in `measure_file` (or measure_photo).
+With several photos, from the second round on only the rows that changed since they were last shown are returned
+(`unchanged` names the others; `image` = compare.png still has every row).
 
 - `scene_dir`: str
 - `input_id`?: str
@@ -335,7 +337,13 @@ room that source alone asks for (1.0 = agrees), `median`, `pm` and `outlier` (th
 others agree, also a "scale: ..." warning saying what to do). When the fitted wall height is that outlier,
 `height_suspect` {height_m, typical, photos} (and `room.height_suspect`, a "height: ..." warning) says the
 ceiling's landmarks in those photos are likely misread (a soffit, a beam): apply keeps the scene's height;
-check them, or fit again with fit_height=false and the real (or a typical) height. Aim for 6+
+check them, or fit again with fit_height=false and the real (or a typical) height. A fitted height outside
+the room's range (`place`: home, office, school 2.4-3.3 m, lab, hospital, cafe, restaurant; or
+`height_range`; the scene's place with out_dir; no place / a shop, factory, hall: no range, only warned of) or
+suspect is fitted again held (the given height, else 2.4 / 2.7 m) inside the same call: `height_refit`
+{adopted: held | fitted, reason, fitted, held, metric_worse} - held when the landmarks fit it about as well and
+the depth / door top do not fit it worse (the scale was off); fitted otherwise (misread ceiling landmarks, or
+a ceiling the depth says is that high). apply writes a held height only when given. Aim for 6+
 measurements per photo and at least one landmark shared with another photo (a corner, an opening).
 `locate` turns pixels into floor positions afterwards (furniture feet at z=0, a table top at its height);
 give each its `object` (the scene object id) and the result's `objects` has each one's floor center, and
@@ -1399,6 +1407,8 @@ Shelf boards are found from the fixture's geometry (agentic_sim_world_gen.assets
 - `points`?: {str: SharedPoint}
 - `locate`?: [Locate]
 - `relative`?: [RelativePose] — relative poses of video frames (video_poses): constrain and seed the cameras' view directions
+- `place`?: str — what the room is (Room.place: home, office, school ...): the wall heights it may have (CEILING_RANGE_BY_PLACE: home, office, school, lab, hospital, cafe, restaurant); a fitted height outside is fitted again held at a typical one. Other places (shops, factories, halls) and none: not held, only warned of. fit_photos takes it from the scene folder
+- `height_range`?: [num,num] — wall heights this room may have [m] (0 < low < high), in place of the place's (a hall: (3, 6))
 - `inside`?: [str] — photos whose camera stood in the room: held at least 0.1 m inside every wall (the fit may move the camera or the walls; when a wall is placed wrong, fix its landmarks instead - see the result's `outside`)
 
 ## Fixtures
@@ -1470,7 +1480,7 @@ Walls: south y=0, north y=depth, west x=0, east x=width. "Front" is the side a p
 - `center`?: bool — room center
 - `ceiling`?: bool — hang from the ceiling: top at the room height (ceiling signage, lamps); combine with against_wall / center / position for x-y
 - `wall_height`?: num — hang on the wall: bottom this high above the floor [m] (posters, POP, clocks, shelves on brackets); with against_wall, gap default 0.005
-- `gap`?: num — distance to the wall/target [m]; negative = tuck under (only if the knee space is open, else PhysX explodes)
+- `gap`?: num — distance to the wall/target [m]; negative = tuck under (only if the knee space is open, else PhysX explodes). Left out, a chair in_front_of a desk goes under as far as their measured parts allow
 
 ## LayoutOption
 

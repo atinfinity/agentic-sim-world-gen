@@ -103,6 +103,16 @@ def stop() -> None:
 atexit.register(stop)
 
 
+def free_gpu() -> None:
+    """Stop the worker before another GPU program (the MoGe depth model) runs: the idle Kit holds 3.8-7.9 GB of
+    GPU memory, and on a small card both do not fit. A job running in the worker is let finish first (stop waits
+    for the lock); the next Isaac Sim call starts it again (about 11 s), which can happen while the GPU program
+    still runs if another tool call comes in meanwhile (not prevented)."""
+    if _worker is not None:
+        log.info("Isaac Sim worker: stopped to free the GPU for another program")
+        stop()
+
+
 def _fail(why: str) -> None:
     """The worker cannot be trusted any more: stop it, keep its log, let the caller go one-shot."""
     global _worker

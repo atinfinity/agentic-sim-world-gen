@@ -82,6 +82,7 @@ cd ~/agentic-sim-world-gen-ws && claude
 
 `workspace`は作業フォルダに次のものを作る：`.mcp.json`（agentic-sim-world-genのMCPサーバー）、スキルworld-gen（リポジトリへのリンク）、
 短いCLAUDE.md、会話の圧縮（compaction）の後も返答の言語を保つフックと、途中の1行・最終報告が利用者の言語で書かれたかを確かめるフック。シーンは`~/agentic-sim-world-gen-ws/scenes`にできる。
+`.mcp.json`には`AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=1`が入り、Isaac Simを起動したままにして2回目からのcheck・compare_photoを速くする（compare_photoで約90 → 70秒）。待っている間もGPUメモリを数GB使う（MoGeの単眼の深度の前には自動で止める）。要らなければ`--env AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=0`（`.mcp.json`の値が優先されるので、シェルの環境変数では切れない）。
 
 作業フォルダは**リポジトリの外**に作る（中に作るとエラー）。リポジトリの中で`claude`を起動しても動くが、
 開発用のCLAUDE.mdを毎ターン読むので料金が高く、会話の圧縮も早く起きる。

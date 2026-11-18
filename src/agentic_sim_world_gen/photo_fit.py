@@ -26,7 +26,7 @@ from __future__ import annotations
 import math
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, PrivateAttr
+from pydantic import BaseModel, Field, PrivateAttr, field_validator
 
 WALLS = ("south", "north", "west", "east")
 COMPASS = {"east": 0, "northeast": 45, "north": 90, "northwest": 135, "west": 180, "southwest": 225,
@@ -143,6 +143,20 @@ class FitRequest(BaseModel):
     locate: list[Locate] = Field(default_factory=list)
     relative: list[RelativePose] = Field(default_factory=list, description="relative poses of video frames "
                                          "(video_poses): constrain and seed the cameras' view directions")
+    place: str | None = Field(default=None, description="what the room is (Room.place: home, office, school ...): "
+                              "the wall heights it may have (CEILING_RANGE_BY_PLACE: home, office, school, lab, "
+                              "hospital, cafe, restaurant); a fitted height outside is fitted again held at a typical "
+                              "one. Other places (shops, factories, halls) and none: not held, only warned of. "
+                              "fit_photos takes it from the scene folder")
+    height_range: tuple[float, float] | None = Field(default=None, description="wall heights this room may have [m] "
+                                                     "(0 < low < high), in place of the place's (a hall: (3, 6))")
+
+    @field_validator("height_range")
+    @classmethod
+    def _height_range_ok(cls, v):
+        if v is not None and not 0 < v[0] < v[1]:
+            raise ValueError(f"height_range {list(v)}: needs 0 < low < high [m]")
+        return v
     inside: list[str] = Field(default_factory=list, description="photos whose camera stood in the room: held at "
                               "least 0.1 m inside every wall (the fit may move the camera or the walls; when a "
                               "wall is placed wrong, fix its landmarks instead - see the result's `outside`)")
@@ -193,6 +207,20 @@ MIN_OBS = 6  # a camera has 6 unknowns: fewer measurements leave it free (warned
 PRIOR_PX = 10.0  # the priors above are written so that about 10 px is their 1-sigma (the depth scale's 15%)
 # What sets the room's scale, side by side. Each source's own error (share, about 1 sigma):
 CEILING_TYPICAL_M = (2.4, 2.7)  # wall heights of homes and offices: a fitted height outside says the scale is off
+# wall heights a room may have: a fitted height outside is fitted again held at a typical one (a classroom video
+# fitted 3.53 m against 2.65 m, its room 13.44 x 8.37 m against 9.59 x 6.19; held at 2.7: 10.27 x 6.39).
+# No place, or a place not listed (shops, factories, warehouses, halls, stations: high ceilings, "other"): not held,
+# only warned of (height_suspect), unless height_range is given
+CEILING_RANGE_BY_PLACE: dict[str, tuple[float, float]] = {
+    "home": (2.2, 2.9), "office": (2.3, 3.2), "school": (2.4, 3.3), "lab": (2.3, 3.5), "hospital": (2.3, 3.2),
+    "cafe": (2.3, 3.6), "restaurant": (2.3, 3.6),
+}
+HELD_RMS_GAIN = 1.15  # the held fit is taken when its pixel rms is within 15% ...
+HELD_RMS_PX = 1.0  # ... + 1 px of the fitted one's (see _height_refit), and the depth's rms within 15% ...
+HELD_DEPTH_RMS = 0.01  # ... + 1 cm (meters, as the photos' depth_rms)
+# scale sources measured in meters; not the eye height: a soft prior (a handheld walk 1.06-1.6 m),
+# the one most likely off when nothing else is seen (the classroom's scale above)
+METRIC_SOURCES = ("depth", "door top", "typical height")
 SCALE_ERR = {"depth": 0.15,  # one photo's depth scale (-15 .. +24 %); averages over the photos, never under ...
              "door top": 0.05,  # DOOR_TOP_SIGMA_M of 2.0 m
              "eye height": 0.15}  # a handheld walk's mean camera height: 1.06-1.6 m against 1.4
@@ -972,8 +1000,148 @@ def _mean_depth_rms(cams: dict):
 
 def fit(req: FitRequest | dict, compare: bool = True) -> dict:
     """compare: a camera fitted beyond a wall it sees the room through is fitted again held inside, and the two
-    fits are compared in the warning (the result's `outside`)."""
+    fits are compared in the warning (the result's `outside`); a fitted wall height outside the room's range or
+    suspect is fitted again held (`height_refit`). The fit is solved without the comparisons first; they run
+    once, on the fit that is taken."""
     req = req if isinstance(req, FitRequest) else FitRequest.model_validate(req)
+    r = _fit(req, compare=False)
+    if compare and r.get("ok"):
+        winner, solved, info = req, r.pop("_solved"), None
+        if (got := _height_refit(req, r)) is not None:
+            alt_req, alt, info = got
+            if info["adopted"] == "held":
+                winner, solved = alt_req, alt.pop("_solved")
+        r = _fit(winner, compare=True, solved=solved)
+        if info is not None and r.get("ok"):
+            _add_height_refit(r, info)
+    r.pop("_solved", None)
+    if r.get("ok") and req.place is not None:
+        from agentic_sim_world_gen.scene.spec import PLACES
+
+        if req.place not in PLACES:
+            r["warnings"].append(f"place '{req.place}' is not a Room.place (home, office, school, shop, factory ...): "
+                                 "no wall height range was used - give a known place or height_range")
+    return r
+
+
+def height_range(req: FitRequest) -> tuple[float, float] | None:
+    """The wall heights the room may have: height_range, else the listed place's; None (no place, a place
+    not listed - shops, factories, halls, stations) = the height is not held, only warned of (height_suspect)."""
+    if req.height_range is not None:
+        return req.height_range
+    return CEILING_RANGE_BY_PLACE.get(req.place) if req.place is not None else None
+
+
+def _held_height(req: FitRequest, H: float, rng: tuple[float, float]) -> float:
+    """The height a refit holds: the request's height when it was given and is in the range, else the typical
+    one on H's side (2.4 below, 2.7 above, as _height_suspect's hint), kept in the range."""
+    if "height" in req.model_fields_set and rng[0] <= req.height <= rng[1]:
+        return req.height
+    lo, hi = CEILING_TYPICAL_M
+    return min(max(lo if H < lo else hi, rng[0]), rng[1])
+
+
+def _metric_worse(r: dict, alt: dict) -> list[str]:
+    """What is measured in meters that fits the held fit clearly worse than the fitted one: the
+    depth's residual (mean of the photos' depth_rms, as wall_moved_out) beyond HELD_RMS_GAIN + HELD_DEPTH_RMS, and
+    each source of the scale in METRIC_SOURCES (the depth's scale, a door top, a typical height)
+    whose range takes in the fitted room but not the held one. The pixels say nothing of the scale: a really high
+    ceiling seen by the depth fits them as well held."""
+    out = []
+    d0, d1 = _mean_depth_rms(r["cameras"]), _mean_depth_rms(alt["cameras"])
+    if d0 is not None and d1 is not None and d1 > HELD_RMS_GAIN * d0 + HELD_DEPTH_RMS:
+        out.append(f"depth rms {d0:.3f} -> {d1:.3f}")
+
+    def metric(res):
+        return {s["by"]: s for s in (res.get("scale") or {}).get("sources", [])
+                if s["by"] in METRIC_SOURCES}
+
+    def takes_in(s):
+        lo, hi = s.get("range", (s["scale"], s["scale"]))
+        return lo <= 1.0 <= hi
+
+    was = metric(r)
+    for by, s in metric(alt).items():
+        if not takes_in(s) and (by not in was or takes_in(was[by])):
+            out.append(f"{by} asks for {s['scale']:.2f}x the held room")
+    return out
+
+
+def _height_refit(req: FitRequest, r: dict) -> tuple[FitRequest, dict, dict] | None:
+    """Fit again with the wall height held, when the fitted height is outside the room's range, or suspect
+    (height_suspect) with the place's range (an explicit height_range that takes it in is kept). No range (no place, a place
+    not listed): nothing. Returns (the held request, its fit without the comparisons, `height_refit`: both fits, the
+    one taken and why), or None. The held fit is taken when its landmarks fit about as well (pixel rms within
+    HELD_RMS_GAIN, +HELD_RMS_PX) and nothing measured in meters fits it clearly worse (_metric_worse): a room whose
+    scale alone was off fits the pixels as well at any height, while ceiling landmarks on a soffit / beam (height_suspect:
+    the size right, the height alone off) pull a held room out of shape (1.8 m held at 2.4: 4.5 x 3.6 -> 7.5 x 6.9
+    m, rms 0 -> 62 px)."""
+    rng, room = height_range(req), r["room"]
+    if rng is None or not room["height_fitted"] or not _ceiling_seen(req):
+        return None
+    H = room["height"]
+    if not rng[0] <= H <= rng[1]:
+        where = f" ({req.place})" if req.place and req.height_range is None else ""
+        why = f"is outside {rng[0]}-{rng[1]} m{where}"
+    elif "height_suspect" in (r.get("scale") or {}) and req.height_range is None:
+        why = "is suspect (the room's size agrees without it)"
+    else:
+        return None
+    held = _held_height(req, H, rng)
+    alt_req = req.model_copy(update={"fit_height": False, "height": held})
+    alt = _fit(alt_req, compare=False)
+    if not alt.get("ok"):
+        return None
+
+    def brief(res):
+        d = _mean_depth_rms(res["cameras"])
+        return {"width": res["room"]["width"], "depth": res["room"]["depth"], "height": res["room"]["height"],
+                "rms_px": res["rms_px"], **({"depth_rms": d} if d is not None else {})}
+
+    was, now = brief(r), brief(alt)
+    if "height_suspect" in (r.get("scale") or {}):
+        was["height_suspect"] = r["scale"]["height_suspect"]
+    pixels = now["rms_px"] <= HELD_RMS_GAIN * was["rms_px"] + HELD_RMS_PX
+    worse = _metric_worse(r, alt)
+    take = pixels and not worse
+    info = {"adopted": "held" if take else "fitted", "reason": why, "held_height_m": held, "range": list(rng),
+            "fitted": was, "held": now, **({"metric_worse": worse} if worse else {})}
+    head = (f"height: the fitted wall height {H:.2f} m {why} - fitted again with the height held at {held:.2f} m: the "
+            f"room {was['width']:.2f} x {was['depth']:.2f} -> {now['width']:.2f} x {now['depth']:.2f} m, rms "
+            f"{was['rms_px']:.1f} -> {now['rms_px']:.1f} px")
+    if take:
+        info["warning"] = (head + ". The held fit is used (it fits as well: the scale was off, not the ceiling). If the "
+                           f"ceiling really is {H:.2f} m, fit again with fit_height=false, height={H:.2f} (or "
+                           "height_range); the fitted one is in height_refit.fitted")
+    elif not pixels:
+        info["warning"] = (head + ". The fitted one is kept: the landmarks do not fit the held height, so the ceiling's "
+                           "landmarks are likely on something else (a soffit, a beam, a corner on the wrong level) - "
+                           "check them, or give the real height (fit_height=false); the held fit is in "
+                           "height_refit.held")
+    else:
+        info["warning"] = (head + ". The fitted one is kept: what is measured in meters fits the held one worse ("
+                           + "; ".join(worse) + "), so the ceiling may really be that high - give the height if it is "
+                           "known (fit_height=false, height=...); the held fit is in height_refit.held")
+    info["short"] = (f"held at {held:.2f} m it fits worse: rms {was['rms_px']:.1f} -> {now['rms_px']:.1f} px"
+                     + ("; " + "; ".join(worse) if worse else "") + ", so the fitted one is kept (height_refit)")
+    return alt_req, alt, info
+
+
+def _add_height_refit(r: dict, info: dict) -> None:
+    """height_refit and its one warning into the result: when the fitted one is kept and height_suspect's hint is
+    there, the refit is said in that hint instead of in a second warning."""
+    text, short = info.pop("warning"), info.pop("short")
+    r["height_refit"] = info
+    hint = ((r.get("scale") or {}).get("height_suspect") or {}).get("hint")
+    if info["adopted"] == "fitted" and hint is not None and hint in r["warnings"]:
+        r["warnings"][r["warnings"].index(hint)] = hint + f" ({short})"
+    else:
+        r["warnings"].insert(0, text)
+
+
+def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
+    """One fit and its report. `solved` (`_solved` of the same request's fit without the comparisons) skips the
+    solving: the comparisons run on it."""
     if bad := [cid for cid in req.inside if cid not in req.photos]:
         return {"ok": False, "error": f"inside: no photo {', '.join(bad)}"}
     for oid in req.openings:
@@ -990,22 +1158,28 @@ def fit(req: FitRequest | dict, compare: bool = True) -> dict:
         m.residuals(m.init)
     except ValueError as e:
         return {"ok": False, "error": str(e)}
-    unused, group_notes = _pick_groups(req)
-    other_model = set(unused)
+    if solved is None:
+        unused, group_notes = _pick_groups(req)
+        other_model = set(unused)
 
-    def without(drop):
-        return req.model_copy(update={"relative": [rp for i, rp in enumerate(req.relative) if i not in drop]})
+        def without(drop):
+            return req.model_copy(update={"relative": [rp for i, rp in enumerate(req.relative) if i not in drop]})
 
-    first = without(unused) if unused else req
-    m, x, cost, JtJ, seed_notes = _fit_once(first, _Model(first) if unused else m)
-    if req.relative:  # second pass without the relative poses that disagree with the first fit
-        p = dict(zip(m.names, x))
-        off = {i for i, rp in enumerate(req.relative) if i not in unused and rp.robust and _turn_error(p, rp) > DROP_DEG}
-        if off:
-            unused |= off
-            kept = without(unused)
-            m, x, cost, JtJ, seed_notes = _fit_once(kept, _Model(kept))
-    seed_notes = group_notes + seed_notes
+        first = without(unused) if unused else req
+        m, x, cost, JtJ, seed_notes = _fit_once(first, _Model(first) if unused else m)
+        if req.relative:  # second pass without the relative poses that disagree with the first fit
+            p = dict(zip(m.names, x))
+            off = {i for i, rp in enumerate(req.relative)
+                   if i not in unused and rp.robust and _turn_error(p, rp) > DROP_DEG}
+            if off:
+                unused |= off
+                kept = without(unused)
+                m, x, cost, JtJ, seed_notes = _fit_once(kept, _Model(kept))
+        seed_notes = group_notes + seed_notes
+        solved = (m, x, cost, JtJ, seed_notes, unused, other_model)
+    else:
+        m, x, cost, JtJ, seed_notes, unused, other_model = solved
+        seed_notes = list(seed_notes)
     p = dict(zip(m.names, x))
     r, rows = m.residuals(x, detail=True)
     depth_rows = [row for row in rows if row[3] == "depth"]
@@ -1325,6 +1499,7 @@ def fit(req: FitRequest | dict, compare: bool = True) -> dict:
         **({"outside": outside} if outside else {}),
         **({"suspects": suspects} if suspects else {}),
         "warnings": warnings,
+        **({} if compare else {"_solved": solved}),  # fit() solves without the comparisons first, then reuses it
     }
 
 
