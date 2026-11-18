@@ -191,19 +191,108 @@ def test_wall_seen_by_one_photo():
     assert any("depth" in x and "one photo for the south wall (ne)" in x for x in r["warnings"]), r["warnings"]
 
 
-@pytest.mark.xfail(strict=True, reason="photos alone: the door's top is fitted at 2.0 m but does not move the "
-                   "scale from the eye height here; it held the scale only with the relative poses of a video (#72)")
-def test_door_top_holds_the_scale():
-    """No ceiling seen and the eye height 20% off: a door's top (2.0 m, seen) should set the scale. With photos alone
-    it does not yet (the eye height wins), so this is a known gap, kept strict so a fix shows up."""
+def _rests(r):
+    """{dimension: the warning} for the dimensions that rest on the camera height."""
+    return {w.split()[2]: w for w in r["warnings"] if "rests on the camera height" in w}
+
+
+def test_door_top_holds_only_its_photos(monkeypatch):
+    """No ceiling seen and the eye height 20% off. Each photo can then carry its own scale (its camera height
+    trades off with the distances): the door's top, seen only in photo ne (which sees nothing of the north or
+    east wall), is fitted at 2.0 m but cannot reach the width (photo s) or the depth (photo w). The result says
+    so: the eye height set them, and a warning names the dimension and the photo. (#76)"""
     for eye in (1.2, 1.75):
         req = {**_no_ceiling(_request()), "eye_height": eye}
         off = service.fit_photos({**req, "door_top": None})
-        assert abs(off["room"]["width"] - W) > 0.6 and "size_priors" not in off, off["room"]
         on = service.fit_photos(req)
-        # the eye height still pulls (it is a prior too): most of the 20% comes back
-        assert abs(on["room"]["width"] - W) < 0.25 and abs(on["room"]["depth"] - D) < 0.2, on["room"]
+        assert abs(on["room"]["width"] - off["room"]["width"]) < 0.05 and abs(on["room"]["width"] - W) > 0.6
         assert [d["of"] for d in on["size_priors"]] == ["door_s.top"] and abs(on["size_priors"][0]["fitted"] - 2) < 0.05
+        by = {s["by"]: s for s in on["scale"]["sources"]}
+        assert not by["door top"]["used"] and by["eye height"]["used"], on["scale"]
+        assert by["eye height"]["sets"] == ["depth", "width"]
+        rests = _rests(on)
+        assert set(rests) == {"width", "depth"}, on["warnings"]
+        assert "photo s measures it" in rests["width"] and "photo w measures it" in rests["depth"]
+        assert _rests(off) == {}  # nothing of known height seen at all: the general warning says it
+    # a door on the north wall, seen by photo s with the north corners: its top holds the width
+    monkeypatch.setitem(OPS, "door_n", ("door", "north", 3.65, 0.8, 0.0, 2.0))
+    for eye in (1.2, 1.75):
+        r = service.fit_photos({**_no_ceiling(_request()), "eye_height": eye})
+        assert abs(r["room"]["width"] - W) < 0.25, r["room"]
+        by = {s["of"]: s for s in r["scale"]["sources"] if s["by"] == "door top"}
+        assert by["door_n.top"]["used"] and not by["door_s.top"]["used"]
+        assert set(_rests(r)) == {"depth"}, r["warnings"]
+
+
+def test_ceiling_seen_no_dimension_rests_on_the_camera_height():
+    r = service.fit_photos({**_request(), "eye_height": 1.2})
+    assert _rests(r) == {}, r["warnings"]
+    assert not next(s for s in r["scale"]["sources"] if s["by"] == "eye height")["used"]
+
+
+def _reach(photos, **more):
+    """_dims_on_eye of a request with these photos (the pixels do not matter): (reach, on_eye)."""
+    req = pf.FitRequest.model_validate({
+        "photos": {cid: {"size": [1280, 960], "facing": "north",
+                         "points": [{"at": a, "px": [100, 100]} for a in pts],
+                         "lines": [{"along": a, "px": [100, 100]} for a in lines]} for cid, (pts, lines) in photos.items()},
+        "openings": {"door_s": {"kind": "door", "wall": "south"}, "door_w": {"kind": "door", "wall": "west"},
+                     "win_e": {"kind": "window", "wall": "east"}}, **more})
+    _, reach, on_eye = pf._dims_on_eye(pf._Model(req), req)
+    return reach, on_eye
+
+
+def test_the_scale_spreads_through_the_room():
+    """A door's top in photo a, which sees the south and north walls (the depth); photo b sees the depth too,
+    and the width: the door holds a, a holds the depth, the depth holds b and b the width."""
+    a = (["door_s:start:top", "door_s:end:top", "corner:sw:floor"], ["floor:south", "floor:north"])
+    b = (["corner:sw:floor", "corner:nw:floor", "corner:ne:floor"], [])
+    reach, on_eye = _reach({"a": a, "b": b})
+    assert reach["door_s.top"] == ["width", "depth"] and on_eye == {}, (reach, on_eye)
+    _, on_eye = _reach({"a": a, "b": b}, door_top=None)  # nothing of known height: all on the camera height
+    assert set(on_eye) == {"width", "depth"}
+    # a photo too thin to hold its camera (4 measurements) neither measures nor passes the scale on
+    _, on_eye = _reach({"a": a, "b": (["corner:nw:floor", "corner:ne:floor"], [])})
+    assert on_eye == {"width": (["a"], True)}, on_eye  # only a's west wall measures the width now
+
+
+def test_one_wall_each_is_not_held_by_one_side():
+    """No photo sees both the west and the east wall: the width is held only when the held photos see both."""
+    a = (["door_w:start:top", "door_w:end:top"], ["floor:west", "door_w:start", "door_w:end"])
+    b = (["win_e:start:top", "win_e:end:top", "win_e:start:bottom", "win_e:end:bottom"], ["floor:east"])
+    reach, on_eye = _reach({"a": a, "b": b})
+    assert reach["door_w.top"] == [] and on_eye == {"width": (["a", "b"], True)}, (reach, on_eye)
+    req = pf.FitRequest.model_validate({
+        "photos": {cid: {"size": [1280, 960], "facing": "north",
+                         "points": [{"at": x, "px": [100, 100]} for x in pts],
+                         "lines": [{"along": x, "px": [100, 100]} for x in lines]} for cid, (pts, lines) in
+                   {"a": a, "b": b}.items()},
+        "openings": {"door_w": {"kind": "door", "wall": "west"}, "win_e": {"kind": "window", "wall": "east"}},
+        "eye_height": 1.2})
+    m = pf._Model(req)
+    ev = pf._scale_evidence(m, req, dict(zip(m.names, m.init)), {}, 2.4)
+    assert ev["warnings"] == ["the room's width rests on the camera height (eye_height 1.2 m): only photos that see "
+                              "one of its walls measure it (a, b) - give eye_height if known, or mark a door's top "
+                              "/ a ceiling corner in a photo that also sees the west and east walls"], ev["warnings"]
+    # with a shared point both see, the door holds b too, and the two see both walls
+    a2 = (a[0] + ["mark"], a[1])
+    b2 = (b[0] + ["mark"], b[1])
+    reach, on_eye = _reach({"a": a2, "b": b2}, points={"mark": {}})
+    assert reach["door_w.top"] == ["width"] and "width" not in on_eye, (reach, on_eye)
+
+
+def test_a_fitted_height_without_depth_holds_the_scale():
+    """fit_height=true and no depth: the scale follows the guessed wall height (its weak prior), not the eye
+    height, so no dimension is said to rest on the camera height."""
+    for h, w in ((2.4, 4.5), (3.0, 5.62)):
+        req = _request()
+        for c in req["photos"].values():
+            c["points"] = [o for o in c["points"] if o["at"] != "shelf"]
+        req.update(points={}, door_top=None, fit_height=True, eye_height=1.2, height=h)
+        r = service.fit_photos(req)
+        assert r["room"]["width"] == w, r["room"]
+        assert not next(s for s in r["scale"]["sources"] if s["by"] == "eye height")["used"]
+        assert _rests(r) == {}, r["warnings"]
 
 
 def test_typical_height_point():

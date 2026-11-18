@@ -173,3 +173,19 @@ def test_a_broken_scene_is_an_error(tmp_path):
     f.write_text(json.dumps({"spec": {"room": "broken"}}))
     r = service.fit_photos(_scale_off(1.25, one_depth=True), d)
     assert r["ok"] is False and r["error"].startswith("out_dir: the scene could not be read"), r
+
+
+def test_a_photo_without_depth_across_the_room_keeps_the_fit():
+    """The fitted height and the depth, with photo s (it sees both the west and the east wall) left without a
+    depth: the room, the height and the refit are as before the per-dimension scale report (#76), which only
+    reports."""
+    for k, room, refit in ((1.0, (4.52, 3.62, 2.41), None), (1.25, (5.06, 4.06, 2.7), "held")):
+        req = _scale_off(k, place="home")
+        for o in req["photos"]["s"]["points"]:
+            o.pop("depth", None)
+        r = pf.fit(req)
+        assert (r["room"]["width"], r["room"]["depth"], r["room"]["height"]) == room, r["room"]
+        assert (r.get("height_refit") or {}).get("adopted") == refit
+        if refit:
+            assert r["height_refit"]["held_height_m"] == 2.7 and r["height_refit"]["fitted"]["height"] == 3.01
+        assert not any("rests on the camera height" in w for w in r["warnings"]), r["warnings"]
