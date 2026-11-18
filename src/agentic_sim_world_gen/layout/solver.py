@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import math
 import re
+from typing import Callable
 
 from agentic_sim_world_gen.assets.record import AssetRecord
 from agentic_sim_world_gen.layout.array import block_record, instances
@@ -244,6 +245,31 @@ def _fill(scene: ResolvedScene, asset: dict[str, AssetRecord], o: ObjectSpec, a:
     return [Issue("shelf_fit", (o.id, t.id), problem)] if problem else []
 
 
+def _tuck(o: ObjectSpec, a: AssetRecord, t: ObjectSpec, ta: AssetRecord, tf: float,
+          floor: Callable[[tuple[float, float]], float]) -> float:
+    """How deep the chair `o` goes under the desk `t` it is in front of: 0 unless both were measured
+    (AssetRecord.knee) and the parts leave room (agentic_sim_world_gen.layout.knee). floor: the chair's floor height at a point
+    (a level under it lifts it only after it is placed)."""
+    from agentic_sim_world_gen.layout.knee import tuck_depth
+    from agentic_sim_world_gen.layout.validate import MAX_TUCK, tuck_pair
+
+    if (not (a.knee and ta.knee and "lo" in a.knee and "lo" in ta.knee) or o.array is not None
+            or t.array is not None or not tuck_pair(o, a, t, ta)):
+        return 0.0
+    return tuck_depth(ta.knee, t.position, t.yaw_deg, half_extent(ta, t.yaw_deg, tf),
+                      half_extent(ta, t.yaw_deg, tf + 90.0), a.knee, o.yaw_deg, half_extent(a, o.yaw_deg, tf),
+                      half_extent(a, o.yaw_deg, tf + 90.0), tf, lambda p: floor(p) - (t.z or 0.0),
+                      cap=MAX_TUCK * min(a.size_m[:2]))
+
+
+def _floor_at(scene: ResolvedScene, geom: RoomGeometry, o: ObjectSpec, p: tuple[float, float]) -> float:
+    """The z an object standing on the floor gets at p (the end of solve: a level under it indoors)."""
+    lay = o.layout
+    if o.zone is None or not (scene.spec.room.outdoor or geom.outside(o.zone)):
+        return geom.ground_z(p) + ((lay.wall_height or 0.0) if lay else 0.0)
+    return o.z or 0.0
+
+
 def solve(scene: ResolvedScene) -> list[Issue]:
     """Fill position/yaw_deg/z of objects that have `layout`. Mutates the scene; returns problems."""
     order, issues = _order(scene)
@@ -321,9 +347,11 @@ def solve(scene: ResolvedScene) -> list[Issue]:
             tf = facing_of(ta, t)
             if lay.in_front_of:
                 o.yaw_deg = yaw_for_facing(a, o, tf + 180.0)  # face the target
-                # No automatic tuck under desks: the bbox can't tell whether the knee space is open,
-                # and an overlapping chair explodes in PhysX (Isaac Sim check, 2026-10-25).
+                # Under a desk only as far as its measured knee space allows: the bbox can't tell whether
+                # it is open, and an overlapping chair explodes in PhysX (Isaac Sim check, 2026-10-25).
                 gap = NEAR_GAP if lay.gap is None else lay.gap
+                if lay.gap is None and (deep := _tuck(o, a, t, ta, tf, lambda p: _floor_at(scene, geom, o, p))) > 0:
+                    gap = -deep
                 dist = half_extent(ext[tid], t.yaw_deg, tf) + half_extent(ext[oid], o.yaw_deg, tf) + gap
                 ux, uy = unit(tf)
             else:

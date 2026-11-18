@@ -498,6 +498,44 @@ def _ensure_shelves(scene: ResolvedScene) -> None:
                     c["hooks"] = sh.find_hooks(c["uri"], _cache_dir())
                 except Exception:
                     c["hooks"] = []
+    _ensure_knees(scene)
+
+
+KNEE_RETRY_S = 3600  # an asset that could not be read is tried again after this long (offline for a while)
+
+
+def _ensure_knees(scene: ResolvedScene) -> None:
+    """Measure the parts of each chair in front of a desk and of that desk (how far it goes under; once per
+    selected asset, kept in the candidate so the solver needs no USD). Arrays are not tucked, so not measured.
+    Unreadable: {"v", "failed"} (no tuck), measured again after KNEE_RETRY_S or with a new knee.VERSION."""
+    import time
+
+    from agentic_sim_world_gen.layout import knee
+    from agentic_sim_world_gen.layout.validate import tuck_pair
+
+    by = {p.object_id: p for p in scene.placements}
+    now, done = time.time(), {}
+    for o in scene.spec.objects:
+        lay = o.layout
+        if (lay is None or not lay.in_front_of or lay.gap is not None or lay.in_front_of not in by
+                or o.array is not None or scene.obj(lay.in_front_of).array is not None):
+            continue
+        mine, theirs = by.get(o.id), by[lay.in_front_of]
+        if mine is None or mine.asset is None or theirs.asset is None:
+            continue
+        if not tuck_pair(o, mine.asset, scene.obj(lay.in_front_of), theirs.asset):
+            continue
+        for p in (mine, theirs):
+            c = p.candidates[p.selected]
+            k = c.get("knee")
+            if k and k.get("v") == knee.VERSION and ("lo" in k or now - k.get("failed", 0) < KNEE_RETRY_S):
+                continue
+            if c["uri"] not in done:
+                try:
+                    done[c["uri"]] = knee.scan(c["uri"], _cache_dir())
+                except Exception:
+                    done[c["uri"]] = None
+            c["knee"] = done[c["uri"]] or {"v": knee.VERSION, "failed": round(now)}
 
 
 def _hooks_view(hooks: list[dict]) -> dict[str, Any]:

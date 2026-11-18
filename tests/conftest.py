@@ -40,3 +40,12 @@ def _auto_fix_marker(request, monkeypatch):
     """Tests of what a check reports keep the issue: @pytest.mark.no_auto_fix turns the automatic fixes off."""
     if request.node.get_closest_marker("no_auto_fix"):
         monkeypatch.setenv("AGENTIC_SIM_WORLD_GEN_AUTO_FIX", "0")
+
+
+@pytest.fixture(autouse=True)
+def _no_knee_scans(monkeypatch):
+    """A chair in front of a desk has both measured before solving, which fetches their USD: tests' fake assets
+    have none. Tests of the tuck put the grids in themselves."""
+    from agentic_sim_world_gen.layout import knee
+
+    monkeypatch.setattr(knee, "scan", lambda uri, cache_dir: None)
