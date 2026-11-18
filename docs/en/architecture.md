@@ -672,6 +672,7 @@ flowchart TD
 The room is treated as a box. For each photo, Claude picks the pixels of visible landmarks (room corners, wall-floor lines, door and window corners, points shared across photos).
 `fit_photos` takes the room width and depth, opening positions, and each camera's position, direction and field of view as unknowns, and minimizes the reprojection error of the landmarks (pure-Python Levenberg–Marquardt).
 The wall height sets the scale. If there are no ceiling landmarks, the camera height (`eye_height`) sets it.
+Without a ceiling each photo carries its own scale, so something of known height (a door's top) sets the scale only of the photos it is in. When the photos that measure the width or depth (those that see both of its walls) see nothing of known height, the result's `scale` and a warning say that dimension rests on the camera height (`_metric_photos`, `_dim_photos`).
 The wall height is fitted too; when it falls outside the range for the kind of room (`place`) or is suspect (`height_suspect`), the same call fits again with the height held, and takes the held fit when the landmarks fit it about as well and nothing measured in meters (the depth, a door top) fits it worse (`height_refit`; a room with no place, or one not listed, is not refitted).
 
 Adding monocular depth (MoGe-2) helps fix the dimensions even for photos that show only 1–2 walls.
