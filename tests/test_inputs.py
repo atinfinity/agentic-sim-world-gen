@@ -292,7 +292,7 @@ def test_compare_is_tracked(fake, tmp_path, monkeypatch):  # noqa: F811
     service.move_object(d, oid, position=[1.2, 1.5])
     r = service.compare_photo(d)
     assert r["round"] == 3 and "then report" in r["hint"]
-    service.move_object(d, oid, position=[1.3, 1.5])
+    service.move_object(d, oid, position=[1.6, 1.5])  # over SMALL_MOVE_M
     st = service.status(d)
     assert "the last one" in st["photo_compare_hint"] and st["photo_compare"]["stops_finish"]  # round 4 is due
     service.compare_photo(d)

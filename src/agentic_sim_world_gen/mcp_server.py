@@ -1322,12 +1322,17 @@ def compare_photo(scene_dir: str, input_id: str | None = None) -> list[Any]:
     Run compose_scene first. layout.svg shows every photo camera (position and field of view).
     `round` counts the comparisons and `hint` says what to do next: fix every difference of one round
     together, about 3 rounds, then report what still differs. `measure` has the free widths each
-    camera sees and what bounds them; the gaps of each line are in `measure_file` (or measure_photo)."""
+    camera sees and what bounds them; the gaps of each line are in `measure_file` (or measure_photo).
+    With several photos, from the second round on only the rows that changed since they were last shown are returned
+    (`unchanged` names the others; `image` = compare.png still has every row)."""
     r = service.compare_photo(scene_dir, input_id)
     if not r.get("ok"):
         return [json.dumps(service.with_language(scene_dir, r), ensure_ascii=False)]
-    with open(r["image"], "rb") as f:
-        return [json.dumps(service.with_language(scene_dir, r), ensure_ascii=False), Image(data=f.read(), format="png")]
+    text = json.dumps(service.with_language(scene_dir, r), ensure_ascii=False)
+    if r.get("unchanged") and not r.get("image_changed"):  # no render changed since the last round
+        return [text]
+    with open(r.get("image_changed") or r["image"], "rb") as f:
+        return [text, Image(data=f.read(), format="jpeg" if r.get("image_changed") else "png")]
 
 
 @mcp.tool()

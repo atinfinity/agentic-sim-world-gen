@@ -321,3 +321,108 @@ def test_report_names_the_empty_windows_from_the_spec(tmp_path, monkeypatch):
     service.set_assumptions(d, [{"item": "window_view", "value": "窓はカーテンで隠れて映らない"}])
     monkeypatch.setenv("WORLDGEN_MISSING", "0")  # the report does not need the log
     assert service.finish(d)["report_must_include"]["windows_not_found"] == ["curtain / blind (w1)"]
+
+
+def _compared(tmp_path, monkeypatch):
+    d, _ = _photo_scene(tmp_path)
+    (d / "scene.usda").write_text("#usda 1.0\n")
+
+    def fake_run(script, args, timeout_s):
+        open(args[args.index("--compare") + 1], "wb").write(b"png")
+        return type("P", (), {"returncode": 0})(), {}
+
+    monkeypatch.setattr(service, "_run_isaac", fake_run)
+    assert service.compare_photo(d)["ok"]
+    isaac(monkeypatch, ["passed"])
+    return d
+
+
+def test_finish_goes_on_after_small_moves(tmp_path, monkeypatch):
+    """a nudge of a few cm (or the physics fixes) since compare_photo does not stop finish for another one."""
+    d = _compared(tmp_path, monkeypatch)
+    o = next(o for o in service.status(d)["objects"] if o["id"] == "chair")
+    x, y = o["position"]
+    service.move_object(d, "chair", position=[x + 0.07, y], yaw_deg=(o.get("yaw_deg") or 0) + 5)
+    pc = service.status(d)["photo_compare"]
+    assert pc["stale"] and "stops_finish" not in pc
+    assert pc["small_moves"] == [{"id": "chair", "moved_m": pytest.approx(0.07, abs=1e-3), "turned_deg": 5.0}]
+    st = service.status(d)
+    assert "chair 7 cm" in st["photo_compare_hint"] and "not compared again" in st["photo_compare_hint"]
+    assert service.finish(d).get("stopped") != "compare"
+
+
+@pytest.mark.parametrize("change", ["far", "turn", "add", "remove", "room", "asset", "old_record"])
+def test_finish_still_stops_on_a_real_change(tmp_path, monkeypatch, change):
+    """what shows in the photos' renders - a big move or turn, an object added or removed, the room - is
+    compared again."""
+    d = _compared(tmp_path, monkeypatch)
+    o = next(o for o in service.status(d)["objects"] if o["id"] == "chair")
+    x, y = o["position"]
+    if change == "far":
+        service.move_object(d, "chair", position=[x + 0.3, y])
+    elif change == "turn":
+        service.move_object(d, "chair", yaw_deg=(o.get("yaw_deg") or 0) + 30)
+    elif change == "add":
+        service.add_objects(d, [{"id": "lamp", "query": "desk", "position": [0.5, 0.5]}])
+    elif change == "remove":
+        service.remove_object(d, "chair")
+    elif change == "asset":
+        service.select_asset(d, "desk", 1)
+    elif change == "old_record":  # a compare.json written before the layout was recorded has no shape
+        rec = json.loads((d / service.COMPARE_JSON).read_text())
+        rec.pop("shape")
+        (d / service.COMPARE_JSON).write_text(json.dumps(rec))
+        service.move_object(d, "chair", position=[x + 0.05, y])
+    else:
+        service.set_room(d, height=2.6)
+    pc = service.status(d)["photo_compare"]
+    assert pc["stale"] and pc["stops_finish"] and "small_moves" not in pc
+    if change != "add":  # the added desk stands where finish reports an issue first
+        assert service.finish(d)["stopped"] == "compare"
+
+
+def test_small_moves_are_not_the_next_step_and_labels_are_not_moves(tmp_path, monkeypatch):
+    """compose_scene does not send the small-moves note as `next`; a label alone is no change to compare."""
+    d = _compared(tmp_path, monkeypatch)
+    o = next(o for o in service.status(d)["objects"] if o["id"] == "chair")
+    rec = json.loads((d / "scene.resolved.json").read_text())
+    next(x for x in rec["spec"]["objects"] if x["id"] == "chair")["label"] = "いす"
+    (d / "scene.resolved.json").write_text(json.dumps(rec, ensure_ascii=False, indent=2))
+    st = service.status(d)
+    assert st["photo_compare"]["stale"] and "stops_finish" not in st["photo_compare"]
+    assert "small_moves" not in st["photo_compare"] and "photo_compare_hint" not in st
+    x, y = o["position"]
+    service.move_object(d, "chair", position=[x + 0.05, y])
+    monkeypatch.setattr(service, "_run_isaac", lambda *a, **k: (None, {"ok": False}))
+    r = service.compose_scene(d)
+    assert "compare_photo" not in (r.get("next") or "")
+
+
+def test_a_turned_row_is_compared_again():
+    """a few degrees turn the far ends of an array a long way."""
+    was = {"rest": "r", "poses": {"racks": [[2, 2], 0, 0, None]}, "arrays": ["racks"]}
+    now = {"rest": "r", "poses": {"racks": [[2, 2], 0, 5, None]}, "arrays": ["racks"]}
+    assert service._small_moves(was, now) is None
+    now["poses"]["racks"] = [[2.05, 2], 0, 0, None]
+    assert service._small_moves(was, now) == [{"id": "racks", "moved_m": 0.05}]
+
+
+def test_a_stocked_shelf_moved_a_little_is_a_small_move(tmp_path, monkeypatch):
+    """the products' slots are in world coordinates; nudging their shelf is still a small move."""
+    d = _compared(tmp_path, monkeypatch)
+    f = d / "scene.resolved.json"
+    rec = json.loads(f.read_text())
+    desk = next(x for x in rec["spec"]["objects"] if x["id"] == "desk")
+    rec["spec"]["objects"].append({**next(x for x in rec["spec"]["objects"] if x["id"] == "chair"), "id": "goods", "layout": None,
+                                   "position": None, "fill": {"on": "desk", "slots": [["goods_0", 1.0, 2.0, 0.0, 0.75]]}})
+    f.write_text(json.dumps(rec, ensure_ascii=False, indent=2))
+    service._record_compare(d, service._photo_inputs(service.load(d)))
+    desk["position"] = [desk["position"][0] + 0.05, desk["position"][1]]
+    rec["spec"]["objects"][-1]["fill"]["slots"] = [["goods_0", 1.05, 2.0, 0.0, 0.75]]
+    f.write_text(json.dumps(rec, ensure_ascii=False, indent=2))
+    assert [m["id"] for m in service._small_moves(json.loads((d / service.COMPARE_JSON).read_text())["shape"],
+                                                  service._layout_shape(d))] == ["desk"]
+    rec["spec"]["objects"][-1]["fill"]["slots"].append(["goods_1", 1.2, 2.0, 0.0, 0.75])  # one more product
+    f.write_text(json.dumps(rec, ensure_ascii=False, indent=2))
+    assert service._small_moves(json.loads((d / service.COMPARE_JSON).read_text())["shape"],
+                                service._layout_shape(d)) is None

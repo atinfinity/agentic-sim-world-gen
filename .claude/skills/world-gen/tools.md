@@ -142,6 +142,8 @@ Run compose_scene first. layout.svg shows every photo camera (position and field
 `round` counts the comparisons and `hint` says what to do next: fix every difference of one round
 together, about 3 rounds, then report what still differs. `measure` has the free widths each
 camera sees and what bounds them; the gaps of each line are in `measure_file` (or measure_photo).
+With several photos, from the second round on only the rows that changed since they were last shown are returned
+(`unchanged` names the others; `image` = compare.png still has every row).
 
 - `scene_dir`: str
 - `input_id`?: str
@@ -1480,7 +1482,7 @@ Walls: south y=0, north y=depth, west x=0, east x=width. "Front" is the side a p
 - `center`?: bool — room center
 - `ceiling`?: bool — hang from the ceiling: top at the room height (ceiling signage, lamps); combine with against_wall / center / position for x-y
 - `wall_height`?: num — hang on the wall: bottom this high above the floor [m] (posters, POP, clocks, shelves on brackets); with against_wall, gap default 0.005
-- `gap`?: num — distance to the wall/target [m]; negative = tuck under (only if the knee space is open, else PhysX explodes)
+- `gap`?: num — distance to the wall/target [m]; negative = tuck under (only if the knee space is open, else PhysX explodes). Left out, a chair in_front_of a desk goes under as far as their measured parts allow
 
 ## LayoutOption
 

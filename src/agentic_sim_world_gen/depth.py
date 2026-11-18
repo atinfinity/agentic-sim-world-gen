@@ -16,6 +16,8 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from agentic_sim_world_gen import isaac_worker
+
 MODEL = "Ruicheng/moge-2-vits-normal"  # MIT, 141 MB
 SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "depth" / "moge_depth.py"
 WINDOW = 2  # median over (2 * WINDOW + 1)^2 pixels of the map around the pixel
@@ -100,6 +102,7 @@ def run(images: list[str | Path], force: bool = False, timeout: float = 1800) ->
     if env.get("AGENTIC_SIM_WORLD_GEN_DEPTH_DOWNLOAD") != "1":
         env["HF_HUB_OFFLINE"] = "1"
     cmd = [py, "-I", str(SCRIPT), "--model", os.environ.get("AGENTIC_SIM_WORLD_GEN_DEPTH_MODEL", MODEL), *todo]
+    isaac_worker.free_gpu()
     p = subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=timeout)
     if p.returncode != 0:
         tail = (p.stderr or p.stdout).strip().splitlines()[-5:]

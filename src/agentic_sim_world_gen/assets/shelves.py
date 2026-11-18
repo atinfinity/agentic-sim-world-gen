@@ -128,8 +128,10 @@ def surfaces_of_stage(stage) -> list[dict[str, Any]]:
     return scan_stage(stage)["shelves"]
 
 
-def scan_stage(stage) -> dict[str, list[dict[str, Any]]]:
-    """{"shelves", "hooks"} of an opened asset stage (usd-core)."""
+def part_boxes(stage) -> tuple[list[tuple[str, tuple[float, ...], tuple[float, ...]]], list, Any]:
+    """(boxes, tall meshes, (zup, mpu, pivot)) of an opened asset stage: every gprim's box (path, min, max) in the
+    asset's Z-up frame in meters, relative to the pivot (footprint center, bottom). Also used for tucking chairs
+    under desks (agentic_sim_world_gen.layout.knee)."""
     from pxr import Usd, UsdGeom
 
     up = UsdGeom.GetStageUpAxis(stage).upper()
@@ -143,7 +145,7 @@ def scan_stage(stage) -> dict[str, list[dict[str, Any]]]:
     root = stage.GetDefaultPrim() or stage.GetPseudoRoot()
     total = cache.ComputeWorldBound(root).ComputeAlignedRange()
     if total.IsEmpty():
-        return {"shelves": [], "hooks": []}
+        return [], [], None
     a, b = zup(tuple(total.GetMin())), zup(tuple(total.GetMax()))
     lo, hi = [min(p, q) for p, q in zip(a, b)], [max(p, q) for p, q in zip(a, b)]
     piv = ((lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, lo[2])
@@ -161,6 +163,17 @@ def scan_stage(stage) -> dict[str, list[dict[str, Any]]]:
         boxes.append((str(prim.GetPath()), mn, mx))
         if prim.IsA(UsdGeom.Mesh) and mx[2] - mn[2] > THIN:
             meshes.append(prim)
+    return boxes, meshes, (zup, mpu, piv)
+
+
+def scan_stage(stage) -> dict[str, list[dict[str, Any]]]:
+    """{"shelves", "hooks"} of an opened asset stage (usd-core)."""
+    from pxr import Usd, UsdGeom
+
+    boxes, meshes, frame = part_boxes(stage)
+    if frame is None:
+        return {"shelves": [], "hooks": []}
+    zup, mpu, piv = frame
     out = surfaces_from_boxes(boxes)
     hooks = hooks_from_boxes(boxes)
     if out or not meshes or any(_is_board(a, b) for _, a, b in boxes):
