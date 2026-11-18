@@ -5,6 +5,7 @@ an asset's front points to +X of its own Z-up frame. This holds for most SimRead
 third-party store assets; known exceptions are listed in KNOWN_FRONTS, ForgeCAD's assets face -Y, a local
 folder can declare its own with agentic-sim-world-gen.json {"front": ...}, and ObjectSpec.front_offset_deg corrects
 a single object (e.g. 180 if it ends up backwards). Directions: 0 = +X, 90 = +Y, 180 = -X, 270 = -Y.
+A thing hung on a wall without any of these faces out along its thin side (FLAT_FRONT_DEG).
 """
 
 from __future__ import annotations
@@ -38,6 +39,12 @@ KNOWN_FRONT_PATTERNS: list[tuple[str, float]] = [
 # office chair's backrest, a toilet's tank are at +Y and a kitchen base cabinet's countertop overhangs at -Y
 # (a classroom's dining chairs stood turned 90 degrees from their tables).
 FORGECAD_FRONT_DEG = 270.0
+# A thing hung on a wall (layout.wall_height, or a card's mount "wall") whose front is not recorded and whose
+# footprint is thin along Y (short side under FLAT_RATIO of the long side) faces -Y: the default +X stood a framed
+# picture (61 x 6 cm) at right angles to the wall. Which of the two faces is the picture is not known;
+# front_offset_deg 180 turns it.
+FLAT_RATIO = 0.3
+FLAT_FRONT_DEG = 270.0
 
 
 def _forgecad(a: AssetRecord) -> bool:
@@ -51,6 +58,12 @@ def _stem(uri: str) -> str:
 
 def asset_front_deg(a: AssetRecord) -> float:
     """Front direction in the asset's own Z-up footprint frame, before any per-object offset."""
+    f = _recorded_front(a)
+    return DEFAULT_FRONT_DEG if f is None else f
+
+
+def _recorded_front(a: AssetRecord) -> float | None:
+    """The front from the record, KNOWN_FRONTS, a card or ForgeCAD; None: nothing says."""
     if a.front_deg is not None:
         return a.front_deg
     stem = _stem(a.uri)
@@ -64,11 +77,28 @@ def asset_front_deg(a: AssetRecord) -> float:
         return float(card["front_deg"])
     if _forgecad(a):
         return FORGECAD_FRONT_DEG
-    return DEFAULT_FRONT_DEG
+    return None
+
+
+def _hung(a: AssetRecord, o: ObjectSpec) -> bool:
+    """On a wall: layout.wall_height above the floor, a card's mount "wall", or moved by hand (no layout) and left
+    above the floor, as service._floor_furniture tells (move_object drops the layout: the front must not change)."""
+    if o.layout is not None:
+        if (o.layout.wall_height or 0) > 0.05:
+            return True
+    elif (o.z or 0) > 0.05:
+        return True
+    return (cards.of(a) or {}).get("mount") == "wall"
+
+
+def flat_front(a: AssetRecord, o: ObjectSpec) -> bool:
+    """A thing hung on a wall, thin along its own Y, without a recorded front."""
+    w, d, _ = a.size_m
+    return d < FLAT_RATIO * w and _recorded_front(a) is None and _hung(a, o)
 
 
 def front_local_deg(a: AssetRecord, o: ObjectSpec) -> float:
-    return asset_front_deg(a) + o.front_offset_deg
+    return (FLAT_FRONT_DEG if flat_front(a, o) else asset_front_deg(a)) + o.front_offset_deg
 
 
 def norm_deg(y: float) -> float:
