@@ -319,7 +319,9 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
      in). Check chairs and anything facing something in the thumbnails: they are shot from the asset's +X+Y
      corner, so the **left** face in the image is the +X face. Front on the left face → OK; front on the right
      face → `front_offset_deg=90`; back on the left face → `180`; back on the right face → `-90`
-     (`set_layout(..., front_offset_deg=...)`). When a thumbnail does not show the front (cabinets, shelves),
+     (`set_layout(..., front_offset_deg=...)`). A thin thing on a wall (a picture, a frame) with no known front
+     takes -Y, its thin side, instead (status shows `asset_front_deg` 270): there the picture on the right face
+     (+Y) → `180`, on the left face (+X) → `90`. When a thumbnail does not show the front (cabinets, shelves),
      call `view_fronts` after `compose_scene` (Isaac Sim, ~30 s): one image per object from its assumed front
      (products placed by `fill` are skipped; `ids=[...]` to reshoot a few); `around=true` shows 4 sides to pick
      the offset. For a whole third-party folder, put `"front": <deg>` (or `{"<glob>": <deg>}`) in its agentic-sim-world-gen.json.

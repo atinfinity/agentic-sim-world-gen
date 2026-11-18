@@ -386,9 +386,10 @@ def _fixture_light(stage: Usd.Stage, path: str, x: float, y: float, L: dict, up:
 def build_fixtures(stage: Usd.Stage, room, root: str = "/World/Lights",
                    body_root: str = "/World/Room/Fixtures") -> list[str]:
     """Room.fixtures: a light per fixture under root (Fixture_NN, like the presets' lights) and its body
-    under body_root (Fixture_NN: flange / cord + shade / housing; no collider, it is above everyone's reach).
+    under body_root (Fixture_NN: flange / cord + shade / housing and a glowing Lens over the light; no collider,
+    it is above everyone's reach).
     A flush fixture's body has customData agentic_sim_world_gen:flush (the dollhouse view hides it with the ceiling)."""
-    from agentic_sim_world_gen.scene.fixtures import linear_rgb, plan
+    from agentic_sim_world_gen.scene.fixtures import LENS_GLOW, kelvin_tint, linear_rgb, plan
 
     fx = plan(room)
     if not fx:
@@ -396,6 +397,10 @@ def build_fixtures(stage: Usd.Stage, room, root: str = "/World/Lights",
     UsdGeom.Xform.Define(stage, body_root).GetPrim().SetCustomDataByKey("agentic_sim_world_gen:fixtures", room.fixtures.kind)
     looks = {}
     out = []
+    # the lens's glow: one material (the room's fixtures share a color temperature), scaled like the lights
+    lens_mat = make_material(stage, f"{body_root}/Looks/Lens", resolve_surface(
+        {"preset": "paint_white", "color": (1.0, 1.0, 1.0), "roughness": 0.4}, "paint_white"),
+        glow=LENS_GLOW * room.lighting_scale, tint=kelvin_tint(fx[0]["light"]["kelvin"]))
     for i, f in enumerate(fx):
         L = f["light"]
         path = f"{root}/Fixture_{i:02d}"
@@ -412,8 +417,9 @@ def build_fixtures(stage: Usd.Stage, room, root: str = "/World/Lights",
         body.SetCustomDataByKey("agentic_sim_world_gen:fixture", f["kind"])
         if f["flush"]:
             body.SetCustomDataByKey("agentic_sim_world_gen:flush", True)
-        for j, part in enumerate(f["parts"]):
-            pp = f"{body_root}/Fixture_{i:02d}/Part_{j}"
+        named = [(f"Part_{j}", part, looks[color]) for j, part in enumerate(f["parts"])]
+        for name, part, mat in named + [("Lens", f["lens"], lens_mat)]:
+            pp = f"{body_root}/Fixture_{i:02d}/{name}"
             if part["shape"] == "box":
                 prim = box_mesh(stage, pp, part["center"], part["size"], 1.0, part.get("yaw", 0.0)).GetPrim()
             elif part["shape"] == "shade":
@@ -427,5 +433,5 @@ def build_fixtures(stage: Usd.Stage, room, root: str = "/World/Lights",
                 cyl.CreateExtentAttr([Gf.Vec3f(-r, -r, -h / 2), Gf.Vec3f(r, r, h / 2)])
                 UsdGeom.XformCommonAPI(cyl).SetTranslate(Gf.Vec3d(*part["center"]))
                 prim = cyl.GetPrim()
-            UsdShade.MaterialBindingAPI.Apply(prim).Bind(looks[color])
+            UsdShade.MaterialBindingAPI.Apply(prim).Bind(mat)
     return out

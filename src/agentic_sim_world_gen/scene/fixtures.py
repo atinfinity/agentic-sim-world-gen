@@ -42,6 +42,13 @@ LENS = 0.004  # the light sits this far below the body's bottom (no z-fighting, 
 # blocks the bounce from the floor, so a large one darkened the ceiling and small ones left bright spots.
 FILL = 0.3  # default Fixtures.ceiling_fill
 GLOW_PER_LIGHT = 0.002  # emission per (fixture light per m2 of floor x ceiling_fill), measured in Isaac Sim 6.1
+# A fixture's light is not seen by the camera, so the face it shines from showed the body's paint lit only by the
+# floor's bounce: brown, not a lit panel. A thin lens of the light's shape just above the light glows instead
+# (emission = white x LENS_GLOW x lighting_scale x the light's color); it is part of the body (hidden with it in
+# the dollhouse view).
+LENS_GLOW = 4.0
+LENS_T = 0.002  # lens thickness [m]
+LENS_OUT = 0.0005  # the lens sticks out this far below the body's bottom (no faces in one plane with the body)
 
 
 class Fixtures(BaseModel):
@@ -253,7 +260,8 @@ def place_default(room) -> Fixtures | None:
 def plan(room, points=None) -> list[dict[str, Any]]:
     """Fixtures of Room.fixtures: one dict per fixture with kind, x, y, ceiling (z of the underside it hangs
     from), light (shape, z, size, intensity, kelvin, yaw) and body (parts as boxes / cylinders in world
-    coordinates). `points` (the grid) defaults to RoomGeometry(room).fixture_points(spacing)."""
+    coordinates) and lens (the glowing face over the light; not in lowest: it sticks out LENS_OUT). `points` (the
+    grid) defaults to RoomGeometry(room).fixture_points(spacing)."""
     f = room.fixtures
     if f is None or room.outdoor:
         return []
@@ -287,6 +295,8 @@ def plan(room, points=None) -> list[dict[str, Any]]:
         if f.kind == "downlight":
             parts.append({"shape": "cylinder", "center": (x, y, top - 0.005), "radius": size / 2, "height": 0.01})
             lz, light = top - 0.01 - LENS, {"shape": "disk", "radius": _lens_radius("downlight", size)}
+            lens = {"shape": "cylinder", "center": (x, y, top - 0.01 - LENS_OUT + LENS_T / 2), "radius": light["radius"],
+                    "height": LENS_T}
         elif f.kind == "pendant":
             bottom = top - drop - SHADE_H
             if drop > 0:
@@ -294,6 +304,8 @@ def plan(room, points=None) -> list[dict[str, Any]]:
             parts.append({"shape": "shade", "center": (x, y, bottom + SHADE_H / 2), "radius": size / 2,
                           "top_radius": size * 0.18, "height": SHADE_H})
             lz, light = bottom + 0.02, {"shape": "disk", "radius": _lens_radius("pendant", size)}
+            lens = {"shape": "cylinder", "center": (x, y, lz + LENS - LENS_T / 2), "radius": light["radius"],
+                    "height": LENS_T}  # the bulb's disk, inside the shade above its light
             up = {"shape": "disk", "radius": size * 0.18, "z": bottom + SHADE_H + LENS}
         else:
             hb = 0.05 if f.kind == "line" else 0.02
@@ -306,13 +318,15 @@ def plan(room, points=None) -> list[dict[str, Any]]:
                                   "height": drop})
             parts.append({"shape": "box", "center": (x, y, top - drop - hb / 2), "size": body, "yaw": yaw})
             lz, light = top - drop - hb - LENS, {"shape": "rect", "width": size[0], "height": size[1]}
+            lens = {"shape": "box", "center": (x, y, top - drop - hb - LENS_OUT + LENS_T / 2), "size": (*size, LENS_T),
+                    "yaw": yaw}
             up = {**light, "z": top - drop + LENS}
         light.update(z=round(lz, 4), intensity=round(intensity, 1), kelvin=kelvin, yaw=yaw)
         flush = drop == 0 and f.kind != "pendant"
         if f.uplight and not flush:  # emits toward +Z, from the top of the body
             up.update(z=round(up["z"], 4), intensity=round(intensity * f.uplight, 1), kelvin=kelvin, yaw=yaw)
             light["up"] = up
-        out.append({"kind": f.kind, "x": x, "y": y, "ceiling": top, "light": light, "parts": parts,
+        out.append({"kind": f.kind, "x": x, "y": y, "ceiling": top, "light": light, "parts": parts, "lens": lens,
                     "color": color, "flush": flush, "lowest": round(min(_bottom(p) for p in parts), 4)})
     return out
 
