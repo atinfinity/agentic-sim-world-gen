@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -I \"$CLAUDE_PROJECT_DIR/scripts/hooks/ask_guard.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
