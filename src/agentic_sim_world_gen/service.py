@@ -4304,8 +4304,9 @@ def _no_switch(a) -> str | None:
             f"({a.name}) has only printed pictures, no screen (blank them with set_variants)"
     from agentic_sim_world_gen.usd.screen import found_screens
 
-    return f"({a.name}) has no screen that lights up or shows a picture" if found_screens(a, printed=True) == [] \
-        else None
+    if found_screens(a, printed=True, panels=False) == []:
+        return f"({a.name}) has no screen that lights up or shows a picture"
+    return None
 
 
 def set_screen(scene: str | Path, object_id: str, screen: Screen | dict[str, Any] | str | None) -> dict[str, Any]:
