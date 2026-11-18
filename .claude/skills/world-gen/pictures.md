@@ -27,7 +27,11 @@ Japanese text in a store whose photos show another country or language. Say whic
 **Your own image**: to show something that fits the place instead (a safety poster, KPI board, floor map, the
 user's own image), use `set_screen(object_id, {"image": "<png/jpg>", "fit": "contain"})` on an asset whose
 summary lists `screens` (this covers screens and printed pictures), or on a TV / monitor that lists none: its
-material that lights up a texture is the screen, found in compose ("Off" = an all-black image). agentic-sim-world-gen paints the image onto the screen's
+material that lights up a texture is the screen, found in compose ("Off" = an all-black image). A panel with no
+texture (a material named lcd / oled / screen / display, like LG's monitors) gets the image on a thin quad laid
+over its front instead (it moves with the monitor's rigid body); with one image, the largest screen of the asset
+is used. Such a panel has no light of its own to switch, so "off" / "on" do not apply to it.
+agentic-sim-world-gen paints the image onto the screen's
 front face in a copy of the texture (`screens/<id>_<material>.png`, aspect kept; `contain` pads with `background`,
 `cover` crops, `stretch` fills) and keeps `Screen` On (`Picture` Default). For several screens on one
 asset: `"image": {"<material>": "<file>", ...}`. Record where the image came from (`url`, `title`, `author`,

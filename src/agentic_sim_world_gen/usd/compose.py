@@ -549,7 +549,7 @@ def _add_screen(stage: Usd.Stage, paths: list[str], a, o, scene_dir: Path, place
     if o.screen is None and not off:
         return
     from agentic_sim_world_gen.usd.screen import (apply_screen, black_image, detect_screens, find_material,
-                                                  printed_screens, screen_faces, uninstance)
+                                                  panel_screens, printed_screens, screen_faces, uninstance)
 
     by_place = off and o.screen_on is None
     if off:
@@ -566,6 +566,8 @@ def _add_screen(stage: Usd.Stage, paths: list[str], a, o, scene_dir: Path, place
     if detected:  # no screen declared: a material that emits a texture is one
         first = stage.GetPrimAtPath(f"{paths[0]}/{ASSET_CHILD}")
         found = detect_screens(first) if first and first.IsValid() else []
+        if not off and first and first.IsValid():  # a panel without a texture: an overlay (LG's monitor)
+            found += [x for x in panel_screens(first) if x["material"] not in {y["material"] for y in found}]
         if not found and off and first and first.IsValid():  # a picture without light (NVIDIA's office monitor)
             found = printed_screens(first)
         if not found:
@@ -580,9 +582,10 @@ def _add_screen(stage: Usd.Stage, paths: list[str], a, o, scene_dir: Path, place
                 "error": "the asset declares no screen and no material emits a local texture (asset not fetched, "
                          "or no lit screen)"})
             return
-        if len(found) > 1 and isinstance(o.screen.image, str):  # the screen, not a lit logo / LED
-            area = {s["material"]: sum(f.size_m[0] * f.size_m[1] for f in screen_faces(stage, first, m))
-                    for s in found if (m := find_material(first, s["material"]))}
+        if len(found) > 1 and isinstance(o.screen.image, str):  # the screen, not a lit logo / LED (review)
+            area = {s["material"]: max((f.size_m[0] * f.size_m[1]
+                                        for f in screen_faces(stage, first, m, proxies=True)), default=0.0)
+                    for s in found if (m := find_material(first, s["material"], proxies=True))}
             found = [max(found, key=lambda s: area.get(s["material"], 0.0))]
         a = dataclasses.replace(a, screens=found)
     # off: a found screen's emissive texture all black, its base color black on the screen's faces only

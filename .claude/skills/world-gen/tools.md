@@ -1101,7 +1101,8 @@ ones. For a whole plan zone use zone_floors. [] removes them.
 ## set_screen
 
 Show an image on a signage's screens, a TV's screen or a poster's printed picture (assets listing "screens", or a
-TV / monitor whose material lights up a texture):
+TV / monitor whose material lights up a texture, or whose display material (lcd / screen ...) has none: the
+image then goes on a quad over its front):
 screen {image: "<file>" | {"<material>": "<file>"}, fit contain|cover|stretch, background, url, title, author,
 license} (source recorded in LICENSES.md; <stem>.source.json fills the rest). Keep Screen On / Picture Default.
 "off" = screen switched off (black); "on" = the asset's own lit picture; null = back to the place's default:

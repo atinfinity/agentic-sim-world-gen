@@ -34,13 +34,19 @@ class ScreenFace:
     uv_min: tuple[float, float]
     uv_max: tuple[float, float]
     size_m: tuple[float, float]  # (width, height) as seen from the front
-    # (right, up) [m] = m @ (u, v) + t; (right, up) relative to the face's lower-left corner
-    m: tuple[tuple[float, float], tuple[float, float]]
-    t: tuple[float, float]
+    # (right, up) [m] = m @ (u, v) + t; (right, up) relative to the face's lower-left corner; None: the UVs are
+    # degenerate (a panel without a texture: LG's monitor `lcd`), only an overlay can show an image there
+    m: tuple[tuple[float, float], tuple[float, float]] | None
+    t: tuple[float, float] | None
+    # the face's plane in the world: lower-left corner, right, up, normal (out of the screen)
+    corner: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    right: tuple[float, float, float] = (1.0, 0.0, 0.0)
+    up: tuple[float, float, float] = (0.0, 0.0, 1.0)
+    normal: tuple[float, float, float] = (0.0, -1.0, 0.0)
 
 
-def find_material(root: Usd.Prim, name: str) -> Usd.Prim | None:
-    for p in Usd.PrimRange(root):
+def find_material(root: Usd.Prim, name: str, proxies: bool = False) -> Usd.Prim | None:
+    for p in (Usd.PrimRange(root, Usd.TraverseInstanceProxies()) if proxies else Usd.PrimRange(root)):
         if p.IsA(UsdShade.Material) and p.GetName() == name:
             return p
     return None
@@ -53,10 +59,11 @@ def _faces(mesh: UsdGeom.Mesh, xf: Gf.Matrix4d,
     counts = mesh.GetFaceVertexCountsAttr().Get() or []
     idx = mesh.GetFaceVertexIndicesAttr().Get() or []
     pv = UsdGeom.PrimvarsAPI(mesh.GetPrim()).GetPrimvar("st")
-    if not pv or not pts:
+    if not pts:
         return []
-    uv = pv.ComputeFlattened()
-    face_varying = pv.GetInterpolation() == UsdGeom.Tokens.faceVarying
+    # no UVs: a panel without a texture can still take an overlay; its UVs are then all one point
+    uv = pv.ComputeFlattened() if pv and pv.HasValue() else None
+    face_varying = bool(uv is not None and pv.GetInterpolation() == UsdGeom.Tokens.faceVarying)
     wpts = [xf.Transform(Gf.Vec3d(p)) for p in pts]
     out, k = [], 0
     for f, n in enumerate(counts):
@@ -64,7 +71,8 @@ def _faces(mesh: UsdGeom.Mesh, xf: Gf.Matrix4d,
             k += n
             continue
         vs = [wpts[i] for i in idx[k:k + n]]
-        us = [uv[j] for j in range(k, k + n)] if face_varying else [uv[i] for i in idx[k:k + n]]
+        us = ([Gf.Vec2f(0, 0)] * n if uv is None else [uv[j] for j in range(k, k + n)] if face_varying
+              else [uv[i] for i in idx[k:k + n]])
         k += n
         if n < 3:
             continue
@@ -77,13 +85,14 @@ def _faces(mesh: UsdGeom.Mesh, xf: Gf.Matrix4d,
     return out
 
 
-def screen_faces(stage: Usd.Stage, root: Usd.Prim, material: Usd.Prim) -> list[ScreenFace]:
+def screen_faces(stage: Usd.Stage, root: Usd.Prim, material: Usd.Prim, proxies: bool = False) -> list[ScreenFace]:
     """The large flat sides of the meshes under root bound to material, largest first. A screen panel has two
-    (front and back, the same size); which one shows the picture is decided from the texture (front_face)."""
+    (front and back, the same size); which one shows the picture is decided from the texture (front_face).
+    proxies: also the meshes inside instances (read only: an overlay)."""
     mat_path = material.GetPath()
     cache = UsdGeom.XformCache()
     faces = []
-    for p in Usd.PrimRange(root):
+    for p in (Usd.PrimRange(root, Usd.TraverseInstanceProxies()) if proxies else Usd.PrimRange(root)):
         if not p.IsA(UsdGeom.Mesh):
             continue
         mesh = UsdGeom.Mesh(p)
@@ -124,12 +133,18 @@ def _side(normal: Gf.Vec3d, faces: list) -> ScreenFace:
     right = Gf.Cross(up, normal)  # seen from the front (looking along -normal)
     plane = [(Gf.Dot(v, right), Gf.Dot(v, up)) for f in faces for v in f[2]]
     uvs = [(float(u[0]), float(u[1])) for f in faces for u in f[3]]
-    m, t = _fit_affine(uvs, plane)
+    try:
+        m, t = _fit_affine(uvs, plane)
+    except ValueError:  # no UVs to draw into: the face is still a screen for an overlay
+        m, t = None, None
     rs, ups = [q[0] for q in plane], [q[1] for q in plane]
     us, vs = [q[0] for q in uvs], [q[1] for q in uvs]
     r0, u0 = min(rs), min(ups)
+    depth = max(Gf.Dot(v, normal) for f in faces for v in f[2])
+    corner = right * r0 + up * u0 + normal * depth
     return ScreenFace(uv_min=(min(us), min(vs)), uv_max=(max(us), max(vs)), size_m=(max(rs) - r0, max(ups) - u0),
-                      m=m, t=(t[0] - r0, t[1] - u0))
+                      m=m, t=None if t is None else (t[0] - r0, t[1] - u0), corner=tuple(corner),
+                      right=tuple(right), up=tuple(up), normal=tuple(normal))
 
 
 def front_face(sides: list[ScreenFace], atlas) -> ScreenFace:
@@ -203,6 +218,8 @@ def render_texture(atlas_path: Path, image_path: Path, sides: list[ScreenFace], 
 
     atlas = Image.open(atlas_path).convert("RGB")
     face = front_face(sides, atlas)
+    if face.m is None:
+        raise ValueError("the screen's UVs are degenerate")
     k = min(1.0, MAX_TEXTURE_PX / max(atlas.size))
     if k < 1:
         atlas = atlas.resize((round(atlas.width * k), round(atlas.height * k)), Image.LANCZOS)
@@ -448,19 +465,24 @@ def uninstance(root: Usd.Prim) -> int:
 
 
 @functools.lru_cache(maxsize=64)
-def _found_in(path: str, mtime: float) -> tuple[str, ...]:
+def _found_in(path: str, mtime: float) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
+    """(lit, printed, panels) screen materials of the asset file."""
     stage = Usd.Stage.Open(path)
     if not stage:
-        return (), ()
+        return (), (), ()
     root = stage.GetDefaultPrim() or stage.GetPseudoRoot()  # what a reference brings in, like compose (review)
-    return tuple(s["material"] for s in detect_screens(root)), tuple(s["material"] for s in printed_screens(root))
+    lit = [s["material"] for s in detect_screens(root)]
+    return tuple(lit), tuple(s["material"] for s in printed_screens(root)), \
+        tuple(s["material"] for s in panel_screens(root) if s["material"] not in lit)
 
 
-def found_screens(asset, printed: bool = False) -> list[str] | None:
-    """The screen materials compose would find on an asset that declares none: [] = none, so set_screen
-    has nothing to draw on; None = not known before compose (a Hugging Face asset, fetched only then). Cached by
-    the file's mtime: a texture added later is seen after the USD file changes (or a restart).
-    printed: also the screens that show a picture without light (printed_screens: what "off" blackens)."""
+def found_screens(asset, printed: bool = False, panels: bool = True) -> list[str] | None:
+    """The screen materials compose would find on an asset that declares none (a panel without a texture too,
+    panel_screens): [] = none, so set_screen has nothing to draw on; None = not known before compose (a Hugging Face
+    asset, fetched only then). Cached by the file's mtime: a texture added later is seen after the USD file changes
+    (or a restart).
+    printed: also the screens that show a picture without light (printed_screens: what "off" blackens).
+    panels: also the panels without a texture (an image goes on a quad over them; "off" / "on" leave them)."""
     from agentic_sim_world_gen.assets.localize import parse_hf_url
     from agentic_sim_world_gen.assets.providers.isaac_index import rebase_uri
 
@@ -470,8 +492,8 @@ def found_screens(asset, printed: bool = False) -> list[str] | None:
     if "://" in uri or not Path(uri).is_file():
         return []
     try:
-        lit, shown = _found_in(str(Path(uri).resolve()), Path(uri).stat().st_mtime)
-        return list(lit) + (list(shown) if printed else [])
+        lit, shown, flat = _found_in(str(Path(uri).resolve()), Path(uri).stat().st_mtime)
+        return list(lit) + (list(flat) if panels else []) + (list(shown) if printed else [])
     except Exception:  # an unreadable file shows no screen
         return []
 
@@ -486,6 +508,81 @@ def black_image(scene_dir: Path) -> Path:
         out.parent.mkdir(parents=True, exist_ok=True)
         Image.new("RGB", (16, 16), (0, 0, 0)).save(out)
     return out
+
+
+def _bound_meshes(root: Usd.Prim, material: Usd.Prim) -> list[Usd.Prim]:
+    """The meshes under root (instances included) bound to material, directly or by a GeomSubset."""
+    out = []
+    for p in Usd.PrimRange(root, Usd.TraverseInstanceProxies()):
+        if not p.IsA(UsdGeom.Mesh):
+            continue
+        api = UsdShade.MaterialBindingAPI(p)
+        mats = [UsdShade.MaterialBindingAPI(s.GetPrim()).GetDirectBinding().GetMaterial()
+                for s in api.GetMaterialBindSubsets()] + [api.ComputeBoundMaterial()[0]]
+        if any(m and m.GetPath() == material.GetPath() for m in mats):
+            out.append(p)
+    return out
+
+
+def overlay_parent(stage: Usd.Stage, unit: str, ref: Usd.Prim, material: Usd.Prim) -> Usd.Prim:
+    """Where the quad goes so that it moves with the screen when a simulation moves the monitor: the rigid body
+    holding the screen's mesh (SimReady assets put it on a part, not the root), else the unit. A body that is or is inside an instance is
+    made editable by switching that instance off (instanceable = false, on this unit only)."""
+    from pxr import UsdPhysics
+
+    meshes = _bound_meshes(ref, material)
+    body = None
+    p = meshes[0] if meshes else None
+    while p and p.IsValid() and p.GetPath().HasPrefix(ref.GetPath()):
+        if p.HasAPI(UsdPhysics.RigidBodyAPI):
+            body = p
+            break
+        p = p.GetParent()
+    if body is None:
+        return stage.GetPrimAtPath(unit)
+    path = body.GetPath()
+    for _ in range(8):  # nested instances
+        body = stage.GetPrimAtPath(path)
+        if body.IsInstance():  # its children would be ignored
+            body.SetInstanceable(False)
+            continue
+        if not body.IsInstanceProxy():
+            return body
+        inst = body
+        while inst and not inst.IsInstance():
+            inst = inst.GetParent()
+        inst.SetInstanceable(False)
+    return stage.GetPrimAtPath(unit)
+
+
+def _overlay(stage: Usd.Stage, prim_paths: list[str], o, mat_name: str, img_path: Path,
+             scene_dir: Path) -> dict[str, Any]:
+    """The image on a quad laid over the screen's face of every unit (overlay_quad): `Screen_<material>` under the
+    rigid body that holds the screen (overlay_parent; the unit if none), one material
+    `/World/Objects/<id>/ScreenLooks/<material>` for all."""
+    from agentic_sim_world_gen.usd.compose import ASSET_CHILD
+
+    spec = o.screen
+    safe = Sdf.Path.IsValidIdentifier(mat_name) and mat_name or "screen"
+    tex = (scene_dir / f"screens/{o.id}_{mat_name}.png").resolve()
+    mat, face, quads = None, None, []
+    for path in prim_paths:
+        ref = stage.GetPrimAtPath(f"{path}/{ASSET_CHILD}")
+        m = find_material(ref, mat_name, proxies=True) if ref else None
+        sides = screen_faces(stage, ref, m, proxies=True) if m is not None else []
+        if not sides:
+            continue
+        f = facing_out(sides, ref)
+        if mat is None:
+            face = f
+            overlay_image(img_path, f.size_m, spec.fit, spec.background, tex)
+            mat = overlay_material(stage, f"/World/Objects/{o.id}/ScreenLooks/{safe}", str(tex))
+        parent = overlay_parent(stage, path, ref, m)
+        quads.append(str(overlay_quad(stage, f"{parent.GetPath()}/Screen_{safe}", f, mat).GetPath()))
+    if face is None:
+        return {"material": mat_name, "error": "no mesh with this material"}
+    return {"material": mat_name, "image": str(img_path), "texture": str(tex), "overlay": quads[0], "units": len(quads),
+            "size_m": [round(x, 3) for x in face.size_m]}
 
 
 def apply_screen(stage: Usd.Stage, prim_paths: list[str], asset, o, scene_dir: Path,
@@ -511,6 +608,9 @@ def apply_screen(stage: Usd.Stage, prim_paths: list[str], asset, o, scene_dir: P
         if not img_path.exists():
             continue  # reported by validate
         first = stage.GetPrimAtPath(f"{prim_paths[0]}/{ASSET_CHILD}")
+        if s.get("overlay") and not whole:  # a panel without a texture: a quad in front of it
+            done.append(_overlay(stage, prim_paths, o, mat_name, img_path, scene_dir))
+            continue
         mat = find_material(first, mat_name) if first else None
         if mat is None or mat.IsInstanceProxy():
             done.append({"material": mat_name, "error": "material not found" if mat is None else "instanceable asset"})
@@ -527,7 +627,11 @@ def apply_screen(stage: Usd.Stage, prim_paths: list[str], asset, o, scene_dir: P
         else:
             # absolute like the room's textures: RTX's MDL reader resolves a relative path against the asset's layer
             tex = (scene_dir / f"screens/{o.id}_{mat_name}.png").resolve()
-            face = render_texture(Path(s["image"]), img_path, sides, spec.fit, spec.background, tex)
+            try:
+                face = render_texture(Path(s["image"]), img_path, sides, spec.fit, spec.background, tex)
+            except ValueError as e:  # its faces have no UVs to draw into
+                done.append({"material": mat_name, "error": str(e)})
+                continue
         inputs = []
         for path in prim_paths:
             ref = stage.GetPrimAtPath(f"{path}/{ASSET_CHILD}")
@@ -538,3 +642,137 @@ def apply_screen(stage: Usd.Stage, prim_paths: list[str], asset, o, scene_dir: P
                      **({"base_texture": str(base)} if base else {}),
                      **({"size_m": [round(x, 3) for x in face.size_m]} if face else {})})
     return done
+
+
+# a material named like a panel's display is a screen even without a texture (LG's monitor `monitor_27gx790a`
+# has its front screen as `lcd`, no texture and every UV the same point; the lit texture `on_1` is a decoration on
+# the back). An image goes on a quad laid just in front of it (overlay_screen).
+PANEL_WORDS = {"lcd", "oled", "screen", "display", "monitor"}
+PANEL_NOT = {"bezel", "frame", "border", "edge", "back", "rear", "cover", "physics", "glass", "stand", "decal"}
+OVERLAY_GAP_M = 0.001  # the quad in front of the screen's face
+OVERLAY_PX = 2048  # the long side of the image drawn for an overlay
+OVERLAY_NITS = 10000.0  # OmniPBR emissive_intensity, like the screens of LG's SimReady TVs (tv_oled77g6wua)
+
+
+def _words(name: str) -> set[str]:
+    import re
+
+    return {w for w in re.split(r"[^a-z0-9]+", name.lower()) if w}
+
+
+def panel_screens(root: Usd.Prim) -> list[dict[str, Any]]:
+    """Screens with no texture to draw into: materials named lcd / oled / screen / display / monitor (not a
+    bezel, frame, back ...), bound to a mesh. AssetRecord.screens entries with `overlay`: set_screen's image goes on
+    a quad in front of the face (apply_screen)."""
+    out, seen = [], set()
+    bound = set()
+    for p in Usd.PrimRange(root, Usd.TraverseInstanceProxies()):
+        if p.IsA(UsdGeom.Mesh) or p.IsA(UsdGeom.Subset):
+            m = UsdShade.MaterialBindingAPI(p).GetDirectBinding().GetMaterial()
+            if m:
+                bound.add(m.GetPrim().GetName())
+    for p in Usd.PrimRange(root, Usd.TraverseInstanceProxies()):
+        if not p.IsA(UsdShade.Material) or p.GetName() in seen:
+            continue
+        w = _words(p.GetName())
+        if w & PANEL_WORDS and not w & PANEL_NOT and p.GetName() in bound:
+            seen.add(p.GetName())
+            out.append({"kind": "screen", "material": p.GetName(), "detected": True, "overlay": True})
+    return out
+
+
+def facing_out(sides: list[ScreenFace], root: Usd.Prim) -> ScreenFace:
+    """Of a panel's sides (front and back alike), the one facing away from the asset's middle: the body of a
+    monitor or a TV is behind its screen."""
+    if len(sides) == 1:
+        return sides[0]
+    # the middle of the box in the asset's own frame: a world-aligned box of a turned asset is wider than it is, and
+    # the corners of a thin panel then reach past the body behind it (BBoxCache gave the world-aligned one, even
+    # for ComputeUntransformedBound)
+    cache = UsdGeom.XformCache()
+    to_root = cache.GetLocalToWorldTransform(root).GetInverse()
+    rng = Gf.Range3d()
+    for p in Usd.PrimRange(root, Usd.TraverseInstanceProxies()):
+        if not p.IsA(UsdGeom.Boundable) or UsdGeom.Imageable(p).ComputePurpose() not in ("default", "render"):
+            continue
+        ext = UsdGeom.Boundable.ComputeExtentFromPlugins(UsdGeom.Boundable(p), Usd.TimeCode.Default())
+        if not ext or len(ext) < 2:
+            continue
+        xf = cache.GetLocalToWorldTransform(p) * to_root
+        box = Gf.Range3d(Gf.Vec3d(ext[0]), Gf.Vec3d(ext[1]))
+        for i in range(8):
+            rng.UnionWith(xf.Transform(box.GetCorner(i)))
+    if rng.IsEmpty():
+        return sides[0]
+    mid = cache.GetLocalToWorldTransform(root).Transform(rng.GetMidpoint())
+
+    def out(f: ScreenFace) -> float:
+        c = (Gf.Vec3d(f.corner) + Gf.Vec3d(f.right) * (f.size_m[0] / 2) + Gf.Vec3d(f.up) * (f.size_m[1] / 2))
+        return Gf.Dot(c - mid, Gf.Vec3d(f.normal))
+
+    return max(sides, key=out)
+
+
+def overlay_material(stage: Usd.Stage, path: str, texture: str) -> UsdShade.Material:
+    """A lit picture: OmniPBR (RTX) with the image as base color and emission, UsdPreviewSurface for other
+    renderers."""
+    mat = UsdShade.Material.Define(stage, path)
+    reader = UsdShade.Shader.Define(stage, f"{path}/st")
+    reader.CreateIdAttr("UsdPrimvarReader_float2")
+    reader.CreateInput("varname", Sdf.ValueTypeNames.Token).Set("st")
+    reader.CreateOutput("result", Sdf.ValueTypeNames.Float2)
+    tex = UsdShade.Shader.Define(stage, f"{path}/Image")
+    tex.CreateIdAttr("UsdUVTexture")
+    tex.CreateInput("file", Sdf.ValueTypeNames.Asset).Set(Sdf.AssetPath(texture))
+    tex.CreateInput("sourceColorSpace", Sdf.ValueTypeNames.Token).Set("sRGB")
+    tex.CreateInput("st", Sdf.ValueTypeNames.Float2).ConnectToSource(reader.ConnectableAPI(), "result")
+    tex.CreateOutput("rgb", Sdf.ValueTypeNames.Float3)
+    ps = UsdShade.Shader.Define(stage, f"{path}/Preview")
+    ps.CreateIdAttr("UsdPreviewSurface")
+    ps.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).ConnectToSource(tex.ConnectableAPI(), "rgb")
+    ps.CreateInput("emissiveColor", Sdf.ValueTypeNames.Color3f).ConnectToSource(tex.ConnectableAPI(), "rgb")
+    ps.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(0.2)
+    mat.CreateSurfaceOutput().ConnectToSource(ps.ConnectableAPI(), "surface")
+    mdl = UsdShade.Shader.Define(stage, f"{path}/MDL")
+    mdl.CreateImplementationSourceAttr(UsdShade.Tokens.sourceAsset)
+    mdl.SetSourceAsset(Sdf.AssetPath("OmniPBR.mdl"), "mdl")
+    mdl.SetSourceAssetSubIdentifier("OmniPBR", "mdl")
+    mdl.CreateInput("diffuse_texture", Sdf.ValueTypeNames.Asset).Set(Sdf.AssetPath(texture))
+    mdl.CreateInput("emissive_color_texture", Sdf.ValueTypeNames.Asset).Set(Sdf.AssetPath(texture))
+    mdl.CreateInput("enable_emission", Sdf.ValueTypeNames.Bool).Set(True)
+    mdl.CreateInput("emissive_intensity", Sdf.ValueTypeNames.Float).Set(OVERLAY_NITS)
+    mdl.CreateInput("reflection_roughness_constant", Sdf.ValueTypeNames.Float).Set(0.2)
+    mat.CreateSurfaceOutput("mdl").ConnectToSource(mdl.CreateOutput("out", Sdf.ValueTypeNames.Token))
+    return mat
+
+
+def overlay_quad(stage: Usd.Stage, path: str, face: ScreenFace, mat: UsdShade.Material) -> UsdGeom.Mesh:
+    """A quad over the face (OVERLAY_GAP_M in front), in the local frame of path's parent, UV 0..1 as seen from
+    the front."""
+    parent = stage.GetPrimAtPath(Sdf.Path(path).GetParentPath())
+    to_local = UsdGeom.XformCache().GetLocalToWorldTransform(parent).GetInverse()
+    c, r, u, n = (Gf.Vec3d(x) for x in (face.corner, face.right, face.up, face.normal))
+    c = c + n * OVERLAY_GAP_M
+    w, h = face.size_m
+    world = [c, c + r * w, c + r * w + u * h, c + u * h]  # counter-clockwise seen from the front
+    mesh = UsdGeom.Mesh.Define(stage, path)
+    pts = [Gf.Vec3f(to_local.Transform(p)) for p in world]
+    mesh.CreatePointsAttr(pts)
+    mesh.CreateFaceVertexCountsAttr([4])
+    mesh.CreateFaceVertexIndicesAttr([0, 1, 2, 3])
+    mesh.CreateExtentAttr(UsdGeom.PointBased.ComputeExtent(pts))
+    mesh.CreateSubdivisionSchemeAttr(UsdGeom.Tokens.none)
+    st = UsdGeom.PrimvarsAPI(mesh).CreatePrimvar("st", Sdf.ValueTypeNames.TexCoord2fArray, UsdGeom.Tokens.vertex)
+    st.Set([Gf.Vec2f(0, 0), Gf.Vec2f(1, 0), Gf.Vec2f(1, 1), Gf.Vec2f(0, 1)])
+    UsdShade.MaterialBindingAPI.Apply(mesh.GetPrim()).Bind(mat)
+    return mesh
+
+
+def overlay_image(image_path: Path, size_m: tuple[float, float], fit: str, background: str, out: Path) -> None:
+    """The image fitted to the face's aspect ratio (OVERLAY_PX on the long side)."""
+    from PIL import Image
+
+    w, h = size_m
+    size = (OVERLAY_PX, max(1, round(OVERLAY_PX * h / w))) if w >= h else (max(1, round(OVERLAY_PX * w / h)), OVERLAY_PX)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    fit_image(Image.open(image_path), size, fit, background).save(out, optimize=True)
