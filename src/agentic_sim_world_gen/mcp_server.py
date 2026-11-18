@@ -1219,7 +1219,13 @@ def fit_photos(request: FitRequest, out_dir: str | None = None, depth: bool = Fa
     others agree, also a "scale: ..." warning saying what to do). When the fitted wall height is that outlier,
     `height_suspect` {height_m, typical, photos} (and `room.height_suspect`, a "height: ..." warning) says the
     ceiling's landmarks in those photos are likely misread (a soffit, a beam): apply keeps the scene's height;
-    check them, or fit again with fit_height=false and the real (or a typical) height. Aim for 6+
+    check them, or fit again with fit_height=false and the real (or a typical) height. A fitted height outside
+    the room's range (`place`: home, office, school 2.4-3.3 m, lab, hospital, cafe, restaurant; or
+    `height_range`; the scene's place with out_dir; no place / a shop, factory, hall: no range, only warned of) or
+    suspect is fitted again held (the given height, else 2.4 / 2.7 m) inside the same call: `height_refit`
+    {adopted: held | fitted, reason, fitted, held, metric_worse} - held when the landmarks fit it about as well and
+    the depth / door top do not fit it worse (the scale was off); fitted otherwise (misread ceiling landmarks, or
+    a ceiling the depth says is that high). apply writes a held height only when given. Aim for 6+
     measurements per photo and at least one landmark shared with another photo (a corner, an opening).
     `locate` turns pixels into floor positions afterwards (furniture feet at z=0, a table top at its height);
     give each its `object` (the scene object id) and the result's `objects` has each one's floor center, and
@@ -1313,12 +1319,17 @@ def compare_photo(scene_dir: str, input_id: str | None = None) -> list[Any]:
     Run compose_scene first. layout.svg shows every photo camera (position and field of view).
     `round` counts the comparisons and `hint` says what to do next: fix every difference of one round
     together, about 3 rounds, then report what still differs. `measure` has the free widths each
-    camera sees and what bounds them; the gaps of each line are in `measure_file` (or measure_photo)."""
+    camera sees and what bounds them; the gaps of each line are in `measure_file` (or measure_photo).
+    With several photos, from the second round on only the rows that changed since they were last shown are returned
+    (`unchanged` names the others; `image` = compare.png still has every row)."""
     r = service.compare_photo(scene_dir, input_id)
     if not r.get("ok"):
         return [json.dumps(service.with_language(scene_dir, r), ensure_ascii=False)]
-    with open(r["image"], "rb") as f:
-        return [json.dumps(service.with_language(scene_dir, r), ensure_ascii=False), Image(data=f.read(), format="png")]
+    text = json.dumps(service.with_language(scene_dir, r), ensure_ascii=False)
+    if r.get("unchanged") and not r.get("image_changed"):  # no render changed since the last round
+        return [text]
+    with open(r.get("image_changed") or r["image"], "rb") as f:
+        return [text, Image(data=f.read(), format="jpeg" if r.get("image_changed") else "png")]
 
 
 @mcp.tool()

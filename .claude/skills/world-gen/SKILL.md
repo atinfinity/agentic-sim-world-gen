@@ -192,7 +192,7 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
      | `layout` key | use |
      |---|---|
      | `against_wall` | north / south / east / west / any; `along` 0..1 |
-     | `in_front_of` | a chair at a desk goes just in front. Tuck it under with a negative `gap` only when the thumbnail shows open knee space (overlaps explode in PhysX). A chair at a table's corner hits its leg: put chairs along a side, clear of the corners. |
+     | `in_front_of` | a chair at a desk goes under it by itself as far as the desk's measured knee space and the chair's parts allow (up to 40% of the chair's depth; none if a panel or a leg is in the way); leave `gap` out for that. A `gap` overrides it (positive keeps it out; negative only when the thumbnail shows open knee space: overlaps explode in PhysX). A chair at a table's corner hits its leg: put chairs along a side, clear of the corners. |
      | `next_to` | with `side` |
      | `on` | a lamp on a desk. `on_height` = surface height above the support's bottom when something sticks up above it (a counter top under a POS terminal, the inside of an open stand). `offset` = (right, front) from its center, right as seen facing its front. `facing` turns it, e.g. `"facing": "east"` toward the clerk side. A flat TV with no foot on a stand falls over (`tips_over`): hang it with `wall_height`. |
      | `facing` | an object id or east / west / north / south |
@@ -452,7 +452,7 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
    `window_view`: windows look out on a gray void - `set_room(site=true)`, or, when no render shows the
    windows or blinds / curtains cover them, `set_assumptions([{item: "window_view", value: <why>}])`. `compare`:
    the photos were not compared with the scene as it is - `compose_scene`, `compare_photo`, fix, finish again
-   (only while compare rounds are left and Isaac Sim's Python is here; after 2 failed compare_photo, or with
+   (only when more than small moves changed - over 15 cm / 10°, an object, the room -; only while compare rounds are left and Isaac Sim's Python is here; after 2 failed compare_photo, or with
    `set_assumptions([{item: "photo_compare", value: <why>}])` when it cannot run, finish goes on). When done, `report_must_include` lists what the
    report has to name: `usability` (count, kinds), `substitutes`, `decor_skipped`, `windows_not_found`,
    `unlocated` (furniture no photo placed). Name every one in step 8, with what you did or why it stays. Without Isaac Sim the check is

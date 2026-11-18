@@ -363,6 +363,7 @@ flowchart TD
 関係するファイル
 - [src/agentic_sim_world_gen/layout/room.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/room.py)：`RoomGeometry`・`Wall`・`Face`・`Obstacle`
 - [src/agentic_sim_world_gen/layout/solver.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/solver.py)：`solve`
+- [src/agentic_sim_world_gen/layout/knee.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/knee.py)：机の下に椅子を差し込む深さ（部品の高さの格子）
 - [src/agentic_sim_world_gen/layout/frame.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/frame.py)：正面方向（`asset_front_deg`・`yaw_for_facing`）
 - [src/agentic_sim_world_gen/layout/array.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/array.py)・[fill.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/layout/fill.py)・[assets/shelves.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/assets/shelves.py)
 - [src/agentic_sim_world_gen/scene/decor.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/scene/decor.py)：`plan`・`PRODUCTS`・`fits_goods`
@@ -513,7 +514,7 @@ flowchart TD
 ### Isaac worker
 
 Kitの起動はdraftのcheckの約40 sのほとんどを占めます。`AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER=1`にすると、最初の呼び出しで起動したheadlessのIsaac Sim（`scripts/isaac/worker.py`）を起動したままにし、以後の`check_scene.py`・`front_views.py`・`render_view.py`をそこで続けて実行します。
-既定は切です（待っている間もKit 1つがGPUメモリを数GB持つため）。
+サーバーの既定は切ですが、`agentic-sim-world-gen workspace`で作った作業フォルダでは入です。待っている間もKit 1つがGPUメモリを数GB（3.8〜7.9 GB）持つので、MoGe（単眼の深度）の前に`isaac_worker.free_gpu()`で止めます（実行中の仕事は終わるまで待つ。次のIsaac Simの呼び出しで起動し直す、約11 s）。
 
 ```mermaid
 flowchart TD
@@ -679,6 +680,7 @@ flowchart TD
 部屋を箱とみなし、写真ごとに見えている目印（部屋の角、壁と床の線、ドア・窓の角、複数の写真に写る共有点）の画素をClaudeが拾います。
 `fit_photos`は、部屋の幅・奥行き・開口の位置・各カメラの位置と向き・視野角を未知数にして、目印の再投影の誤差を最小にします（純PythonのLevenberg–Marquardt）。
 尺度は壁の高さで決まります。天井の目印が無ければ、カメラの高さ（`eye_height`）で決めます。
+壁の高さも当てはめて、それが部屋の種類の範囲（`place`）から外れたり怪しい（`height_suspect`）ときは、同じ呼び出しの中で高さを固定して当て直し、目印が同じくらい合い、深度などメートルで測ったものも悪くならなければ固定した方を採ります（`height_refit`。placeが無い・載っていない部屋は当て直さない）。
 
 動画の場合は、まず`extract_frames`が、見え方の変わる所のくっきりしたコマを選びます。次に`video_poses`がコマの間でカメラがどれだけ回ったかを測り（OpenCVのORB特徴、`video_pose.py`）、`fit_photos`に足します。
 単眼の深度（MoGe-2）を足すと、壁を1〜2面しか写さない写真でも寸法が決まりやすくなります。
@@ -704,7 +706,7 @@ flowchart TD
    - 寸法の分かる物（棚1台・ドア・床タイルなど）が写っていれば、その画素を`known`で渡します。その物を物差しにした幅とカメラの高さも出します。
 
 関係するファイル
-- [src/agentic_sim_world_gen/photo_fit.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_fit.py)：`fit`（結果の`scale`＝ 縮尺の根拠の一覧は`_scale_evidence`）・`FitRequest`・`PointObs`・`LineObs`・`SurfaceObs`・`RelativePose`
+- [src/agentic_sim_world_gen/photo_fit.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_fit.py)：`fit`（結果の`scale`＝ 縮尺の根拠の一覧は`_scale_evidence`。高さの当て直しは`_height_refit`）・`FitRequest`・`PointObs`・`LineObs`・`SurfaceObs`・`RelativePose`
 - [src/agentic_sim_world_gen/video.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/video.py)：`extract`（コマ抜き）
 - [src/agentic_sim_world_gen/video_pose.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/video_pose.py)：`relative_poses`（ORBでコマの間の回転・動いた向き）
 - [src/agentic_sim_world_gen/photo_refine.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_refine.py)：`refine`（箱の投影と足元・輪郭の画素の差を最小化）
