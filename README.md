@@ -83,7 +83,7 @@ One run end to end (the example in [Getting Started](docs/en/getting-started.md#
 
 ## Features
 
-- **MCP server + skill for Claude Code** (61 tools); the same operations from the CLI `agentic-sim-world-gen`
+- **MCP server + skill for Claude Code** (62 tools); the same operations from the CLI `agentic-sim-world-gen`
 - Input: text (rooms, warehouses, outdoor sites), floor plans (JSON / DXF / IFC, or traced from an image) and photos
 - Layout: relations (against a wall, in front of, next to, on, facing), arrays (rack rows with aisles), stocking shelves, overlap / out-of-room / door clearance checks
 - Look: floor and wall materials (Isaac Sim MDL or CC0 PBR), lighting presets, moods, outdoor ground / roads / buildings / sky

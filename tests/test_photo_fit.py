@@ -194,7 +194,8 @@ def test_wall_seen_by_one_photo():
 @pytest.mark.xfail(strict=True, reason="photos alone: the door's top is fitted at 2.0 m but does not move the "
                    "scale from the eye height here; it held the scale only with the relative poses of a video (#72)")
 def test_door_top_holds_the_scale():
-    """No ceiling seen and the eye height 20% off: a door's top (2.0 m, seen) sets the scale."""
+    """No ceiling seen and the eye height 20% off: a door's top (2.0 m, seen) should set the scale. With photos alone
+    it does not yet (the eye height wins), so this is a known gap, kept strict so a fix shows up."""
     for eye in (1.2, 1.75):
         req = {**_no_ceiling(_request()), "eye_height": eye}
         off = service.fit_photos({**req, "door_top": None})
@@ -354,3 +355,9 @@ def test_landmarks_on_something_else():
     assert sus["rms_px"] < 1 and abs(sus["room"][1] - D) < 0.05 and math.dist(sus["position"], CAMS[cid][0]) < 0.05, sus
     assert any(f"photo {cid}: its corner:{corner} landmarks" in w and "relabel" in w for w in r["warnings"]), r["warnings"]
     assert "suspects" not in service.fit_photos(rich())
+
+
+def test_relative_poses_are_refused():
+    """A request that still carries `relative` (video input was removed) is refused, not fitted without it."""
+    with pytest.raises(ValueError, match="no longer read"):
+        pf.FitRequest.model_validate({**_request(), "relative": [{"a": "s", "b": "w"}]})

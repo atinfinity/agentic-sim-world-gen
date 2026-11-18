@@ -73,7 +73,7 @@ Ubuntuの画面の録画（Isaac Simは開かず、checkはheadless）。高画�
 
 ## できること
 
-- **Claude CodeのMCPサーバー＋スキル**（61ツール）。同じ処理をCLI `agentic-sim-world-gen`でも呼べる
+- **Claude CodeのMCPサーバー＋スキル**（62ツール）。同じ処理をCLI `agentic-sim-world-gen`でも呼べる
 - 入力：自然言語（屋内・倉庫・屋外）、間取り図（JSON / DXF / IFC / 画像をなぞる）、写真（出典を記録）
 - 配置：関係配置（壁際・机の前・隣・上・向き合う）、繰り返し配置（ラック列＋通路）、棚への物の陳列、重なり・はみ出し・ドア前の検査
 - 見た目：床・壁のマテリアル（Isaac Sim同梱のMDL・CC0のPBR）、照明プリセット、雰囲気（moods）、屋外の地面・道路・建物・空（HDRI）
@@ -119,7 +119,7 @@ usd-coreは`.venv`にだけ入れる（Isaac SimのPythonには入れない）�
 ワールドを作るだけなら`agentic-sim-world-gen workspace <dir>`で作業フォルダを作り、そこで起動する（[Getting Started](docs/getting-started.md) 4）。
 別ディレクトリから使う場合：`claude mcp add agentic-sim-world-gen -- /path/to/repo/.venv/bin/agentic-sim-world-gen-mcp`
 
-主なツール（全61ツールの引数は[.claude/skills/world-gen/tools.md](.claude/skills/world-gen/tools.md)）：
+主なツール（全62ツールの引数は[.claude/skills/world-gen/tools.md](.claude/skills/world-gen/tools.md)）：
 
 | ツール | 内容 |
 |---|---|

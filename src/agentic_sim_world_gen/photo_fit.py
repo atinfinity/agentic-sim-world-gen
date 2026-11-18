@@ -21,7 +21,7 @@ from __future__ import annotations
 import math
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, PrivateAttr, field_validator
+from pydantic import BaseModel, Field, PrivateAttr, field_validator, model_validator
 
 WALLS = ("south", "north", "west", "east")
 COMPASS = {"east": 0, "northeast": 45, "north": 90, "northwest": 135, "west": 180, "southwest": 225,
@@ -111,6 +111,14 @@ class FitRequest(BaseModel):
                               "known; sets the scale instead of the wall height when no landmark at the ceiling "
                               "(or a shared point of known height) is seen")
     size_guess: tuple[float, float] | None = Field(default=None, description="rough width, depth [m] (start)")
+
+    @model_validator(mode="before")
+    @classmethod
+    def _no_relative(cls, data):
+        if isinstance(data, dict) and data.get("relative"):
+            raise ValueError("`relative` (camera turns between the frames of a video) is no longer read: video input "
+                             "was removed. Fit the photos without it.")
+        return data
     hfov_deg: float | None = Field(default=None, description="rough field of view (soft prior; default 65)")
     hfov_shared: bool = Field(default=True, description="one field of view for all photos without hfov_deg (same "
                               "camera); false: fit one per photo")
@@ -1485,4 +1493,3 @@ def _fit_once(req: FitRequest, m: _Model):
         if math.sqrt(cost / max(1, n_obs)) < 3:
             break
     return m, *best
-

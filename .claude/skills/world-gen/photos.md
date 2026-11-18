@@ -268,7 +268,7 @@ ceiling line or plain wall pixels (`surfaces`), and if none shows it, report the
 **Scale**: if no landmark at the ceiling is seen (ceiling corner / ceiling line / a shared point with a known
 height above the floor), the room's size comes from the camera height. Give `eye_height` (a hand-held phone
 is about 1.4–1.6 m; 1.4 is the default) and say it is assumed. A 6 % wrong height makes the room 6 % wrong.
-**Typical sizes hold the scale** and replace the camera-height guess. Mark the **top corners of every
+**Typical sizes pull the scale** toward them, but they do not always override the camera-height guess: with photos alone, a wrong `eye_height` can still set the scale with the door tops fitted at 2.0 m. Read the result's `scale`; when the eye height set it, report the size as assumed. Mark the **top corners of every
 door** you see (`<door>:start:top`, `<door>:end:top`, or the line `<door>:top`): each seen door top is held
 near `door_top` (2.0 m, ±0.1; give 2.03 for a US room, `null` to turn it off). A door that is not a standard
 one (a sliding door to the ceiling, a low closet) takes its own `openings.<id>.top` / `top_sigma`. A flat top

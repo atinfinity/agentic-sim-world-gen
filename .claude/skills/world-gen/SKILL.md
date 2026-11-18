@@ -64,6 +64,7 @@ Read only what the request needs (each is a few thousand tokens):
 | the request has | read |
 |---|---|
 | photos of the room to rebuild | [photos.md](photos.md) |
+| a video of the room | video is not read: ask for photos instead (stills the user takes or picks from it), then [photos.md](photos.md) |
 | a reference image / mood board for the look, 「雰囲気はおまかせ」, a taste warning | [look.md](look.md) |
 | a shop, restaurant or plant factory (sizes, layouts, stocking shelves, hooks, kinds not in the list) | [shops.md](shops.md) |
 | signage screens, posters, POPs, an image on a screen | [pictures.md](pictures.md) |
