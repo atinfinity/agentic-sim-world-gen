@@ -6056,7 +6056,11 @@ def fit_photos(request: dict[str, Any] | Any, out_dir: str | Path | None = None,
     up inside an object or outside the room.
     depth=true: the photos with `image` get a depth map (agentic_sim_world_gen.depth, MoGe-2 in AGENTIC_SIM_WORLD_GEN_DEPTH_PYTHON; kept as
     <stem>.depth.npz) and their points / lines / surfaces the depth at their pixel; it sets the scale without a
-    ceiling landmark."""
+    ceiling landmark.
+    A fitted height outside the room's range (FitRequest.place / height_range; the scene's place when out_dir is a
+    scene folder; no place or one not listed: no range) or suspect is fitted again held at a typical one;
+    `height_refit` has both fits and the one taken (the held one when the landmarks fit it about as well and nothing
+    measured in meters fits it worse). apply writes a held height only when the request gave it."""
     from agentic_sim_world_gen.photo_fit import FitRequest, fit
 
     info = None
@@ -6076,6 +6080,15 @@ def fit_photos(request: dict[str, Any] | Any, out_dir: str | Path | None = None,
         req = request if isinstance(request, FitRequest) else FitRequest.model_validate(request)
     except Exception as e:  # pydantic ValidationError: say what is wrong, do not raise
         return {"ok": False, "error": str(e)}
+    scene = None  # loaded once: its place for the fit, then apply
+    if out_dir is not None and _resolved_path(out_dir).exists():
+        try:
+            scene = load(out_dir)
+        except Exception as e:  # a broken scene: say so, do not raise
+            return {"ok": False, "error": f"out_dir: the scene could not be read ({e})"}
+        if req.place is None and scene.spec.room.place is not None:
+            # the scene's place sets the wall heights a fitted height is held to
+            req = req.model_copy(update={"place": scene.spec.room.place})
     r = fit(req)
     if info is not None and r.get("ok"):
         from agentic_sim_world_gen import depth as dp
@@ -6097,12 +6110,12 @@ def fit_photos(request: dict[str, Any] | Any, out_dir: str | Path | None = None,
         f.write_text(json.dumps({"request": req.model_dump(mode="json"), "result": r}, ensure_ascii=False, indent=1))
         r["file"] = str(f)
     if apply is None:
-        apply = out_dir is not None and _resolved_path(out_dir).exists()
+        apply = scene is not None
     if apply and r.get("ok"):
-        if out_dir is None or not _resolved_path(out_dir).exists():
+        if scene is None:
             r["warnings"].append("apply: out_dir is not a scene folder (no scene.resolved.json) - nothing applied")
         else:
-            r["applied"] = _apply_fit(out_dir, req, r)
+            r["applied"] = _apply_fit(out_dir, req, r, scene)
             r["warnings"] += r["applied"].pop("warnings")
     return r
 
@@ -6110,15 +6123,16 @@ def fit_photos(request: dict[str, Any] | Any, out_dir: str | Path | None = None,
 FIT_BASIS = "写真から当てはめ"  # the assumptions fit_photos(apply) records
 
 
-def _apply_fit(scene: str | Path, req: Any, r: dict[str, Any]) -> dict[str, Any]:
+def _apply_fit(scene: str | Path, req: Any, r: dict[str, Any], s: Any = None) -> dict[str, Any]:
     """fit_photos' room and cameras into the scene: Room width / depth (and height when fitted), the fitted
     openings merged by id (style / clearance kept, the scene's other openings left alone), each photo input's
-    camera; one save with one history line, and the room size, openings and cameras as guessed assumptions."""
+    camera; one save with one history line, and the room size, openings and cameras as guessed assumptions.
+    s: the scene already loaded."""
     from agentic_sim_world_gen.scene.plan import Opening
     from agentic_sim_world_gen.scene.spec import PhotoCamera, Room
     from agentic_sim_world_gen.scene.walls import WALL_JA
 
-    s = load(scene)
+    s = s if s is not None else load(scene)
     d = _resolved_path(scene).parent
     room, warnings, done = r["room"], [], {}
     parts = []
@@ -6129,11 +6143,17 @@ def _apply_fit(scene: str | Path, req: Any, r: dict[str, Any]) -> dict[str, Any]
         data = s.spec.room.model_dump()
         data.update(width=room["width"], depth=room["depth"])
         suspect = room.get("height_fitted") and room.get("height_suspect")
+        # held at the height the request gave: the size was fitted at it, so the scene gets both; a typical
+        # height held does not replace the scene's (set_room's, say): kept, as any height the fit did not fit
+        held = ((r.get("height_refit") or {}).get("adopted") == "held" and "height" in req.model_fields_set
+                and abs(req.height - room["height"]) <= 0.01)
         if suspect:  # the ceiling's landmarks are likely misread: the room's size is used, its height not
             warnings.append(f"apply: the fitted height {room['height']} m is suspect (see scale.height_suspect) - the "
                             f"scene's {s.spec.room.height} m was kept; fit again with fit_height=false, or set_room(height="
                             f"{room['height']}) if the ceiling really is that high")
         elif room.get("height_fitted"):
+            data["height"] = room["height"]
+        elif held:
             data["height"] = room["height"]
         elif abs(room["height"] - s.spec.room.height) > 0.01:
             warnings.append(f"apply: the fit used the height {room['height']} m but the scene's room is "
@@ -6149,7 +6169,8 @@ def _apply_fit(scene: str | Path, req: Any, r: dict[str, Any]) -> dict[str, Any]
         done["room"] = {"width": room["width"], "depth": room["depth"], "height": h,
                         "openings": [o["id"] for o in room["openings"]]}
         parts.append(f"部屋 {room['width']:.2f} × {room['depth']:.2f} m・天井 {h:.2f} m"
-                     + ("（高さも推定）" if room.get("height_fitted") and not suspect else ""))
+                     + ("（高さも推定）" if room.get("height_fitted") and not suspect else
+                        "（推定した高さが外れたので高さを固定）" if held else ""))
         if room["openings"]:
             parts.append(f"開口 {len(room['openings'])}")
     inputs = {i.id: i for i in s.spec.inputs}

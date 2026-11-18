@@ -105,6 +105,14 @@ file adds what is specific to video frames.
    - Warning "height: the fitted wall height ... is suspect" (`scale.height_suspect`): the room's size holds
      without it, so a ceiling corner or line is on a soffit or a beam. Do not use that height: relabel the
      ceiling in the listed frames, or fit again with fit_height=false and the real or a typical height.
+   - `height_refit`: a fitted height outside the room's range (by `place`: home, office, school, lab,
+     hospital, cafe, restaurant, or `height_range`; the scene's with out_dir; none for no place or a shop / hall)
+     or suspect was already fitted again held at the given or a typical height in the same call - do not fit
+     again for that. `adopted: held` = that fit is the result (the scale was off; apply keeps the scene's height
+     unless you gave `height`); `adopted: fitted` = the landmarks did not fit the held height (misread ceiling
+     landmarks: relabel them), or `metric_worse` lists the depth / door top that fit it worse (the ceiling may
+     really be that high: ask, or give `height`). Give `height` in the request when the user knows it (it is the
+     one held).
    - Warning "nothing of known length is seen" (no ceiling seen with the height given, no shared point at a
      known height): the size comes from the depth and the camera height together, and a depth model can be off
      by 10–15 % in every frame (a rendered room came out 13 % big from the depth alone). Before fitting, ask the

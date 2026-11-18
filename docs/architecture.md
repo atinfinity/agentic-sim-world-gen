@@ -679,6 +679,7 @@ flowchart TD
 部屋を箱とみなし、写真ごとに見えている目印（部屋の角、壁と床の線、ドア・窓の角、複数の写真に写る共有点）の画素をClaudeが拾います。
 `fit_photos`は、部屋の幅・奥行き・開口の位置・各カメラの位置と向き・視野角を未知数にして、目印の再投影の誤差を最小にします（純PythonのLevenberg–Marquardt）。
 尺度は壁の高さで決まります。天井の目印が無ければ、カメラの高さ（`eye_height`）で決めます。
+壁の高さも当てはめて、それが部屋の種類の範囲（`place`）から外れたり怪しい（`height_suspect`）ときは、同じ呼び出しの中で高さを固定して当て直し、目印が同じくらい合い、深度などメートルで測ったものも悪くならなければ固定した方を採ります（`height_refit`。placeが無い・載っていない部屋は当て直さない）。
 
 動画の場合は、まず`extract_frames`が、見え方の変わる所のくっきりしたコマを選びます。次に`video_poses`がコマの間でカメラがどれだけ回ったかを測り（OpenCVのORB特徴、`video_pose.py`）、`fit_photos`に足します。
 単眼の深度（MoGe-2）を足すと、壁を1〜2面しか写さない写真でも寸法が決まりやすくなります。
@@ -704,7 +705,7 @@ flowchart TD
    - 寸法の分かる物（棚1台・ドア・床タイルなど）が写っていれば、その画素を`known`で渡します。その物を物差しにした幅とカメラの高さも出します。
 
 関係するファイル
-- [src/agentic_sim_world_gen/photo_fit.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_fit.py)：`fit`（結果の`scale`＝ 縮尺の根拠の一覧は`_scale_evidence`）・`FitRequest`・`PointObs`・`LineObs`・`SurfaceObs`・`RelativePose`
+- [src/agentic_sim_world_gen/photo_fit.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_fit.py)：`fit`（結果の`scale`＝ 縮尺の根拠の一覧は`_scale_evidence`。高さの当て直しは`_height_refit`）・`FitRequest`・`PointObs`・`LineObs`・`SurfaceObs`・`RelativePose`
 - [src/agentic_sim_world_gen/video.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/video.py)：`extract`（コマ抜き）
 - [src/agentic_sim_world_gen/video_pose.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/video_pose.py)：`relative_poses`（ORBでコマの間の回転・動いた向き）
 - [src/agentic_sim_world_gen/photo_refine.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_refine.py)：`refine`（箱の投影と足元・輪郭の画素の差を最小化）

@@ -677,6 +677,7 @@ flowchart TD
 The room is treated as a box. For each photo, Claude picks the pixels of visible landmarks (room corners, wall-floor lines, door and window corners, points shared across photos).
 `fit_photos` takes the room width and depth, opening positions, and each camera's position, direction and field of view as unknowns, and minimizes the reprojection error of the landmarks (pure-Python Levenberg–Marquardt).
 The wall height sets the scale. If there are no ceiling landmarks, the camera height (`eye_height`) sets it.
+The wall height is fitted too; when it falls outside the range for the kind of room (`place`) or is suspect (`height_suspect`), the same call fits again with the height held, and takes the held fit when the landmarks fit it about as well and nothing measured in meters (the depth, a door top) fits it worse (`height_refit`; a room with no place, or one not listed, is not refitted).
 
 For video, `extract_frames` first selects sharp frames where the view changes. Then `video_poses` measures how much the camera rotated between frames (OpenCV ORB features, `video_pose.py`) and adds that to `fit_photos`.
 Adding monocular depth (MoGe-2) helps fix the dimensions even for photos that show only 1–2 walls.
@@ -702,7 +703,7 @@ flowchart TD
    - If an object of known size (one shelf unit, a door, floor tiles, etc.) is in the photo, pass its pixels with `known`. Widths and the camera height are then also given using that object as a ruler.
 
 Related files
-- [src/agentic_sim_world_gen/photo_fit.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_fit.py): `fit` (the result's `scale` = the list of scale evidence, from `_scale_evidence`), `FitRequest`, `PointObs`, `LineObs`, `SurfaceObs`, `RelativePose`
+- [src/agentic_sim_world_gen/photo_fit.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_fit.py): `fit` (the result's `scale` = the list of scale evidence, from `_scale_evidence`; the height refit is `_height_refit`), `FitRequest`, `PointObs`, `LineObs`, `SurfaceObs`, `RelativePose`
 - [src/agentic_sim_world_gen/video.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/video.py): `extract` (frame extraction)
 - [src/agentic_sim_world_gen/video_pose.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/video_pose.py): `relative_poses` (rotation and motion direction between frames with ORB)
 - [src/agentic_sim_world_gen/photo_refine.py](https://github.com/atinfinity/agentic-sim-world-gen/blob/main/src/agentic_sim_world_gen/photo_refine.py): `refine` (minimizes the pixel difference between the projected box and the foot points and outline)
