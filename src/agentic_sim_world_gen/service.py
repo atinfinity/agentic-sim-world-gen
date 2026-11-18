@@ -5091,7 +5091,7 @@ def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bo
         res["tints_hint"] = ("a tint without materials painted the main color it guessed (painted, its share of "
                              "the surface): if that is not the part the user meant, set_tint again with "
                              "materials=[one of others]")
-    if log and (h := st.get("photo_compare_hint")):
+    if log and (h := st.get("photo_compare_hint")) and "small_moves" not in st.get("photo_compare", {}):
         res["next"] = h
     return res
 
@@ -5702,9 +5702,65 @@ def _photo_inputs(s: ResolvedScene) -> list[InputRef]:
     return [i for i in s.spec.inputs if i.kind != "reference" and i.camera is not None]
 
 
+SMALL_MOVE_M = 0.15  # moves up to this far (and turns up to SMALL_TURN_DEG) since compare_photo do not stop finish
+SMALL_TURN_DEG = 10.0
+POSE_KEYS = ("position", "z", "yaw_deg", "facing_deg")
+# object fields that do not change what the photos' renders show: who placed it, where it was seen, its label, and
+# the layout relation (the solver writes its result into position / z / yaw; moving an object drops the relation)
+NOT_SEEN = ("label", "seen_in", "placed_by_user", "alt_queries", "layout")
+
+
+def _layout_shape(d: Path) -> dict[str, Any] | None:
+    """The scene as compare_photo saw it, split in two: each object's pose (position, z, yaw, facing) and a hash
+    of everything else that shows in a render (the room, the assets, the objects' other fields)."""
+    from agentic_sim_world_gen.preview.page import NOT_IN_USD
+
+    try:
+        data = json.loads((d / "scene.resolved.json").read_text(encoding="utf-8"))
+        spec = data.get("spec", {})
+        for k in NOT_IN_USD:
+            spec.pop(k, None)
+        poses, arrays = {}, []
+        for o in spec.get("objects", []):
+            poses[o["id"]] = [o.get(k) for k in POSE_KEYS]
+            if o.get("array"):
+                arrays.append(o["id"])
+            if isinstance(o.get("fill"), dict) and isinstance(o["fill"].get("slots"), list):
+                # the products' places are in world coordinates, written again when their shelf moves: the shelf's
+                # own pose is compared; here only how many there are
+                o["fill"]["slots"] = len(o["fill"]["slots"])
+            for k in (*POSE_KEYS, *NOT_SEEN):
+                o.pop(k, None)
+    except (OSError, ValueError, AttributeError, KeyError, TypeError):
+        return None
+    rest = hashlib.sha1(json.dumps(data, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
+    return {"rest": rest, "poses": poses, "arrays": arrays}
+
+
+def _small_moves(was: dict[str, Any] | None, now: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    """The objects that moved a little since the comparison, or None when anything else changed: an object
+    added / removed / swapped, the room, an asset, a move over SMALL_MOVE_M or a turn over SMALL_TURN_DEG."""
+    if not was or not now or was.get("rest") != now.get("rest") or set(was.get("poses", {})) != set(now["poses"]):
+        return None
+    out = []
+    for oid, (p1, z1, yaw1, f1) in now["poses"].items():
+        p0, z0, yaw0, f0 = was["poses"][oid]
+        if [p0, z0, yaw0, f0] == [p1, z1, yaw1, f1]:
+            continue
+        if (p0 is None) != (p1 is None) or (f0 is None) != (f1 is None):
+            return None
+        dist = math.dist((*(p0 or (0, 0)), z0 or 0.0), (*(p1 or (0, 0)), z1 or 0.0))
+        turn = max(abs((a - b + 180) % 360 - 180) for a, b in ((yaw0 or 0.0, yaw1 or 0.0), (f0 or 0.0, f1 or 0.0)))
+        # a row of units turns about its middle: a few degrees move its far ends a lot (8 racks, 9 deg: 0.6 m)
+        if dist > SMALL_MOVE_M or turn > SMALL_TURN_DEG or (turn and oid in now.get("arrays", [])):
+            return None
+        out.append({"id": oid, "moved_m": round(dist, 3), **({"turned_deg": round(turn, 1)} if turn else {})})
+    return out
+
+
 def _record_compare(d: Path, photos: list[InputRef]) -> int:
-    """What compare_photo last compared: the scene it rendered and each photo's camera then, and how many
-    rounds of comparing there were. Returns that count."""
+    """What compare_photo last compared: the scene it rendered (and its layout) and each photo's camera then, and
+    how many rounds of comparing there were. Returns that count."""
     from agentic_sim_world_gen.preview.page import scene_hash
 
     f = d / COMPARE_JSON
@@ -5716,7 +5772,8 @@ def _record_compare(d: Path, photos: list[InputRef]) -> int:
     made = scene_hash(d)
     # the same scene and cameras again (a retry) is not a new round
     n = int(old.get("rounds", 0)) + (0 if old.get("made_from") == made and old.get("cameras") == cams else 1)
-    f.write_text(json.dumps({"made_from": made, "cameras": cams, "rounds": max(n, 1)}, indent=1))
+    f.write_text(json.dumps({"made_from": made, "cameras": cams, "rounds": max(n, 1), "shape": _layout_shape(d)},
+                            indent=1))
     return max(n, 1)
 
 
@@ -5752,14 +5809,23 @@ def _compare_state(s: ResolvedScene, d: Path) -> dict[str, Any]:
         out["camera_moved"] = moved
     if never:
         out["not_compared"] = never
+    small = None
     if rec.get("made_from") != scene_hash(d):
         out["stale"] = True
+        small = None if moved or never else _small_moves(rec.get("shape"), _layout_shape(d))
+        if small:
+            out["small_moves"] = small
     hint = ""
     if moved:
         hint = (f"the camera of {', '.join(moved)} moved after the last comparison. A photo's camera is where the photo "
                 "was taken: to change where things are, move the objects, not the camera (set it back unless you were "
                 "fixing its pose to the photo). ")
-    if moved or never or out.get("stale"):
+    if small:  # a few cm off what was compared (a nudge, the physics fixes) - not worth a render
+        hint += ("since the last compare_photo only small moves: " + ", ".join(
+            f"{m['id']} {m['moved_m'] * 100:.0f} cm" + (f" {m['turned_deg']:g} deg" if m.get("turned_deg") else "")
+            for m in small[:8]) + (f" and {len(small) - 8} more" if len(small) > 8 else "")
+            + " (within " + f"{SMALL_MOVE_M * 100:.0f} cm / {SMALL_TURN_DEG:g} deg; not compared again)")
+    elif small is None and (moved or never or out.get("stale")):  # [] - only labels and the like changed
         hint += "The scene changed since the last compare_photo: compose_scene and compare_photo again before reporting"
         if out["rounds"] >= COMPARE_ROUNDS:
             hint += (f" (round {out['rounds'] + 1}: the last one - then report what still differs instead of fixing "
