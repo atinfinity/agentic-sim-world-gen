@@ -81,7 +81,7 @@ cd ~/agentic-sim-world-gen-ws && claude
 ```
 
 `workspace` creates these in the folder: `.mcp.json` (the agentic-sim-world-gen MCP server), the world-gen skill (a link into the repository),
-a short CLAUDE.md, and a hook that keeps the reply language after the conversation is compacted. Scenes go to `~/agentic-sim-world-gen-ws/scenes`.
+a short CLAUDE.md, a hook that keeps the reply language after the conversation is compacted, and hooks that check the notes and the final report were written in the user's language. Scenes go to `~/agentic-sim-world-gen-ws/scenes`.
 
 Create the workspace **outside the repository** (creating it inside is an error). Starting `claude` inside the repository also works,
 but then it reads the development CLAUDE.md on every turn: that costs more and the conversation gets compacted sooner.

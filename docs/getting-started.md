@@ -81,7 +81,7 @@ cd ~/agentic-sim-world-gen-ws && claude
 ```
 
 `workspace`は作業フォルダに次のものを作る：`.mcp.json`（agentic-sim-world-genのMCPサーバー）、スキルworld-gen（リポジトリへのリンク）、
-短いCLAUDE.md、会話の圧縮（compaction）の後も返答の言語を保つフック。シーンは`~/agentic-sim-world-gen-ws/scenes`にできる。
+短いCLAUDE.md、会話の圧縮（compaction）の後も返答の言語を保つフックと、途中の1行・最終報告が利用者の言語で書かれたかを確かめるフック。シーンは`~/agentic-sim-world-gen-ws/scenes`にできる。
 
 作業フォルダは**リポジトリの外**に作る（中に作るとエラー）。リポジトリの中で`claude`を起動しても動くが、
 開発用のCLAUDE.mdを毎ターン読むので料金が高く、会話の圧縮も早く起きる。
