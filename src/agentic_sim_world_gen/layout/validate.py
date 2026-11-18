@@ -446,10 +446,55 @@ def place_fits(place: str | None, fits) -> bool:
     return "any" in fits or (place is not None and (place in fits or (place in STORE_PLACES and "shop" in fits)))
 
 
+# in these places a monitor / TV stands switched off (black) unless told otherwise (ObjectSpec.screen_on):
+# the lit wallpaper of an LG monitor from SimReady Central glowed purple on every desk of a PC classroom, where
+# the video showed black screens
+SCREEN_OFF_PLACES = ("office", "school", "lab")
+SCREEN_WORDS = {"monitor", "tv", "television", "laptop"}  # not "display" / "screen": a display case, a projection screen
+# furniture for a screen: "TV stand", "monitor arm", "television cabinet" are no screen
+SCREEN_FURNITURE = {"stand", "arm", "mount", "cabinet", "desk", "table", "bracket", "rack", "cart", "unit", "board"}
+
+
+def _screen_word(w: str) -> str:
+    """monitors / TVs / televisions / laptops -> the singular (_kind_words keeps "tvs": it strips only words > 3)."""
+    return w[:-1] if w.endswith("s") and w[:-1] in SCREEN_WORDS else w
+
+
+def is_screen_object(o, a) -> bool:
+    """A monitor / TV: the query, an alt query or the asset's class whose head noun (last word) is a screen word,
+    with no furniture word in it ("computer monitor", "TVs" yes; "TV stand", "monitor desk" no)."""
+    for text in (o.query, *(o.alt_queries or []), (a.semantic_class or "") if a is not None else ""):
+        words = [_screen_word(w) for w in re.findall(r"[a-z]+", (text or "").lower())]
+        if words and words[-1] in SCREEN_WORDS and not set(words) & SCREEN_FURNITURE:
+            return True
+    return False
+
+
+def screen_dark(o, a, place: str | None) -> bool | None:
+    """Whether compose turns this object's screen off (paints it black): True = off, None = left as the asset
+    has it. ObjectSpec.screen (an image) wins; then ObjectSpec.screen_on (False = off, True = the asset's own lit
+    picture); then the place: a monitor / TV (is_screen_object) in SCREEN_OFF_PLACES is off.
+    A printed picture (asset.json `picture`) is never turned off here."""
+    if o.screen is not None or o.screen_on is True:
+        return None
+    if a is not None and a.screens and all(x.get("kind") == "picture" for x in a.screens):
+        return None
+    if o.screen_on is False:
+        return True
+    if place in SCREEN_OFF_PLACES and is_screen_object(o, a):
+        return True
+    return None
+
+
 def _screen_content(o, a, place: str | None) -> list[Issue]:
     """A lit screen or a printed picture showing the asset's own picture: it must suit Room.place
     (asset.json screen.places / picture.places)."""
-    x = a.screens[0]
+    shown = a.screens
+    if screen_dark(o, a, place):  # compose paints its screens black: its printed pictures still show
+        shown = [x for x in a.screens if x.get("kind") == "picture"]
+        if not shown:
+            return []
+    x = shown[0]
     vset, on = x.get("variant_set"), x.get("on")
     if vset and on is not None and o.variants.get(vset, on) != on:
         return []  # turned off / blank

@@ -232,10 +232,12 @@ def render_texture(atlas_path: Path, image_path: Path, sides: list[ScreenFace], 
     return face
 
 
-def retarget_textures(material: Usd.Prim, original: str, new: str) -> list[str]:
+def retarget_textures(material: Usd.Prim, original: str, new: str, other: str | None = None) -> list[str]:
     """Point every texture input of the material's shaders that uses `original` (file name) at `new`.
+    other: only the emissive ones (emissive_inputs) get `new`, the rest (base color ...) get `other`.
     Returns the shader inputs changed (prim path.input)."""
     name = Path(original).name
+    lit = emissive_inputs(material) if other is not None else set()
     changed = []
     for p in Usd.PrimRange(material):
         if not p.IsA(UsdShade.Shader):
@@ -245,8 +247,9 @@ def retarget_textures(material: Usd.Prim, original: str, new: str) -> list[str]:
                 continue
             v = i.Get()
             if v is not None and Path(v.path).name == name:
-                i.Set(Sdf.AssetPath(new))
-                changed.append(f"{p.GetPath()}.{i.GetBaseName()}")
+                key = f"{p.GetPath()}.{i.GetBaseName()}"
+                i.Set(Sdf.AssetPath(new if other is None or key in lit else other))
+                changed.append(key)
     return changed
 
 
@@ -300,30 +303,164 @@ def _emissive_texture(material: Usd.Prim) -> str | None:
     return None
 
 
+def emissive_inputs(material: Usd.Prim) -> set[str]:
+    """The texture inputs (prim path.input) of the material that feed its emission: an emissive texture input, or the
+    file of an image node connected to an emission color. An image node that also feeds the base color counts
+    (it is one input: switched off, the screen's base color goes black with it)."""
+    out = set()
+    for p in Usd.PrimRange(material):
+        if not p.IsA(UsdShade.Shader):
+            continue
+        ins = {i.GetBaseName(): i for i in UsdShade.Shader(p).GetInputs()}
+        out |= {f"{p.GetPath()}.{k}" for k in EMISSIVE_TEXTURES if k in ins}
+        for k in EMISSIVE_COLORS:
+            i = ins.get(k)
+            if i is not None and i.HasConnectedSource():
+                src = i.GetConnectedSource()[0].GetPrim()
+                out |= {f"{src.GetPath()}.{n}" for n in ("file", "texture", "filename")
+                        if UsdShade.Shader(src).GetInput(n)}
+    return out
+
+
+def _emits(sh: UsdShade.Shader, ins: dict) -> bool:
+    """The shader's emission is on: enable_emission true where it has it (an MDL's default is false), no amount 0,
+    and something to emit (a texture, a connected or non-black emission color)."""
+    mdl = sh.GetImplementationSource() == UsdShade.Tokens.sourceAsset
+    if (EMISSION_ON in ins or mdl) and (EMISSION_ON not in ins or ins[EMISSION_ON].Get() is not True):
+        return False
+    if any(_is_zero(ins[k].Get()) for k in EMISSION_AMOUNT if k in ins):
+        return False
+    if any(k in ins and getattr(ins[k].Get(), "path", "") for k in EMISSIVE_TEXTURES):
+        return True
+    for k in EMISSIVE_COLORS:
+        i = ins.get(k)
+        if i is not None and (i.HasConnectedSource() or _bright(i.Get())):
+            return True
+    return False
+
+
+def _bright(v) -> bool:
+    """A color (or a number) above 0."""
+    try:
+        return any(float(x) > 0 for x in v) if hasattr(v, "__len__") else float(v) > 0
+    except (TypeError, ValueError):
+        return False
+
+
+def lights_off(root: Usd.Prim) -> list[str]:
+    """Switch off every material under root that emits light (seen in Isaac Sim: the LG monitor's purple glow is a
+    constant emission, `deco_lighting_on`, behind the panel; its lit texture `on_1` is 8 small faces): enable_emission
+    false, the amounts 0, an unconnected emission color black. A monitor switched off has no light left.
+    Returns the names of the materials switched off."""
+    out = []
+    for p in Usd.PrimRange(root):
+        if not p.IsA(UsdShade.Material) or p.IsInstanceProxy():
+            continue
+        hit = False
+        for q in Usd.PrimRange(p):
+            if not q.IsA(UsdShade.Shader):
+                continue
+            sh = UsdShade.Shader(q)
+            ins = {i.GetBaseName(): i for i in sh.GetInputs()}
+            if not _emits(sh, ins):
+                continue
+            hit = True
+            if EMISSION_ON in ins or sh.GetImplementationSource() == UsdShade.Tokens.sourceAsset:
+                sh.CreateInput(EMISSION_ON, Sdf.ValueTypeNames.Bool).Set(False)
+            for k in EMISSION_AMOUNT:
+                if k in ins:
+                    ins[k].Set(0.0)
+            for k in EMISSIVE_COLORS:  # a connected one (an image node) is cut off: nothing to multiply by
+                i = ins.get(k)
+                if i is None:
+                    continue
+                if i.HasConnectedSource():  # an empty list over the asset's (DisconnectSource edits only this layer)
+                    i.GetAttr().SetConnections([])
+                if i.GetTypeName() == Sdf.ValueTypeNames.Color3f or i.GetTypeName() == Sdf.ValueTypeNames.Float3:
+                    i.Set(Gf.Vec3f(0, 0, 0))
+                elif _bright(i.Get()):
+                    i.Set(0.0)
+        if hit:
+            out.append(p.GetName())
+    return out
+
+
+def black_faces(atlas_path: Path, sides: list[ScreenFace], out: Path) -> None:
+    """A copy of the atlas with the screen's faces (every side's UV box) black: the base color of a screen switched
+    off; what else the atlas holds (a bezel, a logo) keeps its color."""
+    from PIL import Image
+
+    atlas = Image.open(atlas_path).convert("RGB")
+    w, h = atlas.size
+    for f in sides:
+        atlas.paste((0, 0, 0), (int(f.uv_min[0] * w), int((1 - f.uv_max[1]) * h),
+                                int(f.uv_max[0] * w + 0.999), int((1 - f.uv_min[1]) * h + 0.999)))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    atlas.save(out, optimize=True)
+
+
 def detect_screens(root: Usd.Prim) -> list[dict[str, Any]]:
     """Screens of an asset that declares none in asset.json (a TV from SimReady Central): its materials that
     emit a texture, as AssetRecord.screens entries (`detected`: found, not declared). The texture must be a local
     file (a Hugging Face asset is fetched first, like a tint)."""
     out = []
-    for p in Usd.PrimRange(root):
+    for p in Usd.PrimRange(root, Usd.TraverseInstanceProxies()):
         if p.IsA(UsdShade.Material) and (tex := _emissive_texture(p)):
             out.append({"kind": "screen", "material": p.GetName(), "image": tex, "detected": True})
     return out
+
+
+def printed_screens(root: Usd.Prim) -> list[dict[str, Any]]:
+    """Screens that do not light up but show a picture (seen in Isaac Sim: NVIDIA's office monitor
+    `sm_computer_monitor_office_a01` has a login screen, purple to blue, as the base color of `..._decal_screen_a`
+    (`t_officemonitor_a01_screen_emissive_albedo.png`, emissive_intensity 0: it renders purple).
+    A material with "screen" in its name or in a texture's file name, and a local texture: a screen to switch off
+    (black), not one to show an image on (set_screen's image needs a lit one, detect_screens)."""
+    out = []
+    for p in Usd.PrimRange(root, Usd.TraverseInstanceProxies()):
+        if not p.IsA(UsdShade.Material) or "physics" in p.GetName().lower():
+            continue
+        named = "screen" in p.GetName().lower()
+        for q in Usd.PrimRange(p, Usd.TraverseInstanceProxies()):
+            if not q.IsA(UsdShade.Shader):
+                continue
+            files = [f for i in UsdShade.Shader(q).GetInputs()
+                     if i.GetTypeName() == Sdf.ValueTypeNames.Asset and (f := _local_file(i.Get()))]
+            tex = next((f for f in files if named or "screen" in Path(f).name.lower()), None)
+            if tex:
+                out.append({"kind": "screen", "material": p.GetName(), "image": tex, "detected": True,
+                            "printed": True})
+                break
+    return out
+
+
+def uninstance(root: Usd.Prim) -> int:
+    """Make the instanced prims under root editable (instanceable false): a material inside an instance is a
+    proxy that takes no override (NVIDIA's SimReady assets are instanced). Returns how many were switched."""
+    n, todo = 0, [root]
+    while todo:
+        p = todo.pop()
+        if p.IsInstance():
+            p.SetInstanceable(False)
+            n += 1
+        todo.extend(p.GetChildren())
+    return n
 
 
 @functools.lru_cache(maxsize=64)
 def _found_in(path: str, mtime: float) -> tuple[str, ...]:
     stage = Usd.Stage.Open(path)
     if not stage:
-        return ()
+        return (), ()
     root = stage.GetDefaultPrim() or stage.GetPseudoRoot()  # what a reference brings in, like compose (review)
-    return tuple(s["material"] for s in detect_screens(root))
+    return tuple(s["material"] for s in detect_screens(root)), tuple(s["material"] for s in printed_screens(root))
 
 
-def found_screens(asset) -> list[str] | None:
+def found_screens(asset, printed: bool = False) -> list[str] | None:
     """The screen materials compose would find on an asset that declares none: [] = none, so set_screen
     has nothing to draw on; None = not known before compose (a Hugging Face asset, fetched only then). Cached by
-    the file's mtime: a texture added later is seen after the USD file changes (or a restart)."""
+    the file's mtime: a texture added later is seen after the USD file changes (or a restart).
+    printed: also the screens that show a picture without light (printed_screens: what "off" blackens)."""
     from agentic_sim_world_gen.assets.localize import parse_hf_url
     from agentic_sim_world_gen.assets.providers.isaac_index import rebase_uri
 
@@ -333,14 +470,32 @@ def found_screens(asset) -> list[str] | None:
     if "://" in uri or not Path(uri).is_file():
         return []
     try:
-        return list(_found_in(str(Path(uri).resolve()), Path(uri).stat().st_mtime))
+        lit, shown = _found_in(str(Path(uri).resolve()), Path(uri).stat().st_mtime)
+        return list(lit) + (list(shown) if printed else [])
     except Exception:  # an unreadable file shows no screen
         return []
 
 
-def apply_screen(stage: Usd.Stage, prim_paths: list[str], asset, o, scene_dir: Path) -> list[dict[str, Any]]:
+def black_image(scene_dir: Path) -> Path:
+    """An all-black image (scene dir `screens/off.png`) for a screen switched off: painted over the screen's
+    face, it neither shows a picture nor lights up (the emissive texture is black too)."""
+    from PIL import Image
+
+    out = scene_dir / "screens" / "off.png"
+    if not out.is_file():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (16, 16), (0, 0, 0)).save(out)
+    return out
+
+
+def apply_screen(stage: Usd.Stage, prim_paths: list[str], asset, o, scene_dir: Path,
+                 whole: bool = False) -> list[dict[str, Any]]:
     """Render the screen textures for object o once and point every unit's (prim_paths) screen materials at them.
-    The reference is the `Asset` child of each path. Returns what was done per screen (for customData)."""
+    The reference is the `Asset` child of each path. Returns what was done per screen (for customData).
+    whole: a found screen switched off: the image (black) replaces the emissive texture inputs as it is,
+    nothing drawn into a copy (the lit material of an LG monitor is 8 faces in 4 slightly turned groups, each on half
+    of the texture, so painting the largest face black left the rest of the screen purple); the material's other
+    inputs on that texture (base color) get a copy with every screen face black (black_faces)."""
     from agentic_sim_world_gen.usd.compose import ASSET_CHILD
 
     spec = o.screen
@@ -364,15 +519,22 @@ def apply_screen(stage: Usd.Stage, prim_paths: list[str], asset, o, scene_dir: P
         if not sides:
             done.append({"material": mat_name, "error": "no mesh with this material"})
             continue
-        # absolute like the room's textures: RTX's MDL reader resolves a relative path against the asset's layer
-        tex = (scene_dir / f"screens/{o.id}_{mat_name}.png").resolve()
-        face = render_texture(Path(s["image"]), img_path, sides, spec.fit, spec.background, tex)
+        face, base = None, None
+        if whole:
+            tex = img_path.resolve()
+            base = (scene_dir / f"screens/{o.id}_{mat_name}_off.png").resolve()
+            black_faces(Path(s["image"]), sides, base)
+        else:
+            # absolute like the room's textures: RTX's MDL reader resolves a relative path against the asset's layer
+            tex = (scene_dir / f"screens/{o.id}_{mat_name}.png").resolve()
+            face = render_texture(Path(s["image"]), img_path, sides, spec.fit, spec.background, tex)
         inputs = []
         for path in prim_paths:
             ref = stage.GetPrimAtPath(f"{path}/{ASSET_CHILD}")
             m = find_material(ref, mat_name) if ref else None
             if m is not None and not m.IsInstanceProxy():
-                inputs += retarget_textures(m, s["image"], str(tex))
+                inputs += retarget_textures(m, s["image"], str(tex), str(base) if base else None)
         done.append({"material": mat_name, "image": str(img_path), "texture": str(tex), "inputs": len(inputs),
-                     "size_m": [round(x, 3) for x in face.size_m]})
+                     **({"base_texture": str(base)} if base else {}),
+                     **({"size_m": [round(x, 3) for x in face.size_m]} if face else {})})
     return done

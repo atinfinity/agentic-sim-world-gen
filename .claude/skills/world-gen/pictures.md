@@ -34,3 +34,10 @@ asset: `"image": {"<material>": "<file>", ...}`. Record where the image came fro
 `license`, or a `<stem>.source.json` next to it); it goes into LICENSES.md. `set_screen(object_id, null)`
 restores the asset's own picture. Don't invent images: use one the user gave, or ask; otherwise prefer
 `{"Screen": "Off"}` / `{"Picture": "Blank"}`.
+
+**Monitors and TVs are off by default in an office, school or lab**: compose paints the screen of an object
+whose query / class names a monitor, TV, television or laptop (not a TV stand / monitor arm) black, and
+`compose_scene` lists them in `screens_off`. Tell the user. If the request or the photos show lit screens,
+`set_screen(object_id, "on")` keeps the asset's own picture; `set_screen(object_id, "off")` switches one off
+anywhere else (a living-room TV); `null` goes back to the place's default. A Hugging Face monitor not fetched yet
+is left as it is and listed in `screens_off_not_applied`: `set_screen(object_id, "off")` fetches and switches it off.

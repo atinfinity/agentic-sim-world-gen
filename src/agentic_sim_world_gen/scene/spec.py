@@ -603,6 +603,11 @@ class ObjectSpec(BaseModel):
     screen: Screen | None = Field(
         default=None, description="image to show on the asset's screens (signage), instead of the asset's own"
     )
+    screen_on: bool | None = Field(
+        default=None,
+        description="false = the screen switched off (painted black); true = the asset's own lit picture; null = by "
+        "room.place: a monitor / TV in an office, school or lab is off. An image (screen) wins",
+    )
     tint: list[Tint] = Field(
         default_factory=list,
         description="new colors for the asset's materials (later entries win); a bare \"#rrggbb\" = the main color",

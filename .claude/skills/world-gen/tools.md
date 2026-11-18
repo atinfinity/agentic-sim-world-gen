@@ -1112,7 +1112,10 @@ Show an image on a signage's screens, a TV's screen or a poster's printed pictur
 TV / monitor whose material lights up a texture):
 screen {image: "<file>" | {"<material>": "<file>"}, fit contain|cover|stretch, background, url, title, author,
 license} (source recorded in LICENSES.md; <stem>.source.json fills the rest). Keep Screen On / Picture Default.
-null = the asset's own picture.
+"off" = screen switched off (black); "on" = the asset's own lit picture; null = back to the place's default:
+in an office / school / lab monitors and TVs are off, elsewhere the asset's own picture.
+"off" / "on" need a screen that lights up or shows a picture (not a chair, not a printed-picture-only poster);
+"off" also switches off the asset's other lights.
 
 Show an image on this signage's screens (or a poster's / board's printed picture) instead of the asset's own
 picture (a café ad in a factory looks wrong). Assets whose candidate summary lists "screens" support it, and so
@@ -1121,11 +1124,11 @@ finds that screen (a Hugging Face asset is fetched first, like a tint) and warns
 screen) or {"<screen material>": "<file>"}, "fit": "contain" (default, background around) | "cover" (crop) |
 "stretch", "background": "#000000", "url", "title", "author", "license"}: the image's source, recorded in
 LICENSES.md; fields left out are read from <stem>.source.json next to the image. The Screen variant must stay
-On (Picture: Default). null goes back to the asset's own picture.
+On (Picture: Default). null drops the image and "off" / "on": the place's default again.
 
 - `scene_dir`: str
 - `object_id`: str
-- `screen`: {}
+- `screen`: {}|str
 
 ## set_tint
 
@@ -1576,6 +1579,7 @@ How one object is placed in a layout option: only the fields given are changed.
 - `fit_scale`?: [num,num,num] — set by the solver: stretch along the asset's own x, y, z to fit its opening
 - `ifc_guid`?: str — GlobalId of the IFC element this object came from
 - `screen`?: Screen — image to show on the asset's screens (signage), instead of the asset's own
+- `screen_on`?: bool — false = the screen switched off (painted black); true = the asset's own lit picture; null = by room.place: a monitor / TV in an office, school or lab is off. An image (screen) wins
 - `tint`?: [Tint] — new colors for the asset's materials (later entries win); a bare "#rrggbb" = the main color
 - `collider`?: auto|box|none — static box collider (the asset's bbox, invisible, never moves) for assets without physics: auto = only when the asset is known to have none (SimReady with no PhysX variant and no rigid body), box = always (check reported no_collider), none = never
 - `front_offset_deg`?: num — correction added to the assumed asset front (e.g. 180 if it ends up backwards)

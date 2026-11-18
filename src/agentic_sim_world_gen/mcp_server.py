@@ -531,12 +531,15 @@ def set_variants(scene_dir: str, object_id: str | list[str], variants: dict[str,
 
 
 @mcp.tool()
-def set_screen(scene_dir: str, object_id: str, screen: dict[str, Any] | None) -> dict[str, Any]:
+def set_screen(scene_dir: str, object_id: str, screen: dict[str, Any] | str | None) -> dict[str, Any]:
     """Show an image on a signage's screens, a TV's screen or a poster's printed picture (assets listing "screens", or a
     TV / monitor whose material lights up a texture):
     screen {image: "<file>" | {"<material>": "<file>"}, fit contain|cover|stretch, background, url, title, author,
     license} (source recorded in LICENSES.md; <stem>.source.json fills the rest). Keep Screen On / Picture Default.
-    null = the asset's own picture.
+    "off" = screen switched off (black); "on" = the asset's own lit picture; null = back to the place's default:
+    in an office / school / lab monitors and TVs are off, elsewhere the asset's own picture.
+    "off" / "on" need a screen that lights up or shows a picture (not a chair, not a printed-picture-only poster);
+    "off" also switches off the asset's other lights.
 
     Show an image on this signage's screens (or a poster's / board's printed picture) instead of the asset's own
     picture (a café ad in a factory looks wrong). Assets whose candidate summary lists "screens" support it, and so
@@ -545,7 +548,7 @@ def set_screen(scene_dir: str, object_id: str, screen: dict[str, Any] | None) ->
     screen) or {"<screen material>": "<file>"}, "fit": "contain" (default, background around) | "cover" (crop) |
     "stretch", "background": "#000000", "url", "title", "author", "license"}: the image's source, recorded in
     LICENSES.md; fields left out are read from <stem>.source.json next to the image. The Screen variant must stay
-    On (Picture: Default). null goes back to the asset's own picture."""
+    On (Picture: Default). null drops the image and "off" / "on": the place's default again."""
     return service.reply(service.set_screen(scene_dir, object_id, screen), object_id)
 
 

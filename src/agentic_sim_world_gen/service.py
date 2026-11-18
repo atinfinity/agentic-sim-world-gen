@@ -2222,12 +2222,17 @@ def latest_language(out: str | Path | None = None) -> str | None:
 def shown_pictures(s: ResolvedScene) -> list[dict[str, Any]]:
     """The asset's own printed pictures and screen images the scene shows: shop headers, POPs, posters,
     signage whose wording the agent has not chosen. One entry per image, with the objects showing it."""
+    from agentic_sim_world_gen.layout.validate import screen_dark
+
     out: dict[str, dict[str, Any]] = {}
     for p in s.placements:
         o, a = s.obj(p.object_id), p.asset
         if a is None or not a.screens or o.screen is not None:
             continue
+        dark = screen_dark(o, a, s.spec.room.place)
         for x in a.screens:
+            if dark and x.get("kind") != "picture":
+                continue  # compose paints this screen black
             vset, on = x.get("variant_set"), x.get("on")
             if vset and on is not None and o.variants.get(vset, on) != on:
                 continue  # blank / off
@@ -4288,17 +4293,40 @@ def set_variants(scene: str | Path, object_id: str | list[str], variants: dict[s
     return _save(s, _resolved_path(scene).parent, f"{what} のバリアントを変更", ids[0] if len(ids) == 1 else None)
 
 
-def set_screen(scene: str | Path, object_id: str, screen: Screen | dict[str, Any] | None) -> dict[str, Any]:
+def _no_switch(a) -> str | None:
+    """Why set_screen "off" / "on" has nothing to switch on this asset, or None: it needs a declared screen (not
+    only printed pictures) or a material that lights up a texture (a Hugging Face asset is known only in
+    compose, so allowed)."""
+    if a is None:
+        return "has no asset selected"
+    if a.screens:
+        return None if any(x.get("kind") != "picture" for x in a.screens) else \
+            f"({a.name}) has only printed pictures, no screen (blank them with set_variants)"
+    from agentic_sim_world_gen.usd.screen import found_screens
+
+    return f"({a.name}) has no screen that lights up or shows a picture" if found_screens(a, printed=True) == [] \
+        else None
+
+
+def set_screen(scene: str | Path, object_id: str, screen: Screen | dict[str, Any] | str | None) -> dict[str, Any]:
     """Show an image on this object's screens (signage), or go back to the asset's own with None.
     screen: {image: file or {material: file}, fit: contain|cover|stretch, background: "#rrggbb",
     url/title/author/license: the image's source (else read from <stem>.source.json next to it)}.
+    "off" = the screen switched off (black), "on" = the asset's own lit picture even where room.place switches
+    monitors / TVs off (ObjectSpec.screen_on); None = the place's default (off there, else the asset's own).
     The asset's screens are in its candidate summary (`screens`)."""
     s = load(scene)
     p = _placement(s, object_id)
     o = s.obj(object_id)
-    if screen is None:
+    if screen in ("off", "on") and (why := _no_switch(p.asset)):
+        return {"ok": False, "error": f"'{object_id}' {why}: \"{screen}\" switches a monitor's / TV's screen"}
+    if screen is None or screen in ("off", "on"):
         o.screen = None
-        return _save(s, _resolved_path(scene).parent, f"{_name(s, object_id)} の画面を元に戻す", object_id)
+        o.screen_on = None if screen is None else screen == "on"
+        what = {None: "元に戻す", "off": "消す", "on": "つける（アセットの画面のまま）"}[screen]
+        return _save(s, _resolved_path(scene).parent, f"{_name(s, object_id)} の画面を{what}", object_id)
+    if isinstance(screen, str):
+        raise ValueError(f'screen must be an object with "image", "off", "on" or null, not {screen!r}')
     sc = screen if isinstance(screen, Screen) else Screen.model_validate(screen)
     a = p.asset
     names = [x["material"] for x in a.screens] if a is not None else []
@@ -5075,6 +5103,13 @@ def _screen_warnings(stage) -> list[str]:
     return out
 
 
+def _screens_off(stage) -> list[str]:
+    """Objects whose screen compose switched off because of room.place (customData agentic_sim_world_gen:screen off)."""
+    objs = stage.GetPrimAtPath("/World/Objects")
+    return [p.GetName() for p in (objs.GetChildren() if objs else [])
+            if (p.GetCustomDataByKey("agentic_sim_world_gen:screen") or {}).get("off") == "place"]
+
+
 def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bool = False,
                   log: bool = True, not_in_photos: dict[str, str] | None = None) -> dict[str, Any]:
     """log=False: no history entry of its own (the preview page rewrites the USD after each edit) and no photo
@@ -5108,6 +5143,14 @@ def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bo
         except Exception as e:
             warnings.append(f"{what} on {', '.join(sorted(tinted))} not applied: could not fetch the asset "
                             f"({type(e).__name__}: {str(e)[:200]})")
+    # a monitor / TV off only because of room.place: from the cache if it is there, never downloaded for it
+    dark = screened_remote(s, by_place=True)
+    if dark and not localize:
+        try:
+            uri_map.update(_localize(s, only=dark, cached_only=True))
+        except Exception:  # no huggingface_hub, a broken cache: left lit, listed below
+            pass
+    not_off = sorted(p.object_id for p in s.placements if p.object_id in dark and p.asset.uri not in uri_map)
     out_path = Path(out) if out else path.parent / "scene.usda"
     stage = compose(s, out_path, uri_map=uri_map)
     warnings += _tint_warnings(stage) + _screen_warnings(stage)
@@ -5129,6 +5172,15 @@ def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bo
         res["tints_hint"] = ("a tint without materials painted the main color it guessed (painted, its share of "
                              "the surface): if that is not the part the user meant, set_tint again with "
                              "materials=[one of others]")
+    if off := _screens_off(stage):
+        res["screens_off"] = off
+        res["screens_off_hint"] = ("these monitors / TVs were switched off (black) because of room.place; "
+                                   "say so, and if the user wants them lit, set_screen(object_id, \"on\")")
+    if not_off:
+        res["screens_off_not_applied"] = not_off
+        res["screens_off_not_applied_hint"] = (
+            "monitors / TVs room.place would switch off, left as the asset has them: a Hugging Face asset not "
+            "fetched yet (its screen may glow); set_screen(object_id, \"off\") fetches it and switches it off")
     if log and (h := st.get("photo_compare_hint")) and "small_moves" not in st.get("photo_compare", {}):
         res["next"] = h
     return res
@@ -5214,6 +5266,9 @@ def _isaac_failure(proc: subprocess.CompletedProcess) -> dict[str, Any]:
     err: dict[str, Any] = {"stderr_tail": out[-3000:]}
     if "EULA not accepted" in out:
         err["error"] = "Isaac Sim EULA not accepted: set OMNI_KIT_ACCEPT_EULA=YES (accepts the NVIDIA Omniverse EULA)"
+    else:  # the last line says why (a missing check_scene.py ...): finish's `next` read "the check failed: None"
+        lines = [x for x in out.strip().splitlines() if x.strip() and "Warning: in _ReportErrors" not in x]
+        err["error"] = f"Isaac Sim exited with {proc.returncode}: {lines[-1][-300:] if lines else 'no output'}"
     return err
 
 
