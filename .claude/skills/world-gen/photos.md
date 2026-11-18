@@ -10,6 +10,9 @@ comparison is missing or out of date, and `compose_scene` returns it as `next`. 
 (`stopped: compare`) while compare rounds are left and Isaac Sim's Python is at hand. When compare_photo
 cannot run (it failed twice, or the photo files are not on this machine) finish goes on; to say so yourself:
 `set_assumptions([{item: "photo_compare", value: <why>}])`.
+With several photos, compare_photo shows only the rows that changed since you last saw them (`unchanged`
+lists the others); compare.png has every row - Read it to look at an unchanged row again, and once after
+a compaction (the rows you saw before it are gone).
 **The photo's camera is where the photo was taken.** When the user says「レジを手前に」, move the register, not
 the camera. Change the camera only to match the photo's view (horizon, landmarks). Objects the photo shows near
 the camera (e.g. a counter it was taken from behind) stay there.
