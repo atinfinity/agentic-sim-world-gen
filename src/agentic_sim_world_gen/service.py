@@ -1871,7 +1871,7 @@ def _substitute_line(o: dict[str, Any]) -> dict[str, Any] | None:
         nearest = None
     if sub.get("not_in_catalog"):
         do = (f"no source has a '{kind}' at all: do not search again; ask the user once - 代用 (the nearest) / "
-              "their own USD (local:<dir> in WORLDGEN_SOURCES) / drop it (remove_object)")
+              "their own USD (local:<dir> in AGENTIC_SIM_WORLD_GEN_SOURCES) / drop it (remove_object)")
     elif miss:
         do = "widen min_size/max_size with research_object if the nearest would do, else keep the asset and call it 代用"
     elif any((cat.get("counts") or {}).values()):
@@ -2735,7 +2735,7 @@ def _finish_gate(st: dict[str, Any]) -> dict[str, Any] | None:
 def _empty_windows(s: ResolvedScene) -> list[str]:
     """The window openings with no window asset in them, and the ones with no curtain / blind where the scene has
     covers (a home, or another window got one). Read from the spec, not from the not-found log: the log can
-    be off (WORLDGEN_MISSING=0) or kept in another machine's cache."""
+    be off (AGENTIC_SIM_WORLD_GEN_MISSING=0) or kept in another machine's cache."""
     from agentic_sim_world_gen.layout.room import RoomGeometry
 
     have_win = {o.opening for o in s.spec.objects if o.opening}
