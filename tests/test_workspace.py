@@ -12,7 +12,8 @@ def test_workspace(tmp_path, monkeypatch):
     r = workspace.make(d, env={"AGENTIC_SIM_WORLD_GEN_SOURCES": "simready-central,isaac"})
     mcp = json.loads((d / ".mcp.json").read_text())["mcpServers"]["agentic-sim-world-gen"]
     assert mcp["command"].endswith("agentic-sim-world-gen-mcp")
-    assert mcp["env"] == {"AGENTIC_SIM_WORLD_GEN_OUT": str(d / "scenes"), "AGENTIC_SIM_WORLD_GEN_SOURCES": "simready-central,isaac"}
+    assert mcp["env"] == {"AGENTIC_SIM_WORLD_GEN_OUT": str(d / "scenes"), "AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER": "1",
+                          "AGENTIC_SIM_WORLD_GEN_SOURCES": "simready-central,isaac"}
     skill = d / ".claude" / "skills" / "world-gen"
     assert skill.is_symlink() and (skill / "SKILL.md").exists()
     settings = json.loads((d / ".claude" / "settings.json").read_text())
