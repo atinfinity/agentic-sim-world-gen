@@ -38,9 +38,9 @@ def test_bad_options_are_refused(scene):  # noqa: F811
         service.propose_layouts(scene, OPTIONS[:1])  # one is not a choice
     with pytest.raises(ValueError):
         service.propose_layouts(scene, [OPTIONS[0], {**OPTIONS[1], "name": "north"}])
-    with pytest.raises(Exception):
+    with pytest.raises(KeyError, match="sofa"):
         service.propose_layouts(scene, [OPTIONS[0], {**OPTIONS[1], "objects": {"sofa": {"zone": "x"}}}])
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError, match="Extra inputs are not permitted"):  # pydantic's ValidationError
         service.propose_layouts(scene, [OPTIONS[0], {**OPTIONS[1], "objects": {"desk": {"asset": 1}}}])
     with pytest.raises(ValueError):
         service.choose_layout(scene, "best")  # nothing proposed

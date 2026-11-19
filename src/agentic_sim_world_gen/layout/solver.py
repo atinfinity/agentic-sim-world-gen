@@ -404,7 +404,7 @@ def solve(scene: ResolvedScene) -> list[Issue]:
                 # Under a desk only as far as its measured knee space allows: the bbox can't tell whether
                 # it is open, and an overlapping chair explodes in PhysX (Isaac Sim check, 2026-10-25).
                 gap = NEAR_GAP if lay.gap is None else lay.gap
-                if lay.gap is None and (deep := _tuck(o, a, t, ta, tf, lambda p: _floor_at(scene, geom, o, p))) > 0:
+                if lay.gap is None and (deep := _tuck(o, a, t, ta, tf, lambda p, o=o: _floor_at(scene, geom, o, p))) > 0:
                     gap = -deep
                 dist = half_extent(ext[tid], t.yaw_deg, tf) + half_extent(ext[oid], o.yaw_deg, tf) + gap
                 ux, uy = unit(tf)

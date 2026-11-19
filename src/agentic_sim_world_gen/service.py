@@ -3535,7 +3535,7 @@ def _auto_fix(s: ResolvedScene, touched: set[str]) -> list[dict[str, Any]]:
                      and (t, FIX_WHY[kind]) not in done), None)
         if cand is None:
             break
-        k, issue, n, fix = cand
+        k, issue, _n, fix = cand
         tried.add(repr(fix))
         before = {x for x, _ in now}
         for extra in AUTO_FIX_EXTRA if issue.kind == "narrow_aisle" else (0.0,):
@@ -3992,8 +3992,8 @@ def place_from_photos(scene: str | Path, objects: list[str] | None = None, apply
         front = front_local_deg(pl.asset, o)
         on_x = abs(math.cos(math.radians(front))) >= abs(math.sin(math.radians(front)))
         size = (w, dd) if on_x else (dd, w)
-        side = lambda e: [cams[lo["photo"]] for lo in located  # noqa: E731
-                          if lo.get("object") == oid and lo.get("edge") == e and lo.get("photo") in cams]
+        side = lambda e, oid=oid: [cams[lo["photo"]] for lo in located  # noqa: E731
+                                   if lo.get("object") == oid and lo.get("edge") == e and lo.get("photo") in cams]
         now = norm_deg(o.facing_deg if o.facing_deg is not None else o.yaw_deg + front)
         if len(pts) >= 2:
             r = fit_pose(pts, size, now, side("front"), side("back"))
@@ -4295,8 +4295,8 @@ def set_screen(scene: str | Path, object_id: str, screen: Screen | dict[str, Any
         o.screen_on = None if screen is None else screen == "on"
         what = {None: "元に戻す", "off": "消す", "on": "つける（アセットの画面のまま）"}[screen]
         return _save(s, _resolved_path(scene).parent, f"{_name(s, object_id)} の画面を{what}", object_id)
-    if isinstance(screen, str):
-        raise ValueError(f'screen must be an object with "image", "off", "on" or null, not {screen!r}')
+    if isinstance(screen, str):  # a bad tool argument is a ValueError, as elsewhere
+        raise ValueError(f'screen must be an object with "image", "off", "on" or null, not {screen!r}')  # noqa: TRY004
     sc = screen if isinstance(screen, Screen) else Screen.model_validate(screen)
     a = p.asset
     names = [x["material"] for x in a.screens] if a is not None else []

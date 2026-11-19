@@ -180,7 +180,7 @@ def test_candidate_sheets(tmp_path, monkeypatch):
     assert [i["object"] for i, _ in auto] == ["chair"]
     monkeypatch.setattr(service, "SHEET_OBJECTS", 0)
     assert service.candidate_sheets(d, limit=0)[0][0]["objects"] == []
-    with pytest.raises(Exception):
+    with pytest.raises(KeyError, match="nope"):
         service.candidate_sheets(d, ["nope"])
 
     from agentic_sim_world_gen.mcp_server import mcp
@@ -257,7 +257,7 @@ def test_finish_stops_until_the_photos_are_compared(tmp_path, monkeypatch):
 def test_finish_does_not_wait_for_a_compare_that_cannot_run(tmp_path, monkeypatch):
     """finish must not stop on compare forever."""
     pytest.importorskip("pxr")
-    d, p = _photo_scene(tmp_path)
+    d, _p = _photo_scene(tmp_path)
     service.compose_scene(d)
     # the user's Isaac Sim is open (live) but there is no python.sh / pip python: compare_photo cannot render
     monkeypatch.setattr(service, "live_available", lambda timeout_s=0.5: True)

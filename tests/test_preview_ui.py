@@ -5,7 +5,6 @@ import pytest
 import json
 
 from agentic_sim_world_gen import service
-from agentic_sim_world_gen.layout import usability
 from agentic_sim_world_gen.preview import page, server
 from agentic_sim_world_gen.preview.layout2d import render_svg
 from agentic_sim_world_gen.scene.spec import Assumption

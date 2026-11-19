@@ -136,7 +136,7 @@ def rerank_queries(runs, vecs, weights):
     print("|---|---|---|---|---|")
     for w in weights:
         p1 = p1s = changed = ungraded = n = 0
-        for room, qs in ROOMS.items():
+        for qs in ROOMS.values():
             for q in qs:
                 cands = [c for c in runs.get(q, []) if c["thumb"] in vecs]
                 if not cands:

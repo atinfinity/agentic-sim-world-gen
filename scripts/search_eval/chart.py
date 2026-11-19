@@ -1,5 +1,5 @@
 """Horizontal grouped bars: P@1 strict / lenient per system (PIL, static PNG for the PR)."""
-import json, sys
+import sys
 from PIL import Image, ImageDraw, ImageFont
 sys.path.insert(0, __import__("os").path.dirname(__file__))
 from score import ORDER, metrics

@@ -21,7 +21,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from agentic_sim_world_gen import photo_measure, photo_vanish
+from agentic_sim_world_gen import photo_measure
 from agentic_sim_world_gen.photo_measure import View
 from agentic_sim_world_gen.scene.spec import PhotoCamera
 

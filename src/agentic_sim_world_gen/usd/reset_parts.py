@@ -94,7 +94,7 @@ def body_paths(stage) -> list[dict[str, Any]]:
 
 def sdf_paths(stage) -> list[dict[str, Any]]:
     """Every mesh collider approximated as an SDF under the default prim (the root included when it is one)."""
-    from pxr import Usd, UsdPhysics
+    from pxr import UsdPhysics
 
     def sdf(p) -> bool:
         return (p.HasAPI(UsdPhysics.MeshCollisionAPI)

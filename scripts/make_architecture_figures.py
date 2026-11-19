@@ -335,7 +335,7 @@ def clip(subject, clipper):
     out = subject
     for i in range(len(clipper)):
         a, b = clipper[i], clipper[(i + 1) % len(clipper)]
-        side = lambda p: (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])  # noqa: E731
+        side = lambda p, a=a, b=b: (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])  # noqa: E731
         inp, out = out, []
         for j in range(len(inp)):
             p, q = inp[j], inp[(j + 1) % len(inp)]

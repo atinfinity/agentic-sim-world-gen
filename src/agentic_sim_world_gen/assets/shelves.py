@@ -134,7 +134,7 @@ def hooks_from_boxes(boxes: list[tuple[str, tuple[float, ...], tuple[float, ...]
             continue
         c, z = (a[lat] + b[lat]) / 2, (a[2] + b[2]) / 2
 
-        def held(e: float) -> bool:
+        def held(e: float, p=p, c=c, z=z) -> bool:  # bound now (called in this iteration only)
             return any(q != p and qa[dep] - TOUCH <= e <= qb[dep] + TOUCH and qa[lat] - NEAR <= c <= qb[lat] + NEAR
                        and qa[2] < z - SMALL and qb[2] > z + SMALL for q, qa, qb in big)
 
@@ -146,7 +146,7 @@ def hooks_from_boxes(boxes: list[tuple[str, tuple[float, ...], tuple[float, ...]
         busy = any(q != p and not _rod(qa, qb) and qa[dep] < hi - 0.01 and qb[dep] > lo + 0.01
                    and qa[lat] < c < qb[lat] and qa[2] < z and z - 0.01 < qb[2] < z + 0.04 for q, qa, qb in big)
 
-        def xy(v: float) -> list[float]:
+        def xy(v: float, c=c) -> list[float]:
             pt = [0.0, 0.0]
             pt[dep], pt[lat] = round(v, 4), round(c, 4)
             return pt

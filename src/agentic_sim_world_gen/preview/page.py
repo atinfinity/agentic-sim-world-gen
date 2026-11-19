@@ -1341,7 +1341,7 @@ def render(scene: ResolvedScene, d: Path, issues: list[dict[str, Any]], event: d
         _notes(scene),
         _references(scene, d),
         f"<section><h2>レイアウトの問題{usd_note}</h2>{iss}</section>",
-        (f"<section><h2>使い勝手の注意 <span class='muted'>置けるが使いにくい（警告）</span></h2><ul class='issues soft'>"
+        ("<section><h2>使い勝手の注意 <span class='muted'>置けるが使いにくい（警告）</span></h2><ul class='issues soft'>"
          + "".join(_issue_line(scene, i) for i in usability) + "</ul></section>") if usability else "",
         _taste(scene, d, taste),
         _nav(d),
@@ -1500,9 +1500,9 @@ def _moods(scene: ResolvedScene, d: Path) -> str:
             btn = ""
         cards += (f"<div class='opt-card mood{' best' if on else ''}'><h3>{badge}"
                   f"{escape(m.label)}</h3>{pic}<div class='note'>{escape(m.note)}</div>{btn}</div>")
-    head = (f"雰囲気 <span class='muted'>見本は標準の部屋です（家具はこのシーンと違います）。選ぶと床・壁・照明の色が"
-            f"変わり、家具は次のターンで Claude が近い色の物を探します<span class='edit-hint'>。「これにする」で決まります"
-            f"</span></span>")
+    head = ("雰囲気 <span class='muted'>見本は標準の部屋です（家具はこのシーンと違います）。選ぶと床・壁・照明の色が"
+            "変わり、家具は次のターンで Claude が近い色の物を探します<span class='edit-hint'>。「これにする」で決まります"
+            "</span></span>")
     given = sorted({i.kind for i in scene.spec.inputs if i.kind in ("photo", "reference")})
     if given and not cur:  # the look already comes from the user's pictures: folded, still there to pick
         what = "・".join({"photo": "写真", "reference": "参考画像"}[k] for k in given)

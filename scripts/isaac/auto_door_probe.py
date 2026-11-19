@@ -56,7 +56,7 @@ for _ in range(5):  # let it load before a stage opens (opening right away crash
 
 import omni.timeline  # noqa: E402
 import omni.usd  # noqa: E402
-from pxr import Gf, Usd, UsdGeom, UsdPhysics  # noqa: E402
+from pxr import Gf, UsdGeom, UsdPhysics  # noqa: E402
 from view import FrameRecorder, hide_guides, wait_frames  # noqa: E402
 
 ctx = omni.usd.get_context()
@@ -92,7 +92,7 @@ for w, o in doors:
     UsdPhysics.CollisionAPI.Apply(c.GetPrim())
     UsdPhysics.RigidBodyAPI.Apply(c.GetPrim()).CreateKinematicEnabledAttr(True)
 
-    def place(n: float) -> None:
+    def place(n: float, w=w, um=um, tr=tr, sill=sill) -> None:  # bound now: called in this iteration only
         x, y = w.at(um, n)
         tr.Set(Gf.Vec3d(x, y, sill + SZ / 2 + 0.01))
 
@@ -121,7 +121,7 @@ for w, o in doors:
     closed = {}
     log = []
 
-    def opening() -> float:
+    def opening(panels=panels, closed=closed) -> float:
         """Mean panel travel from the closed pose [m]."""
         d = []
         for p in panels:
@@ -138,7 +138,7 @@ for w, o in doors:
     frame = 0
     hz = 60
 
-    def tick(n: float) -> None:
+    def tick(n: float, rec=rec, log=log, hz=hz, place=place, opening=opening) -> None:
         global frame
         place(n)
         app.update()

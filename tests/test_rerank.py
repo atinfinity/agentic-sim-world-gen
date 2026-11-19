@@ -314,7 +314,7 @@ GATE = rec("sm_structure_wall_entrance", "entrance", ["roll-up door"],
 
 def test_a_door_tag_on_a_refrigerator_is_a_part():
     """A door leaf search listed only refrigerators: their tag "double door" says what they have."""
-    (r1, m1), (r2, m2) = rerank([FRIDGE, DOOR], "double door", ["door"])
+    (r1, m1), (_r2, m2) = rerank([FRIDGE, DOOR], "double door", ["door"])
     assert r1.name == "interior_door" and m2.weak and m2.score < m1.score
     assert "part of a refrigerator" in m2.matched[0]
     (_, m), = rerank([rec("door", "door", ["door"])], "door")  # a door is still a door

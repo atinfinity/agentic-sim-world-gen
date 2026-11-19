@@ -440,7 +440,7 @@ class _Model:
             self._add(f"{oid}.width", 0.9 if o.kind == "door" else 1.2, 1)  # see _width: never below 0
             if o.kind == "window":
                 self._add(f"{oid}.sill", 0.9, 1)
-            self._add(f"{oid}.top", 2.0 if o.kind == "door" else 2.0, 1)
+            self._add(f"{oid}.top", 2.0, 1)  # doors and windows alike
         for pid, p in req.points.items():
             for ax, g in (("x", w / 2), ("y", d / 2), ("z", p.z if p.z is not None else 1.0)):
                 if (getattr(p, ax) is None or (ax == "z" and p.z_sigma)) and not (p.wall and ax == ("y" if p.wall in ("south", "north") else "x")):
@@ -551,7 +551,7 @@ class _Model:
 
     def line(self, p, along: str):
         parts = along.split(":")
-        W, D, H = p["width"], p["depth"], self.h(p)
+        H = self.h(p)
         if parts[0] in ("floor", "ceiling") and len(parts) == 2 and parts[1] in WALLS:
             z = 0.0 if parts[0] == "floor" else H
             self.used.update(("depth",) if parts[1] == "north" else ("width",) if parts[1] == "east" else ())
@@ -692,8 +692,8 @@ class _Model:
             k = PRIOR_PX / EYE_PHOTO_SIGMA_M if self.depth_only else 0.05
         if self.fit_H:
             r.append((p["height"] - self.req.height) * HEIGHT_PX_PER_M)
-        for u, v, sg in self.size_priors:
-            r.append((p[u] - v) / sg * PRIOR_PX)
+        for u, want, sg in self.size_priors:
+            r.append((p[u] - want) / sg * PRIOR_PX)
         for oid in self.one_end:
             g = self.init[self.index[f"{oid}.width"]]
             r.append(math.log(_width(p, oid) / g) / ONE_END_SIGMA * PRIOR_PX)

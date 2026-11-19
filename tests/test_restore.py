@@ -13,7 +13,7 @@ def hist(d):
     return json.loads((d / page.STATE).read_text())["history"]
 
 
-def test_every_logged_save_keeps_a_version(scene):
+def test_every_logged_save_keeps_a_version(scene):  # noqa: F811
     assert service.versions(scene) == [1]  # create_scene
     service.move_object(scene, "chair", position=(1.0, 1.0))
     service.remove_object(scene, "chair")
@@ -25,7 +25,7 @@ def test_every_logged_save_keeps_a_version(scene):
     assert service.versions(scene) == [1, 2, 3]
 
 
-def test_undo_then_redo(scene):
+def test_undo_then_redo(scene):  # noqa: F811
     before = service.load(scene).model_dump()
     service.remove_object(scene, "chair")
     st = service.restore(scene)
@@ -36,7 +36,7 @@ def test_undo_then_redo(scene):
     assert [o.id for o in service.load(scene).spec.objects] == ["desk"]
 
 
-def test_back_to_a_version_keeps_the_notes(scene):
+def test_back_to_a_version_keeps_the_notes(scene):  # noqa: F811
     service.move_object(scene, "chair", position=(1.0, 1.0))  # 2
     service.set_room(scene, width=5.0)  # 3
     service.add_note(scene, "ここに棚がほしい", position=(2.0, 1.0))
@@ -48,7 +48,7 @@ def test_back_to_a_version_keeps_the_notes(scene):
         service.restore(scene, 99)
 
 
-def test_old_versions_go(scene, monkeypatch):
+def test_old_versions_go(scene, monkeypatch):  # noqa: F811
     monkeypatch.setattr(service, "SNAPSHOTS", 3)
     for i in range(4):
         service.move_object(scene, "chair", position=(1.0 + 0.1 * i, 1.0))
@@ -58,7 +58,7 @@ def test_old_versions_go(scene, monkeypatch):
     assert "id='undo'" in html
 
 
-def test_scene_from_before_keeps_where_it_was(scene):
+def test_scene_from_before_keeps_where_it_was(scene):  # noqa: F811
     import shutil
 
     shutil.rmtree(scene / service.SNAP_DIR)
@@ -68,7 +68,7 @@ def test_scene_from_before_keeps_where_it_was(scene):
     assert {o.id for o in service.load(scene).spec.objects} == {"desk", "chair"}
 
 
-def test_duplicate(scene):
+def test_duplicate(scene):  # noqa: F811
     st = service.duplicate_object(scene, "chair")
     assert st["added"] == ["chair_2"]
     s = service.load(scene)
@@ -79,7 +79,7 @@ def test_duplicate(scene):
     assert service.duplicate_object(scene, "chair")["added"] == ["chair_3"]
 
 
-def test_page_edits(scene):
+def test_page_edits(scene):  # noqa: F811
     n = len(hist(scene))
     assert server.edit(scene, {"op": "duplicate", "id": "desk"})["ok"]
     assert server.edit(scene, {"op": "remove", "id": "chair"})["ok"]
@@ -99,7 +99,7 @@ def test_page_edits(scene):
     assert {o.id for o in service.load(scene).spec.objects} == {"desk", "chair", "desk_2"}
 
 
-def test_page_has_the_controls(scene):
+def test_page_has_the_controls(scene):  # noqa: F811
     html = (scene / page.PAGE).read_text()
     assert "id='room-edit'" in html and "data-op='room'" in html and "data-op='light'" in html
     assert html.count("class='dup'") == 2 and html.count("class='del'") == 2

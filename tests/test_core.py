@@ -36,7 +36,7 @@ def test_parse_simready_hits():
     assert r.thumbnail_url.endswith(".usd.png") and "/.thumbs/256x256/" in r.thumbnail_url
     assert r.license and r.semantic_class
     assert r.variant_selections == {"PhysX": "Enabled"}
-    w, d, h = r.size_m
+    w, _d, h = r.size_m
     assert 0.3 < w < 0.45 and 0.8 < h < 0.95  # sm_cabinet_file_d02: 0.37 x 0.53 x 0.88
 
 
@@ -101,7 +101,7 @@ def test_previews(tmp_path):
 
 
 def test_compose(tmp_path):
-    pxr = pytest.importorskip("pxr")
+    pytest.importorskip("pxr")
     from pxr import Gf, Usd, UsdGeom
 
     from agentic_sim_world_gen.usd.compose import compose

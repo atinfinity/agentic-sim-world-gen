@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 pytest.importorskip("pxr")
-from pxr import Usd, UsdGeom, UsdPhysics, UsdShade  # noqa: E402
+from pxr import UsdGeom, UsdPhysics, UsdShade  # noqa: E402
 
 from agentic_sim_world_gen import service  # noqa: E402
 from agentic_sim_world_gen.preview.changes import diff, snapshot  # noqa: E402

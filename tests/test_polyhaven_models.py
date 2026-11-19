@@ -76,7 +76,7 @@ def site(tmp_path, monkeypatch):
         "Rough": {"1k": {"exr": _f(f"{DL}/textures/1k/chair_rough_1k.exr", rough)},
                   "2k": {"exr": _f(f"{DL}/textures/2k/chair_rough_2k.exr", b"2k")}},
     }
-    blobs = {f"https://api.polyhaven.com/files/dining_chair_02": json.dumps(files).encode(),
+    blobs = {"https://api.polyhaven.com/files/dining_chair_02": json.dumps(files).encode(),
              f"{base}/dining_chair_02_1k.usdc": usdc, f"{base}/textures/chair_diff_1k.jpg": diff,
              f"{DL}/textures/1k/chair_rough_1k.exr": rough}
 

@@ -237,7 +237,7 @@ const first=document.body.dataset.picked;if(first)mark(first);
 
 
 def _card(r: dict[str, Any]) -> str:
-    w, d, h = r["size"]
+    w, d, _h = r["size"]
     thumb = (f"<img src='{escape(r['thumb'], quote=True)}' alt='' loading='lazy'>" if r["thumb"] else "上面図なし")
     fixtures = "、".join(escape(x) for x in r["fixtures"]) + (f" ほか {r['more_fixtures']} 種" if r["more_fixtures"] else "")
     kind = "作例" if r["kind"] == "example" else "過去のシーン"

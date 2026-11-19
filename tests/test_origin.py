@@ -51,7 +51,7 @@ def test_local_git_asset(repo):
 
 
 def test_local_uncommitted_changes(repo):
-    r, f = repo
+    _r, f = repo
     f.write_text("#usda 1.0\n# edited\n")
     o = og.origin(f.as_uri())
     assert o["dirty"] and not o["pinned"] and "uncommitted" in o["note"]

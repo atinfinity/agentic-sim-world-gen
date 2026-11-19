@@ -103,7 +103,7 @@ def test_scene_metrics():
     assert empty["check"] is None and empty["requirements_rate"] is None and empty["usd"] is False
 
 
-def test_scene_metrics_of_a_real_status(fake, tmp_path):
+def test_scene_metrics_of_a_real_status(fake, tmp_path):  # noqa: F811
     from agentic_sim_world_gen import service
 
     service.create_scene(SPEC, tmp_path / "study")

@@ -1,6 +1,5 @@
 """Corner pieces: a footprint with one open bbox corner is put in a room corner with that corner facing in."""
 
-import dataclasses
 import math
 
 import pytest
@@ -58,7 +57,7 @@ def test_l_desk_goes_into_the_corner_open_side_in(tmp_path, along, end):
     st, o = place(tmp_path, {"id": "desk", "query": "l desk", "layout": {"against_wall": "north", "along": along}})
     assert st["issues"] == [], st["issues"]
     a = CATALOG["l desk"][0]
-    x0, x1, y0, y1 = footprint(o["desk"], a)
+    x0, x1, _y0, y1 = footprint(o["desk"], a)
     assert y1 == pytest.approx(3.5, abs=0.03)  # against the north wall
     assert (x1 == pytest.approx(4.0, abs=0.03)) if end == "east" else (x0 == pytest.approx(0.0, abs=0.03))
     fx, fy = facing(o["desk"], a)  # the open corner along the room's diagonal at that corner
@@ -73,7 +72,7 @@ def test_hung_corner_cabinet_without_along(tmp_path):
                              "layout": {"against_wall": "south", "wall_height": 1.5}})
     assert st["issues"] == [], st["issues"]
     a = CATALOG["corner wall cabinet"][0]
-    x0, x1, y0, y1 = footprint(o["c"], a)
+    x0, x1, y0, _y1 = footprint(o["c"], a)
     assert y0 == pytest.approx(0.0, abs=0.03) and min(x0, 4.0 - x1) == pytest.approx(0.0, abs=0.03)
     fx, fy = facing(o["c"], a)
     assert fy > 0.7 and abs(fx) > 0.7 and (fx > 0) == (x0 < 1.0)  # out of the corner, into the room
@@ -81,8 +80,8 @@ def test_hung_corner_cabinet_without_along(tmp_path):
 
 
 def test_plain_cabinet_keeps_its_front_to_the_room(tmp_path):
-    st, o = place(tmp_path, {"id": "c", "query": "cabinet", "layout": {"against_wall": "north", "along": 0.9}})
-    fx, fy = facing(o["c"], CATALOG["cabinet"][0])
+    _st, o = place(tmp_path, {"id": "c", "query": "cabinet", "layout": {"against_wall": "north", "along": 0.9}})
+    _fx, fy = facing(o["c"], CATALOG["cabinet"][0])
     assert fy == pytest.approx(-1.0, abs=1e-6)
 
 
@@ -139,7 +138,7 @@ def test_chair_in_front_of_an_l_desk_faces_a_side(tmp_path):
     chair = rec("chair", 0.55, 0.55, 0.9, 270.0, corner=False)
     CATALOG["chair"] = [chair]
     try:
-        st, o = place(tmp_path, {"id": "desk", "query": "l desk", "layout": {"against_wall": "south", "along": 0.1}},
+        _st, o = place(tmp_path, {"id": "desk", "query": "l desk", "layout": {"against_wall": "south", "along": 0.1}},
                       {"id": "chair", "query": "chair", "layout": {"in_front_of": "desk"}})
     finally:
         del CATALOG["chair"]

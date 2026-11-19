@@ -166,7 +166,7 @@ def _height(scene: ResolvedScene, units: list) -> dict[str, Any] | None:
     tall = sorted(((h, o) for h, o in tall if h > room.height), key=lambda t: -t[0])
     if not tall:
         return None
-    top, o = tall[0]
+    top, _o = tall[0]
     new = _up(top + CEILING_GAP)
     names = "、".join(f"{_name(x)}（{h:.2f} m{'' if scene_asset(scene, x) else ' 以上という指定'}）" for h, x in tall[:3]) + (f" ほか {len(tall) - 3} 個" if len(tall) > 3 else "")
     return {"kind": "height", "text": f"{names}が天井（{room.height:g} m）より高い", "between": ["ceiling height", "objects"],

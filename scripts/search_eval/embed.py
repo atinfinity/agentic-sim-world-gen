@@ -31,7 +31,7 @@ with torch.no_grad():
         feats.append(f.float().cpu().numpy())
         print("img", i, flush=True)
 np.save(f"{E}/emb/siglip_img.npy", norm(np.concatenate(feats)))
-def stext(texts):
+def stext(texts, model=model):  # bound now: `del model` below frees it after the last call
     with torch.no_grad():
         x = proc(text=texts, padding="max_length", max_length=64, truncation=True, return_tensors="pt").to(dev)
         f = model.get_text_features(input_ids=x["input_ids"])

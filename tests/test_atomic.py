@@ -70,7 +70,7 @@ def test_layer_is_replaced_whole_while_another_reads_it(tmp_path):
         opened = Sdf.Layer.FindOrOpen(str(p))
         stop, bad = threading.Event(), []
 
-        def read():
+        def read(stop=stop, p=p, bad=bad):  # bound now: the thread is joined in this iteration
             while not stop.is_set():
                 try:
                     got = Sdf.Layer.OpenAsAnonymous(str(p))
