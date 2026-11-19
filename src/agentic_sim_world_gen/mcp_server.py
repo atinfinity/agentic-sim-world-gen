@@ -1209,9 +1209,11 @@ def fit_photos(request: FitRequest, out_dir: str | None = None, depth: bool = Fa
     without a ceiling only in the photos they are in: mark them in a photo that also sees the far walls. A
     width / depth whose photos see nothing of known height rests on the camera height (a warning says so).
     The result's `scale` lists what sets the size: `sources` [{by: depth | door top | typical height |
-    eye height | ceiling (typical) | height (given), scale, range, used}] where scale = how many times the fitted
-    room that source alone asks for (1.0 = agrees; used = it reaches the width / depth; the eye height's
-    `sets` = the dimensions only it holds), `median`, `pm` and `outlier` (the one source apart while the
+    eye height | ceiling (typical) | height (given), scale, range, used, reaches?, holds?, sets?}] where scale =
+    how many times the fitted room that source alone asks for (1.0 = agrees; used = it holds the fit, and only
+    those are weighed for the outlier - the eye height only when nothing better is seen; `reaches` = the width /
+    depth a door top / typical height sets, `holds` = it sets only the photos it is in; the eye height's `sets` =
+    the dimensions only it holds, even when not used), `median`, `pm` and `outlier` (the one source apart while the
     others agree, also a "scale: ..." warning saying what to do). When the fitted wall height is that outlier,
     `height_suspect` {height_m, typical, photos} (and `room.height_suspect`, a "height: ..." warning) says the
     ceiling's landmarks in those photos are likely misread (a soffit, a beam): apply keeps the scene's height;
