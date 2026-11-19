@@ -201,6 +201,7 @@ SCALE_ERR = {"depth": 0.15,  # one photo's depth scale (-15 .. +24 %); averages 
              "eye height": 0.15}  # a handheld walk's mean camera height: 1.06-1.6 m against 1.4
 DEPTH_ERR_FLOOR = 0.06  # ... this: a depth model can be off the same way for every photo of a room
 SCALE_OUTLIER = 0.1  # one source this far from the others' median, while the others agree: named
+UNMEASURED_SHARE = 0.25  # a width / depth whose 1-sigma is more than this share of it is not measured
 
 
 # ---------- small linear algebra ----------
@@ -915,9 +916,13 @@ def fit(req: FitRequest | dict, compare: bool = True) -> dict:
             if info["adopted"] == "held":
                 winner, solved = alt_req, alt.pop("_solved")
         r = _fit(winner, compare=True, solved=solved)
-        if info is not None and r.get("ok"):
-            _add_height_refit(r, info)
+        if r.get("ok"):
+            if info is not None:
+                _add_height_refit(r, info)
+            # "not measured" stays first, ahead of the refit's warning
+            r["warnings"].sort(key=lambda w: not w.startswith("not measured"))
     r.pop("_solved", None)
+    r.pop("_rms_but_one", None)
     if r.get("ok") and req.place is not None:
         from agentic_sim_world_gen.scene.spec import PLACES
 
@@ -999,12 +1004,15 @@ def _height_refit(req: FitRequest, r: dict) -> tuple[FitRequest, dict, dict] | N
     def brief(res):
         d = _mean_depth_rms(res["cameras"])
         return {"width": res["room"]["width"], "depth": res["room"]["depth"], "height": res["room"]["height"],
-                "rms_px": res["rms_px"], **({"depth_rms": d} if d is not None else {})}
+                "rms_px": res["rms_px"], "rms_px_but_one": res["_rms_but_one"],
+                **({"depth_rms": d} if d is not None else {})}
 
     was, now = brief(r), brief(alt)
     if "height_suspect" in (r.get("scale") or {}):
         was["height_suspect"] = r["scale"]["height_suspect"]
-    pixels = now["rms_px"] <= HELD_RMS_GAIN * was["rms_px"] + HELD_RMS_PX
+    # ... or so without the one landmark each fits worst: one desk corner seen in one frame, far off at the held
+    # height and on at a fitted one, decided the height alone (misread ceiling landmarks are off in many)
+    pixels = any(now[k] <= HELD_RMS_GAIN * was[k] + HELD_RMS_PX for k in ("rms_px", "rms_px_but_one"))
     worse = _metric_worse(r, alt)
     take = pixels and not worse
     info = {"adopted": "held" if take else "fitted", "reason": why, "held_height_m": held, "range": list(rng),
@@ -1095,8 +1103,17 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
     for k in ("width", "depth", *(("height",) if m.fit_H else ())):
         if (v := sd(k)) is not None:
             sigma[k] = round(v, 3)
+    size = {"width": W, "depth": D}
+    unmeasured = [k for k in size if k in sigma and sigma[k] > UNMEASURED_SHARE * size[k]]
 
     warnings = []
+    if unmeasured:  # first: the agent must not report such a size as measured
+        warnings.append(
+            "not measured: the room's " + " and ".join(f"{k} {size[k]:.2f} m (±{min(sigma[k], 99):.2f} m)"
+                                                        for k in unmeasured) +
+            " - the photos do not hold it (it stays near the start, size_guess or the last fit); report it as "
+            "unmeasured, not as the room's size, and add landmarks that tie it (both of its walls in two or more "
+            "photos, a shared point seen from far apart)")
     openings = []
     narrow = []  # openings narrower than NARROW_M with both edges marked
     for oid, o in req.openings.items():
@@ -1339,8 +1356,10 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
     return {
         "ok": True,
         "rms_px": round(rms, 1),
+        "_rms_but_one": round(math.sqrt(sum(e * e for e in sorted(errs)[:-1]) / max(1, len(errs) - 1)), 1),
         "room": {"width": round(W, 2), "depth": round(D, 2), "height": round(H, 2),
                  "height_fitted": m.fit_H, **({"height_suspect": True} if "height_suspect" in scale else {}),
+                 **({"unmeasured": unmeasured} if unmeasured else {}),
                  "openings": openings},
         "sigma_m": sigma,
         "cameras": cams,

@@ -308,8 +308,11 @@ the room's range (`place`: home, office, school 2.4-3.3 m, lab, hospital, cafe, 
 `height_range`; the scene's place with out_dir; no place / a shop, factory, hall: no range, only warned of) or
 suspect is fitted again held (the given height, else 2.4 / 2.7 m) inside the same call: `height_refit`
 {adopted: held | fitted, reason, fitted, held, metric_worse} - held when the landmarks fit it about as well and
-the depth / door top do not fit it worse (the scale was off); fitted otherwise (misread ceiling landmarks, or
-a ceiling the depth says is that high). apply writes a held height only when given. Aim for 6+
+the depth / door top do not fit it worse (the scale was off; also compared without each fit's one worst
+landmark, `rms_px_but_one`); fitted otherwise (misread ceiling landmarks, or a ceiling the depth says is that
+high). apply writes a held height only when given; give `height` only when it is known. `room.unmeasured` (a
+"not measured: ..." warning first): a width / depth whose 1-sigma is over 25 % of it - a guess, never report
+it as measured; add landmarks that tie it. Aim for 6+
 measurements per photo and at least one landmark shared with another photo (a corner, an opening).
 `locate` turns pixels into floor positions afterwards (furniture feet at z=0, a table top at its height);
 give each its `object` (the scene object id) and the result's `objects` has each one's floor center, and
