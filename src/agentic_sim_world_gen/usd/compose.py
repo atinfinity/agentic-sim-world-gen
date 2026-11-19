@@ -459,6 +459,10 @@ def _add_asset(stage: Usd.Stage, path: str, a, uri: str, o, inst) -> None:
         prim.SetCustomDataByKey("agentic_sim_world_gen:author", a.author)
     if o.label:
         prim.SetCustomDataByKey("agentic_sim_world_gen:label", o.label)
+    if a.source == "generic":  # no asset: a plain board / rug / curtain compose built
+        from agentic_sim_world_gen.assets.generic import parse
+
+        prim.SetCustomDataByKey("agentic_sim_world_gen:generic", {k: v for k, v in (parse(a.uri) or {}).items()})
     label(prim, semantic_class(o, a))
     prim.CreateAttribute("agentic_sim_world_gen:query", Sdf.ValueTypeNames.String).Set(o.query)
     if o.ifc_guid:
@@ -500,6 +504,8 @@ COVER_TOP = 0.001  # what stays above the floor
 def _floor_cover(o, a, inst) -> bool:
     """A rug or mat on the floor. Things stand on it (validate counts 1 cm as no overlap), but a 1 cm rigid rug
     under a table's legs pushes the table up when physics starts and what is on it slides off."""
+    if a.source == "generic":  # a generic rug has its own 1 mm collider: the slab stays visible
+        return False
     return (o.fill is None and o.array is None and a.size_m[2] <= FLOOR_COVER and abs(float(inst.z)) < 1e-6
             and (o.layout is None or (o.layout.on is None and not o.layout.ceiling and o.layout.wall_height is None)))
 
@@ -537,7 +543,7 @@ def _stock_sdf(uri: str | None) -> list[dict]:
     where the same boxes with box colliders moved 2 mm. Convex hulls (64 vertices, or 255) also fixed
     the boxes but left rounded cupcakes rolling 3-9 cm off a tray. Also fewer SDF colliders for the GPU solver
 ."""
-    if not uri or uri.startswith("polyhaven:"):
+    if not uri or uri.startswith(("polyhaven:", "generic:")):
         return []
     from agentic_sim_world_gen.usd import reset_parts
 
@@ -739,6 +745,15 @@ def _compose(scene: ResolvedScene, out_path: Path, uri_map: dict[str, str] | Non
             from agentic_sim_world_gen import polyhaven_models
 
             uri = polyhaven_models.scene_ref(uri, out_path.parent)
+        elif uri.startswith("generic:curtain"):  # pleated fabric on a rail, written into the scene
+            from agentic_sim_world_gen.usd import curtain
+
+            uri = curtain.scene_ref(uri, out_path.parent)
+        elif uri.startswith("generic:"):  # a plain board / rug, written into the scene
+            from agentic_sim_world_gen.assets.generic import is_rug
+            from agentic_sim_world_gen.usd import board, rug
+
+            uri = (rug if is_rug(uri) else board).scene_ref(uri, out_path.parent)
         insts = instances(o, a)
         if o.array is None and o.fill is None:
             _add_asset(stage, f"/World/Objects/{o.id}", a, uri, o, insts[0])

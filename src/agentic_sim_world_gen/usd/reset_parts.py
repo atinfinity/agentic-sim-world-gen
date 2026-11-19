@@ -25,7 +25,7 @@ OP = "xformOp:transform:agentic_sim_world_gen"
 def wanted(a, uri: str) -> bool:
     """Worth opening the asset for: a local file (cheap), or a remote asset known to have more than one rigid
     body (only nested bodies can be reset parts; fetching every remote asset's layers would be slow)."""
-    if uri.startswith("polyhaven:"):
+    if uri.startswith(("polyhaven:", "generic:")):
         return False
     if not uri.startswith(("http://", "https://")):
         return True
@@ -115,7 +115,7 @@ def _scan_cached(kind: str, fn, uri: str, cache_dir: str | Path) -> list[dict[st
     from pxr import Usd
 
     path = uri[7:] if uri.startswith("file://") else uri
-    if path.startswith("polyhaven:"):
+    if path.startswith(("polyhaven:", "generic:")):
         return []
     if path.startswith(("http://", "https://")):
         from agentic_sim_world_gen.assets.remote_layers import _Fetcher

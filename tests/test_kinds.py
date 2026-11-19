@@ -135,14 +135,16 @@ def _obj(st, oid):
 
 def test_status_not_in_catalog(chairs_only):
     st = service.create_scene({"name": "t", "room": {"width": 4, "depth": 3, "height": 2.4}, "objects": [
-        {"id": "board", "query": "whiteboard", "alt_queries": ["dry erase board"]},
+        {"id": "board", "query": "dining table", "alt_queries": ["dinner table"]},
         {"id": "lamp", "query": "floor lamp"},
+        {"id": "wb", "query": "whiteboard", "alt_queries": ["dry erase board"]},
         {"id": "chair", "query": "chair"},
     ]}, chairs_only / "s")
     sub = _obj(st, "board")["substitute"]
     assert sub["not_in_catalog"] and len(sub["choices"]) == 3
     assert "Do not search again" in sub["hint"] and "2026-11-01" in sub["hint"]
-    assert sub["catalog"]["kind"] == "whiteboard"
+    assert sub["catalog"]["kind"] == "dining table"
+    assert "substitute" not in _obj(st, "wb")  # a plain board built in compose
     # the table has floor lamps that this search did not find: one more try, not a dead end
     lamp = _obj(st, "lamp")["substitute"]
     assert "not_in_catalog" not in lamp and "simready-central 1" in lamp["hint"]
@@ -150,7 +152,7 @@ def test_status_not_in_catalog(chairs_only):
     lines = {x["id"]: x["try"] for x in service.brief(st)["substitute"]}  # one line each in the replies
     assert "do not search again" in lines["board"] and "'floor lamp'" in lines["lamp"] and "chair" not in lines
     assert _obj(service.brief(st), "board")["substitute"] == "not_in_catalog"
-    r = service.research_object(chairs_only / "s", "board", query="marker board")
+    r = service.research_object(chairs_only / "s", "board", query="dinner table")
     assert "Do not search again" in r["research"]["not_in_catalog"]
     assert "substitute" in service.brief(r)["objects"][0]  # kept in the brief result
 
@@ -166,7 +168,7 @@ def test_status_unknown_source_keeps_old_hint(tmp_path, table, monkeypatch):
     monkeypatch.setattr(kinds, "load", lambda path=None: table)
     try:
         st = service.create_scene({"name": "t", "room": {"width": 4, "depth": 3, "height": 2.4},
-                                   "objects": [{"id": "board", "query": "whiteboard"}]}, tmp_path / "s")
+                                   "objects": [{"id": "board", "query": "dining table"}]}, tmp_path / "s")
     finally:
         service.set_provider(None)
     sub = _obj(st, "board")["substitute"]

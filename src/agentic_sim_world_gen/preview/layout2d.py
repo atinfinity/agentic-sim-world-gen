@@ -8,7 +8,7 @@ from pathlib import Path
 
 from agentic_sim_world_gen.layout.array import instances, placed_size
 from agentic_sim_world_gen.layout.frame import facing_of, half_extent
-from agentic_sim_world_gen.layout.validate import check, footprint
+from agentic_sim_world_gen.layout.validate import check, flat, footprint
 from agentic_sim_world_gen.layout.room import RoomGeometry, centroid
 from agentic_sim_world_gen.scene.fixtures import KINDS, beams
 from agentic_sim_world_gen.scene.fixtures import plan as fixture_plan
@@ -236,14 +236,19 @@ def render_svg(scene: ResolvedScene, px_per_m: float | None = None, margin_px: f
         for x, y in geom.fixture_points(lp["spacing"]):
             out.append(f'<circle cx="{X(x):.1f}" cy="{Y(y):.1f}" r="4" fill="#ffd54f" stroke="#b08900"/>')
 
-    # higher objects last, so a cup on a desk is drawn (and grabbed) above the desk
-    for idx, p in sorted(enumerate(scene.placements), key=lambda t: scene.obj(t[1].object_id).z or 0.0):
+    # higher objects last, so a cup on a desk is drawn (and grabbed) above the desk; rugs under the
+    # furniture standing on them
+    for idx, p in sorted(enumerate(scene.placements), key=lambda t: (scene.obj(t[1].object_id).z or 0.0,
+                                                                     not flat(scene.obj(t[1].object_id), t[1].asset))):
         o = scene.obj(p.object_id)
         a = p.asset
         if a is None or o.position is None:
             continue
         w, d, h = placed_size(o, a)
         color = PALETTE[idx % len(PALETTE)]
+        rug = _rug(o, a)
+        if rug is not None:
+            color = rug["color"]
         stroke = "#333"
         # one group per object, so the live preview can drag / turn it; stocked products and door
         # assets in their opening are not draggable (they follow their fixture / opening)
@@ -258,11 +263,22 @@ def render_svg(scene: ResolvedScene, px_per_m: float | None = None, margin_px: f
             ibad = inst.id in bad or o.id in bad
             stroke = "#d00" if ibad else "#333"
             dash = ' stroke-dasharray="4 3"' if ibad else ""
+            if rug is not None:  # a generic rug: its color and shape, under the furniture, no front
+                if rug["shape"] == "round":
+                    cs, sn = math.cos(math.radians(inst.yaw_deg)), math.sin(math.radians(inst.yaw_deg))
+                    ell = [(w / 2 * math.cos(t), d / 2 * math.sin(t))
+                           for t in (2 * math.pi * k / 48 for k in range(48))]
+                    pts = " ".join(f"{X(inst.position[0] + x * cs - y * sn):.1f},"
+                                   f"{Y(inst.position[1] + x * sn + y * cs):.1f}" for x, y in ell)
+                out.append(f'<polygon class="wg-rug" points="{pts}" fill="{color}" fill-opacity="0.55" '
+                           f'stroke="{"#d00" if ibad else "#8d6e63"}" stroke-width="1.2" stroke-dasharray="6 3"/>')
+                continue
             out.append(
                 f'<polygon points="{pts}" fill="{color}" fill-opacity="0.35" stroke="{stroke}" stroke-width="1.5"{dash}/>'
             )
             if o.fill is not None:
                 continue  # products on shelves: small boxes only
+            out += _curtain_pleats(o, a, inst, X, Y)
             # assumed front (solver convention): short tick from the center toward the front edge
             f = facing_of(a, o) + (inst.yaw_deg - o.yaw_deg)
             r = half_extent(a, inst.yaw_deg, f)
@@ -274,6 +290,8 @@ def render_svg(scene: ResolvedScene, px_per_m: float | None = None, margin_px: f
             out.append("</g>")
             continue  # the fixture's label is there
         cx, cy = X(o.position[0]), Y(o.position[1])
+        if rug is not None:  # its label near its edge: the table standing on it has the center
+            cy = max(cy, Y(o.position[1] - min(w, d) / 2) - 16)
         if edit and not o.array and min(w, d) * px_per_m < 2 * HIT_PX:  # small things: a bigger invisible grip
             out.append(f'<circle class="wg-hit" cx="{cx:.1f}" cy="{cy:.1f}" r="{HIT_PX}" fill="transparent"/>')
         if o.decor:  # small added things; their labels covered the fixture's (the name is in data-label)
@@ -350,6 +368,42 @@ def render_svg(scene: ResolvedScene, px_per_m: float | None = None, margin_px: f
 WIDTH_COLORS = {"squeeze": "#d32f2f", "narrow": "#f57c00", "ok": "#43a047", "wide": "#1e88e5"}
 WIDTH_MARKS = 8  # rings on layout.svg at most (the narrowest spots)
 WIDTH_JA = {"squeeze": "通れない", "narrow": "狭い", "ok": "通路", "wide": "広い"}
+
+
+def _rug(o, a) -> dict | None:
+    """{"shape", "color"} of a generic rug for layout.svg, or None."""
+    if a is None or a.source != "generic":
+        return None
+    from agentic_sim_world_gen.assets.generic import is_rug, parse
+    from agentic_sim_world_gen.assets.rug import preview_color
+
+    p = parse(a.uri) if is_rug(a) else None
+    if p is None:
+        return None
+    tint = next((t.color for t in reversed(o.tint or []) if t.materials is None), None)
+    return {"shape": p["shape"], "color": escape(preview_color(p, tint))}
+
+
+def _curtain_pleats(o, a, inst, X, Y) -> list[str]:
+    """The pleats of a curtain agentic-sim-world-gen builds seen from above: a wavy line along each panel
+    (gathered at the sides when open), so the plan shows it is fabric and how it is drawn."""
+    if a is None or not a.uri.startswith("generic:curtain"):
+        return []
+    from agentic_sim_world_gen.assets.generic_curtain import panels, parse, wave
+
+    p = parse(a.uri)
+    if p is None:
+        return []
+    sx, sy = (o.fit_scale or (1.0, 1.0, 1.0))[:2]
+    c, s = math.cos(math.radians(inst.yaw_deg)), math.sin(math.radians(inst.yaw_deg))
+    (px, py), out = inst.position, []
+    for name, y0, y1, x0, kind in panels(p):
+        pts = " ".join(f"{X(px + c * x * sx - s * y * sy):.1f},{Y(py + s * x * sx + c * y * sy):.1f}"
+                       for x, y, _ in wave(y0, y1, x0, kind)[::2])
+        color, dash = ("#90a4ae", ' stroke-dasharray="2 2"') if kind == "sheer" else ("#6d4c41", "")
+        out.append(f'<polyline class="wg-pleats" data-panel="{name}" points="{pts}" fill="none" stroke="{color}" '
+                   f'stroke-width="1.2"{dash}/>')
+    return out
 
 
 def _widths_svg(scene: ResolvedScene, X, Y, px_per_m: float) -> list[str]:

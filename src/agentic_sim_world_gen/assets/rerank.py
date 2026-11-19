@@ -217,6 +217,18 @@ def _lead(seq: list[str]) -> list[str]:
     return seq
 
 
+# one word that is often written as two: "white board" asks for a whiteboard, not any board that is white
+_CLOSED = frozenset({"whiteboard", "blackboard", "chalkboard", "greenboard"})
+
+
+def _closed_form(tw: list[str], heads: set[str]) -> list[str]:
+    """"white board" -> "whiteboard" when that one word is asked for too (or is a known one): "white" is a color
+    word, so read apart it asked for any board (a cutting board) as long as it was white."""
+    if len(tw) > 1 and (joined := tw[-2] + tw[-1]) and (joined in heads or joined in _CLOSED):
+        return [*tw[:-2], joined]
+    return tw
+
+
 @dataclass
 class Match:
     score: float = 0.0
@@ -251,12 +263,19 @@ def score(rec: AssetRecord, query: str, alt_queries: list[str] | None = None) ->
     # lantern in as a good match and hide that no floor lamp was found
     specific = {tw[-1] for tw in (noun_last(words(t), join=True) for t in [query, *(alt_queries or [])])
                 if any(not _measure(w) for w in tw[:-1])}
+    # one-word heads asked for: a bare synonym "board" next to "chalkboard" names cutting boards and pallet deck
+    # boards, never a chalkboard (it scored 2.25 and made a cutting board a good match)
+    heads = {tw[-1] for tw in (noun_last(words(t), join=True) for t in [query, *(alt_queries or [])]) if tw}
     for i, term in enumerate([query, *(alt_queries or [])]):
         tw = noun_last(words(term), join=True)  # "sofa 3 seat" is a sofa
         if not tw:
             continue
+        if not (_names(cls, tw) or any(_names(t, tw) for t in tags)):  # an asset that says "white board" is one
+            tw = _closed_form(tw, heads)
         head, mods = tw[-1], tw[:-1]
-        if not mods and head in specific:
+        # only for boards and only in a synonym: "armchair" next to "chair", "bookcase" next to "case" still count
+        if not mods and (head in specific or (i > 0 and head == "board"
+                                              and any(h != head and h.endswith(head) for h in heads))):
             continue
         # "floor" in "floor lamp"; not "3seat" in "sofa 3 seat" nor "metal" in "metal locker"
         kinds_asked = [m for m in mods if not _measure(m) and m not in _NOT_KIND]
@@ -282,6 +301,9 @@ def score(rec: AssetRecord, query: str, alt_queries: list[str] | None = None) ->
             named = [t for t in tags if _names(t, [head]) and t != [head]]
             if kinds_asked and named and all(_other_kind(t, head, list(all_mods)) for t in named):
                 s, why = W["other_kind"], f"tags '{' '.join(named[0])}' name another kind of {head}"
+            elif head == "board" and cls and cls[-1] != head and cls[-1].endswith(head) and cls[-1] not in heads:
+                # class "clipboard" / "standing chalkboard" with a bare tag "board": another kind of board
+                s, why = W["other_kind"], f"class '{' '.join(cls)}' is another kind of {head}"
         elif (lead := _lead(cap)) and lead[-1] == head:
             s, why = W["caption"], f"'{head}' in caption"
         elif head in name or head in cls:

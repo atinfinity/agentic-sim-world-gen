@@ -38,6 +38,10 @@ def origin(uri: str, source: str | None = None, asset_id: str | None = None) -> 
         from agentic_sim_world_gen import polyhaven_models
 
         return polyhaven_models.origin(uri)
+    if uri.startswith("generic:"):  # a plain board / rug / curtain built in compose
+        from agentic_sim_world_gen.assets import generic
+
+        return generic.origin(uri)
     if (source or "").startswith("isaac") or (asset_id or "").startswith("isaac:"):
         ver = (source or "").removeprefix("isaac-").removeprefix("isaac") or None
         m = _ISAAC.match(uri)
