@@ -109,11 +109,11 @@ def test_shop_goods_and_foreign_kinds():
     ("門前の保険薬局", "dispensing_pharmacy"), ("a small dispensing pharmacy", "dispensing_pharmacy"),
     ("ドラッグストアを作って", "drugstore"), ("駅前の薬局", "drugstore"), ("pharmacy", "drugstore"),
 ])
-def test_guess_place_668(text, place):
+def test_guess_place_dispensing_pharmacy(text, place):
     assert guess_place(text) == place
 
 
-def test_dispensing_pharmacy_668():
+def test_dispensing_pharmacy():
     from agentic_sim_world_gen.assets.domain import FOREIGN
     from agentic_sim_world_gen.assets.record import AssetRecord
     from agentic_sim_world_gen.scene.fixtures import PLACE_KINDS
@@ -147,7 +147,7 @@ def test_dispensing_pharmacy_668():
     assert not decor.fits_kind(p, rec("baby_powder", "baby powder bottle"))
 
 
-def test_pharmacy_work_places_are_not_display_shelves_668(tmp_path):
+def test_pharmacy_work_places_are_not_display_shelves(tmp_path):
     """A packaging machine and a counseling counter have shelf boards but are work places: no empty_shelves."""
     from test_density import SHELVES, rec
 
