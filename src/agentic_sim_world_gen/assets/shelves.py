@@ -41,7 +41,10 @@ HOOK_LEN = (0.08, 0.45)  # rod length [m]
 TOUCH = 0.006  # the base end is this close to the part holding it [m]
 NEAR = 0.03  # ... and that part is within this of the rod sideways (wire mesh pitch ~0.05)
 SMALL = 0.05  # parts smaller than this (hook tips, price tags) neither hold a hook nor take it
-VERSION = 8  # bump when detection changes (cached results are keyed by it)
+DIVIDER = 0.03  # max thickness of a divider standing on a board across its depth (a picking shelf's 4 mm plates) [m]
+DIVIDER_DEPTH = 0.5  # ... reaching over this share of the board's depth
+WET = ("basin", "drain")  # a sink's basin floor is not a board to stock
+VERSION = 9  # bump when detection changes (cached results are keyed by it)
 
 
 def _overlap(a: dict, b: dict) -> float:
@@ -66,18 +69,48 @@ def surfaces_from_boxes(boxes: list[tuple[str, tuple[float, ...], tuple[float, .
     for s in parts:
         if not _is_board((s["x0"], s["y0"], s["z0"]), (s["x1"], s["y1"], s["z1"])):
             continue
+        if any(w in s["part"].rsplit("/", 1)[-1].lower() for w in WET):
+            continue  # the floor of a sink's basin
         area = (s["x1"] - s["x0"]) * (s["y1"] - s["y0"])
         if any(q is not s and abs(q["z0"] - s["z1"]) < 0.02 and q["z1"] - q["z0"] > THIN
                and _overlap(s, q) >= BURY * area for q in parts):
             continue  # buried under a solid part (a plinth inside a skirt)
         above = [q["z0"] for q in parts if q is not s and q["z0"] >= s["z1"] + 0.02 and _area(q) >= MIN_AREA
                  and _overlap(s, q) >= COVER * min(area, _area(q))]  # one of several boards above also counts
-        out.append({
-            "part": s["part"], "z": round(s["z1"], 4),
-            "x0": round(s["x0"], 4), "x1": round(s["x1"], 4), "y0": round(s["y0"], 4), "y1": round(s["y1"], 4),
-            "clear": round(min(above) - s["z1"], 4) if above else None,
-        })
+        clear = round(min(above) - s["z1"], 4) if above else None
+        for x0, y0, x1, y1 in _bays(s, parts):
+            out.append({
+                "part": s["part"], "z": round(s["z1"], 4),
+                "x0": round(x0, 4), "x1": round(x1, 4), "y0": round(y0, 4), "y1": round(y1, 4), "clear": clear,
+            })
     out.sort(key=lambda s: (s["z"], s["x0"], s["y0"]))
+    return out
+
+
+def _bays(s: dict, parts: list[dict]) -> list[tuple[float, float, float, float]]:
+    """The board split at the dividers standing on it (thin upright plates across its depth, inside its ends: a picking
+    shelf's cells), so products are stocked between them instead of on them. A board without: itself."""
+    ax = 0 if s["x1"] - s["x0"] >= s["y1"] - s["y0"] else 1  # along the long side
+    o = 1 - ax
+    lo, hi = (s["x0"], s["y0"])[ax], (s["x1"], s["y1"])[ax]
+    olo, ohi = (s["x0"], s["y0"])[o], (s["x1"], s["y1"])[o]
+    cuts = []
+    for q in parts:
+        qlo, qhi = (q["x0"], q["y0"]), (q["x1"], q["y1"])
+        if (q is s or abs(q["z0"] - s["z1"]) > 0.02 or q["z1"] - q["z0"] < max(0.02, 2 * (qhi[ax] - qlo[ax])) or qhi[ax] - qlo[ax] > DIVIDER
+                or qlo[ax] <= lo + 0.01 or qhi[ax] >= hi - 0.01
+                or min(qhi[o], ohi) - max(qlo[o], olo) < DIVIDER_DEPTH * (ohi - olo)):
+            continue
+        cuts.append((qlo[ax], qhi[ax]))
+    if not cuts:
+        return [(s["x0"], s["y0"], s["x1"], s["y1"])]
+    out, a = [], lo
+    for c0, c1 in sorted(cuts) + [(hi, hi)]:
+        if c0 - a >= MIN_SIDE / 2:  # a cell at least this wide (a 6 cm box fits)
+            b = [s["x0"], s["y0"], s["x1"], s["y1"]]
+            b[ax], b[2 + ax] = a, c0
+            out.append(tuple(b))
+        a = max(a, c1)
     return out
 
 

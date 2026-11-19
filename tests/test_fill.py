@@ -59,6 +59,19 @@ def test_buried_board_is_not_a_shelf():
     assert [s["part"] for s in surfaces_from_boxes(boxes)] == ["TopBoard"]
 
 
+def test_board_split_at_its_dividers():
+    # picking shelf: 4 mm plates standing on the board across its depth make cells; products go between them
+    board = ("Shelf1", (-0.58, -0.17, 0.11), (0.58, 0.15, 0.127))
+    plates = [(f"Divider{i}", (x - 0.002, -0.15, 0.127), (x + 0.002, 0.15, 0.207)) for i, x in enumerate((-0.2, 0.2))]
+    cells = surfaces_from_boxes([board, *plates])
+    assert [(s["x0"], s["x1"]) for s in cells] == [(-0.58, -0.202), (-0.198, 0.198), (0.202, 0.58)]
+    assert {s["part"] for s in cells} == {"Shelf1"}
+    # a sausage lying across the tray (as tall as it is thick) is stock, not a divider; a basin floor is no board
+    frank = ("Frank0", (-0.0125, -0.15, 0.127), (0.0125, 0.15, 0.152))
+    assert len(surfaces_from_boxes([board, frank])) == 1
+    assert surfaces_from_boxes([("BasinFloor", (-0.25, -0.22, 0.64), (0.25, 0.16, 0.66))]) == []
+
+
 def make(tmp_path, objects, **room):
     return service.create_scene({"name": "s", "room": {"width": 6, "depth": 5, "height": 2.7, **room},
                                  "objects": objects}, tmp_path / "s")

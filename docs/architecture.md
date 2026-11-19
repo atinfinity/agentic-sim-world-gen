@@ -349,7 +349,7 @@ flowchart TD
   ForgeCADのアセット（作者または入手先がForgeCAD）は-Y向きです（`FORGECAD_FRONT_DEG`＝270。椅子の背もたれやトイレのタンクが+Y側にある）。
   例外は`KNOWN_FRONTS`・`KNOWN_FRONT_PATTERNS`に、手持ちのフォルダならagentic-sim-world-gen.jsonの`front`に、物ごとなら`front_offset_deg`に書きます。手で向きを決めるときは`facing_deg`（0＝東＝+X、90＝北＝+Y）。
 - **繰り返し**：`array`はブロック全体を1つの物として置き、検証・プレビュー・USDではユニット（`<id>.r<row>c<col>`）に展開します。
-- **陳列**：`fill`は、什器のジオメトリから見つけた棚板（`assets/shelves.py`）に商品を並べます。
+- **陳列**：`fill`は、什器のジオメトリから見つけた棚板（`assets/shelves.py`）に商品を並べます。棚板に立つ薄い仕切りがあれば区画に分け、区画ごとに並べます。流し台の底（名前にbasin・drainの付く板）には並べません。
 - **小物**：`Room.density`（sparse / normal / lived_in）に応じて、机に本、ソファの前にラグ、のような小物`decor_*`を`create_scene`が足します。問題が増える置き方は捨てます（`service._apply_density`）。
 - **店の陳列**：店（`shop`と`STORE_PLACES`の25種：コンビニ・スーパー・ドラッグストア・書店・パン屋・自転車店・家具店など）では、同じ仕組みで空いている什器に商品を`fill`で並べます。
   商品は店の種類ごとの表（`decor.PRODUCTS`。冷蔵ケースは`COLD_PRODUCTS`、フックは`HANG`）から選び、隣の什器とは違う商品から始めます。
