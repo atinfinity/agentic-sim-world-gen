@@ -67,7 +67,7 @@ class _Fetcher:
             try:
                 r = self.session().get(url, timeout=300)
                 r.raise_for_status()
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 print(f"agentic-sim-world-gen: cannot fetch {url}: {e}", file=sys.stderr)
                 return None
             atomic.write(p, r.content)  # another server may be fetching the same layer

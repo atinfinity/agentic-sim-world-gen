@@ -28,6 +28,11 @@ jobs:
       - uses: astral-sh/setup-uv@v10.3.3
         with:
           python-version: "3.12"
+      # the same for every matrix entry: once is enough. Pinned: a new ruff adds rules (the version is also in
+      # pyproject.toml and docs/contributing.md; change them together)
+      - name: Lint
+        if: matrix.name == 'all'
+        run: uvx ruff@0.17.6 check .
       - name: Install
         run: uv sync --locked ${{ matrix.extras }}
       - name: Test

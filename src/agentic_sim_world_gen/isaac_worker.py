@@ -52,7 +52,7 @@ def _root() -> Path:
 def _start(py: Path) -> dict[str, Any] | None:
     spool = _root() / f"{os.getpid()}-{uuid.uuid4().hex[:8]}"
     spool.mkdir(parents=True, exist_ok=True)
-    logfile = open(spool / "worker.log", "w")  # noqa: SIM115  (the child's for its whole life)
+    logfile = open(spool / "worker.log", "w")  # the child's for its whole life
     t0 = time.monotonic()
     proc = subprocess.Popen(
         [str(py), str(SCRIPT), "--dir", str(spool), "--idle", str(_number("AGENTIC_SIM_WORLD_GEN_ISAAC_WORKER_IDLE", 600)),

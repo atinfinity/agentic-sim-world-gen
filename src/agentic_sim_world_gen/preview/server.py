@@ -92,7 +92,7 @@ class _Handler(SimpleHTTPRequestHandler):
             return self._json(200, edit(scene.parent, req))
         except (KeyError, ValueError, IndexError, TypeError) as e:
             return self._json(400, {"error": str(e)})
-        except Exception as e:  # noqa: BLE001 — the page shows it; the server must keep running
+        except Exception as e:  # the page shows it; the server must keep running
             return self._json(500, {"error": f"{type(e).__name__}: {e}"})
 
     def _gallery_pick(self) -> None:
@@ -266,7 +266,7 @@ def _compose_later(scene_dir: Path) -> bool:
             tok = service.ACTOR.set("preview")
             try:
                 service.compose_scene(scene_dir, log=False)
-            except Exception:  # noqa: BLE001 — the next compose_scene by the agent reports it
+            except Exception:  # the next compose_scene by the agent reports it
                 pass
             finally:
                 service.ACTOR.reset(tok)

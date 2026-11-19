@@ -160,7 +160,7 @@ def _info(path: Path, cache_dir: Path | None = None) -> dict[str, Any] | None:
     try:
         opened = (openable_copy(path, cache_dir) if cache_dir else None) or path
         stage = Usd.Stage.Open(str(opened), Usd.Stage.LoadAll)
-    except Exception as e:  # noqa: BLE001 (pxr raises Tf.ErrorException)
+    except Exception as e:  # pxr raises Tf.ErrorException
         print(f"agentic-sim-world-gen: cannot open {path}: {e}", file=sys.stderr)
         return None
     if stage is None:

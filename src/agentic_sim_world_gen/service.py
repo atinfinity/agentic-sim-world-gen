@@ -231,7 +231,7 @@ def _searching(objs: list[ObjectSpec], n: int):
     def one(args):
         try:
             return provider.search(args[0], limit=args[1], size=args[2])
-        except Exception:  # noqa: BLE001
+        except Exception:
             return None
 
     keys = list(todo)
@@ -5414,7 +5414,7 @@ def check_in_isaac(scene: str | Path, steps: int = 240, timeout_s: int = 900, gi
 
     try:
         labels = {o.id: o.label or o.id for o in load(scene).spec.objects}
-    except Exception:  # noqa: BLE001 - fall back to prim names
+    except Exception:  # fall back to prim names
         labels = {}
     bad = [(label, rep[k]) for k, label in (("unstable", "物理で動いた"), ("sunk", "床を抜けた"),
                                             ("no_collider", "当たり判定なし")) if rep.get(k)]

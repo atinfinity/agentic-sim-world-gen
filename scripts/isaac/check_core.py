@@ -245,7 +245,7 @@ def log_size() -> int:
     """Where the Kit log ends now, so blown_up() reads only what this check wrote."""
     try:
         return _log_file().stat().st_size
-    except Exception:  # noqa: BLE001 - no log file: blown_up() finds nothing
+    except Exception:  # no log file: blown_up() finds nothing
         return -1
 
 
@@ -259,7 +259,7 @@ def blown_up(objects: dict, since: int) -> list[str]:
         with open(_log_file(), "rb") as fh:
             fh.seek(max(since, 0))
             text = fh.read().decode("utf-8", "replace")
-    except Exception:  # noqa: BLE001
+    except Exception:
         return []
     names = sorted(objects, key=len, reverse=True)  # "chairs/chairs_r0c3" before "chairs"
     out: list[str] = []

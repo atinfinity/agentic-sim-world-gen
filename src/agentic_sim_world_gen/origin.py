@@ -163,7 +163,7 @@ def _asset_version(path: str, mtime: float) -> str | None:
         layer = Sdf.Layer.FindOrOpen(path)
         prim = layer and layer.defaultPrim and layer.GetPrimAtPath("/" + layer.defaultPrim)
         v = prim.assetInfo.get("version") if prim else None
-    except Exception:  # noqa: BLE001 - unreadable layers just have no version
+    except Exception:  # unreadable layers just have no version
         return None
     return str(v) if v else None
 

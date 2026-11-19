@@ -13,10 +13,13 @@ cd agentic-sim-world-gen
 uv sync --extra usd --extra mcp --extra dxf --extra ifc --extra photo --extra hf --extra dev
 uv run pytest -q              # offline tests (about 2 minutes)
 uv run pytest -q -m network   # optional: calls the real SimReady Central / Poly Haven APIs
+uvx ruff@0.17.6 check .       # lint (the version CI runs)
 ```
 
 CI runs the tests twice: with the extras the README installs (`usd`, `hf`, `mcp`, `dev`) and with all but `taste`.
 A test that needs another extra skips without it (`pytest.importorskip`).
+CI also runs `ruff check`. The rules left out (matters of style) and why are in `[tool.ruff.lint]` of `pyproject.toml`.
+To move to another ruff version, change CI (`.github/workflows/ci.yml`) and this page together.
 
 Checking a scene in Isaac Sim (`check`) needs an NVIDIA RTX GPU and Isaac Sim 6.1 on Linux; everything else
 (search, layout, USD, previews) runs without a GPU. Pull requests that cannot be tested on Isaac Sim are fine:

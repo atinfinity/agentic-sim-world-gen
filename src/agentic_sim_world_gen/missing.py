@@ -103,7 +103,7 @@ def record(scene_dir: str | Path, scene: Any, status: dict[str, Any],
         if not rows and not path.exists():
             return
         _write(path, d, scene, rows)
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         log.warning("missing assets not recorded: %s", e)
 
 
@@ -128,7 +128,7 @@ def add(scene_dir: str | Path, scene: Any, rows: list[dict[str, Any]]) -> bool:
         old = [r for r in (_read(path) or {}).get("rows") or [] if (r.get("why"), _key(r.get("query", "")), r.get("id")) not in new]
         _write(path, d, scene, old + rows)
         return True
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         log.warning("missing assets not recorded: %s", e)
         return False
 
@@ -224,7 +224,7 @@ def recheck(find: Any) -> dict[str, Any]:
     for q, alts in queries.items():
         try:
             hit = find(q, alts)
-        except Exception as e:  # noqa: BLE001  one failed search must not lose the others
+        except Exception as e:  # one failed search must not lose the others
             log.warning("recheck of %r failed: %s", q, e)
             continue
         checks[q] = {"checked": now, "asset": None, **({"asset": hit["name"], "source": hit.get("source"),

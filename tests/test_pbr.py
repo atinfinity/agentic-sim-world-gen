@@ -182,7 +182,7 @@ def test_two_servers_fetch_the_same_material(tmp_path, net):
     def run():
         try:
             got.append(pbr.fetch(pbr.by_id("PolyHaven/plaster_01")))
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             errors.append(e)
             gate.abort()
 

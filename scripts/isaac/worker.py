@@ -93,7 +93,7 @@ def reset(folder: Path | None) -> None:
         if p and not layer.anonymous and (layer.dirty or (folder and Path(p).resolve().is_relative_to(folder))):
             try:
                 layer.Reload(force=True)
-            except Exception:  # noqa: BLE001  (a file that is gone, e.g. front_views_stage.usda)
+            except Exception:  # a file that is gone, e.g. front_views_stage.usda
                 pass
 
 
@@ -113,13 +113,13 @@ def run(job: dict) -> dict:
             runpy.run_path(str(HERE / name), run_name="__main__")
     except SystemExit as e:
         code = e.code if isinstance(e.code, int) else (0 if e.code is None else 1)
-    except BaseException:  # noqa: BLE001
+    except BaseException:
         code, error = 1, traceback.format_exc()[-4000:]
     finally:
         sys.argv = old_argv
     try:
         reset(None)  # drop the stage now: its assets are not held until the next job
-    except Exception:  # noqa: BLE001
+    except Exception:
         code, error = code or 1, (error or "") + traceback.format_exc()[-2000:]
     r = {"returncode": code, "stdout": out.getvalue(), "seconds": round(time.monotonic() - t0, 1)}
     if error:

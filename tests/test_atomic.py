@@ -41,7 +41,7 @@ def test_two_fetchers_of_the_same_layers(tmp_path):
         f.session = lambda: Session()
         try:
             got.append([f.local_path(f"https://example.com/assets/m{i}.usdz") for i in range(N)])
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             errors.append(e)
             gate.abort()
 
@@ -76,7 +76,7 @@ def test_layer_is_replaced_whole_while_another_reads_it(tmp_path):
                     got = Sdf.Layer.OpenAsAnonymous(str(p))
                     if got is None or "n" not in got.GetPrimAtPath("/A").customData:
                         bad.append("partial")
-                except Exception as e:  # noqa: BLE001
+                except Exception as e:
                     bad.append(e)
 
         t = threading.Thread(target=read)
