@@ -1,6 +1,7 @@
 """Relational layout solver and 3D overlap check (no network)."""
 
 import dataclasses
+import itertools
 
 import pytest
 
@@ -242,7 +243,7 @@ def test_array_front_on_long_side(tmp_path):
     o, a = s.obj("chairs"), s.placements[0].asset
     assert block_record(o, a).size_m[:2] == pytest.approx((5 * 0.55 + 4 * 0.1, 0.62))
     xs = sorted(u.position[0] for u in instances(o, a))
-    assert [b - a_ for a_, b in zip(xs, xs[1:])] == pytest.approx([0.65] * 4)
+    assert [b - a_ for a_, b in itertools.pairwise(xs)] == pytest.approx([0.65] * 4)
     assert all(u.position[1] == pytest.approx(4 - 0.02 - 0.31) for u in instances(o, a))
 
 

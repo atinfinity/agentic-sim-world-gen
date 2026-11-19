@@ -911,7 +911,7 @@ def _check_section(d: Path, st: dict[str, Any], labels: dict[str, str], notes: l
                      f"{'・古い画像なので書き込みのピンは上面図だけ' if st['check'] == 'stale' and notes else ''}"
                      f"{'<span class=edit-hint>・ダブルクリックで書き込み</span>' if cams else ''}</span></div>")
         if "check.gif" in fresh:
-            parts.append("<div class='muted'><a href='check.gif?v=%d'>物理の様子（check.gif）</a></div>" % v)
+            parts.append(f"<div class='muted'><a href='check.gif?v={v}'>物理の様子（check.gif）</a></div>")
     elif fresh:
         parts.append(f"<img src='{fresh[0]}?v={v}' alt='{fresh[0]}'>")
     rows = []

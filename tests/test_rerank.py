@@ -30,7 +30,7 @@ def test_words_singularize():
 def test_rerank_puts_desk_first():
     ranked = rerank([SOFA, PALLET, TABLE, DESK], "office desk")
     assert ranked[0][0].name == "sm_desk_a01"
-    m = dict((r.name, m) for r, m in ranked)
+    m = {r.name: m for r, m in ranked}
     assert m["sm_desk_a01"].score >= 3 and not m["sm_desk_a01"].weak
     assert m["sm_sofa"].weak and m["sm_pallet"].weak
     assert m["sm_table"].weak  # "a table that could serve as a desk" is a table

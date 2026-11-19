@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Draw the top views of examples/*.json for the gallery: src/agentic_sim_world_gen/data/gallery/<name>.svg.
 
     PYTHONPATH=src python scripts/make_gallery.py [name ...]
