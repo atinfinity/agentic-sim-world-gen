@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from agentic_sim_world_gen.assets.record import AssetRecord
-from agentic_sim_world_gen.assets.rerank import _AFTER_NOUN, _lead, _measure, noun_last, score, words
+from agentic_sim_world_gen.assets.rerank import _AFTER_NOUN, _lead, _measure, noun_last, phrases, score, words
 
 VERSION = 1
 DATA = Path(__file__).resolve().parents[1] / "data"
@@ -54,8 +54,8 @@ def strong(rec: AssetRecord, queries: list[str]) -> bool:
 
 
 def _phrases(rec: AssetRecord) -> list[list[str]]:
-    cls = noun_last(words(rec.semantic_class) or words(rec.raw.get("kind")), join=True)
-    return [p for p in [cls, *(noun_last(words(t), join=True) for t in rec.tags)] if p]
+    cls, tags = phrases(rec)
+    return [p for p in [cls, *tags] if p]
 
 
 def candidate_kinds(rec: AssetRecord) -> tuple[set[str], set[str]]:

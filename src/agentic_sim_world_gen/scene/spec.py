@@ -354,12 +354,14 @@ class Layout(BaseModel):
 
     against_wall: Wall | None = Field(
         default=None,
-        description="back to this wall, front facing into the room: north/south/east/west/any, or a plan wall id (w3)",
+        description="back to this wall, front facing into the room: north/south/east/west/any, or a plan wall id (w3); "
+        "a corner piece (candidate with corner: true; measured once chosen, when the name says corner) goes into a "
+        "corner at an end of the wall, open side in",
     )
     along: float | None = Field(
         default=None, ge=0, le=1,
         description="position along the wall, 0..1 (west->east for north/south, south->north for east/west); "
-        "omit to pick a free spot",
+        "omit to pick a free spot; a corner piece: < 0.5 the corner at the start, >= 0.5 at the end",
     )
     in_front_of: str | None = Field(default=None, description="object id; stand at its front, facing it (chair at desk)")
     next_to: str | None = Field(default=None, description="object id; stand beside it with the same facing")

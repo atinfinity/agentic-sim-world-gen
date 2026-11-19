@@ -40,6 +40,9 @@ def words(text: str | None) -> list[str]:
 
 # words that may follow the noun of a phrase: "desk with drawers" names a desk, "desk lamp" does not
 _BEFORE_PLACE = {"under", "beside", "near", "behind", "above", "below", "over", "next", "for", "on", "in", "at", "by"}
+# "cabinet with drawers": what follows names a part or feature of the thing, not the thing
+_PARTS = {"with", "featuring", "having"}
+_FILLER = {"a", "an", "the", "and", "or", "some"}
 _AFTER_NOUN = {"with", "and", "or", "for", "in", "on", "of", "from", "by", "to", "at", "that", "featuring", "having"}
 
 
@@ -65,11 +68,40 @@ def _qty(n: str, unit: str = "") -> str:
     return _DIGITS.get(n, n) + _UNITS.get(unit, unit)
 
 
-def noun_last(tw: list[str], join: bool = False) -> list[str]:
-    """Move trailing quantity phrases to the front so the last word is the object noun:
+def phrases(rec: AssetRecord) -> tuple[list[str], list[list[str]]]:
+    """The asset's class and tags as the query is read. "X with Y" is kept as written (class "rack with shelves" is a
+    shelf, "desk with drawers" was always found for "drawers") and also read as "Y X" like the query ("cabinet with
+    drawers" -> "drawer cabinet"), so a tag that names the query whole still names it."""
+    def both(tw: list[str]) -> list[list[str]]:
+        kept = noun_last(tw, join=True, parts=False)
+        alt = noun_last(tw, join=True)
+        return [kept] if alt == kept else [kept, alt]
+
+    cls = both(words(rec.semantic_class) or words(rec.raw.get("kind")))
+    return cls[0], [*cls[1:], *(p for t in rec.tags for p in both(words(t)))]
+
+
+def noun_last(tw: list[str], join: bool = False, parts: bool = True) -> list[str]:
+    """Move trailing quantity phrases, and what follows "with" (featuring, having), to the front so the last
+    word is the object noun: "cabinet with drawers" -> "drawer cabinet",
     "sofa 3 seat" -> "3 seat sofa", "water bottle pack of 6" -> "6 pack water bottle", "chair x2" -> "x2 chair".
     A count alone ("2 chairs") keeps its noun. With join=True each moved quantity is one token
-    ("6pack water bottle"), so "beer can 6pack" and "beer can 6 pack" read the same."""
+    ("6pack water bottle"), so "beer can 6pack" and "beer can 6 pack" read the same. parts=False leaves "with" in
+    place: an asset's class "rack with shelves" is also a shelf (see phrases())."""
+    k = next((i for i, w in enumerate(tw) if w in _PARTS and 0 < i < len(tw) - 1), None) if parts else None
+    if k is not None:  # "cabinet with drawers" -> "drawer cabinet": the head noun last as everywhere else
+        tail = [w for w in tw[k + 1:] if w not in _FILLER and w not in _PARTS]
+        if join:  # "sofa with 3 seats" -> "3seat sofa"
+            out, i = [], 0
+            while i < len(tail):
+                if i + 1 < len(tail) and _num(tail[i]) and not _num(tail[i + 1]):
+                    out.append(_qty(tail[i], tail[i + 1]))
+                    i += 2
+                else:
+                    out.append(tail[i])
+                    i += 1
+            tail = out
+        return [*tail, *noun_last(tw[:k], join)]
     tw, front = list(tw), []
     while len(tw) > 1:
         if len(tw) > 3 and tw[-2] == "of" and _num(tw[-1]):  # "pack of 6", "set of 4"
@@ -175,7 +207,6 @@ def _a_part(cap: list[str], head: str) -> str | None:
     return None
 
 
-_PARTS = {"with", "featuring", "having"}
 
 
 def _lead(seq: list[str]) -> list[str]:
@@ -199,8 +230,7 @@ class Match:
 def score(rec: AssetRecord, query: str, alt_queries: list[str] | None = None) -> Match:
     # no USD class: a local asset's asset.json slug names the thing just as well ("croissant", "curry bread")
     # class and tags get the same word order as the query: tag "beer can 6pack" names a beer can like "beer can 6 pack"
-    cls = noun_last(words(rec.semantic_class) or words(rec.raw.get("kind")), join=True)
-    tags = [noun_last(words(t), join=True) for t in rec.tags]
+    cls, tags = phrases(rec)
     cap = words(rec.caption)
     name = words(re.sub(r"[_\-.]|(?<=[a-z])(?=[A-Z])", " ", rec.name))  # also split camelCase
     everything = set(cls) | set(cap) | set(name) | {w for t in tags for w in t}

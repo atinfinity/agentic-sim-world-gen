@@ -46,6 +46,9 @@ class AssetRecord:
     # direction the asset's front points to in its own Z-up footprint frame [deg] (0 = +X, 90 = +Y);
     # None = the default from layout/frame.py
     front_deg: float | None = None
+    # a corner piece: its front (front_deg) is the open corner of its footprint, and against_wall puts it in a
+    # corner of the room with the open corner facing in (the corner across in the room's corner)
+    corner: bool = False
     # shelf boards found from the geometry (agentic_sim_world_gen.assets.shelves), filled in when something is stocked on it
     shelves: list[dict[str, Any]] | None = None
     # hooks found with the shelves (agentic_sim_world_gen.assets.shelves): pegboards, hook racks
@@ -113,6 +116,7 @@ class AssetRecord:
             "uri": self.uri,
             "thumbnail_url": self.thumbnail_url,
             "front_deg": self.front_deg,
+            **({"corner": True} if self.corner else {}),
             **({"variants": self.variant_sets} if self.variant_sets else {}),
             **({"physics": False} if self.has_physics is False else {}),
             **({"faces": self.polygons} if self.polygons is not None else {}),
