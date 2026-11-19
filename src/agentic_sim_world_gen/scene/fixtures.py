@@ -237,7 +237,7 @@ def ceiling_tint(room) -> tuple[float, float, float]:
 LINE_PLACES = ("school", "lab", "station", "public", "datacenter", "shop", "convenience_store", "supermarket",
                "drugstore", "hundred_yen_shop", "bookstore", "electronics_store", "variety_store", "greengrocer",
                "toy_store", "pet_shop", "liquor_store", "bicycle_shop", "record_store", "sporting_goods_store",
-               "asian_grocery")
+               "asian_grocery", "dispensing_pharmacy")
 DOWNLIGHT_PLACES = ("cafe", "restaurant", "apparel_store", "bakery", "florist", "shoe_store", "optician",
                     "wagashi_shop", "cosmetics_store", "furniture_store")
 PLACE_KINDS: dict[str, str] = {"office": "panel", "hospital": "panel",

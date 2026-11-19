@@ -957,7 +957,7 @@ Change the room; only the fields given change, and the layout is solved again. F
 convenience_store, supermarket, drugstore, home_center, hundred_yen_shop, bookstore, electronics_store,
 apparel_store, bakery, variety_store, florist, greengrocer, toy_store, pet_shop, garden_center, shoe_store,
 optician, liquor_store, bicycle_shop, wagashi_shop, record_store, sporting_goods_store, cosmetics_store,
-furniture_store, asian_grocery, cafe, restaurant, factory, warehouse, datacenter, lab, hospital, school, station,
+furniture_store, asian_grocery, dispensing_pharmacy, cafe, restaurant, factory, warehouse, datacenter, lab, hospital, school, station,
 public, outdoor, other), size, floor / walls / ceiling, lighting (studio, daylight, home, office, warehouse, night;
 outdoor sun, overcast, dusk, street_night), lighting_scale, light_kelvin, density (sparse / normal / lived_in),
 openings, plan_file, zone_floors, wainscot, baseboard, fixtures, ceiling_features, levels, stairs, columns,
@@ -973,7 +973,7 @@ correction=true when the user asked for it (lighting / floor / walls remembered 
 correction=true when the user asked for this change (not your own adjustment): lighting, lighting_scale,
 floor and walls are remembered per place and become defaults once 2+ scenes agree (get_preferences).
 Change the room: place (what the space is: home, office, shop, convenience_store, supermarket, drugstore,
-home_center, hundred_yen_shop, bookstore, electronics_store, apparel_store, bakery, variety_store, florist, greengrocer, toy_store, pet_shop, garden_center, shoe_store, optician, liquor_store, bicycle_shop, wagashi_shop, record_store, sporting_goods_store, cosmetics_store, furniture_store, asian_grocery, cafe, restaurant, factory, warehouse, datacenter, lab, hospital, school, station, public, outdoor, other), size, floor/walls surface (preset name or {preset, color, roughness, texture, tile_m,
+home_center, hundred_yen_shop, bookstore, electronics_store, apparel_store, bakery, variety_store, florist, greengrocer, toy_store, pet_shop, garden_center, shoe_store, optician, liquor_store, bicycle_shop, wagashi_shop, record_store, sporting_goods_store, cosmetics_store, furniture_store, asian_grocery, dispensing_pharmacy, cafe, restaurant, factory, warehouse, datacenter, lab, hospital, school, station, public, outdoor, other), size, floor/walls surface (preset name or {preset, color, roughness, texture, tile_m,
 mdl, static_friction}), lighting preset (studio, daylight, home, office, warehouse, night; outdoor: sun,
 overcast, dusk, street_night), lighting_scale, light_kelvin (color temperature of the fixtures and the sun
 [K] instead of the preset's: warm 2700, neutral 4000, cool 6500), ceiling. Floor presets: wood_light, wood_dark, tatami,
@@ -1648,7 +1648,7 @@ One thing the user asked for, matched against the result after generating.
 ## Room
 
 - `name`?: str
-- `place`?: home|office|shop|convenience_store|supermarket|drugstore|home_center|hundred_yen_shop|bookstore|electronics_store|apparel_store|bakery|variety_store|florist|greengrocer|toy_store|pet_shop|garden_center|shoe_store|optician|liquor_store|bicycle_shop|wagashi_shop|record_store|sporting_goods_store|cosmetics_store|furniture_store|asian_grocery|cafe|restaurant|factory|plant_factory|warehouse|datacenter|lab|hospital|school|station|public|outdoor|other — what the space is (home, office, shop, convenience_store, supermarket, drugstore, home_center, hundred_yen_shop, bookstore, electronics_store, apparel_store, bakery, variety_store, florist, greengrocer, toy_store, pet_shop, garden_center, shoe_store, optician, liquor_store, bicycle_shop, wagashi_shop, record_store, sporting_goods_store, cosmetics_store, furniture_store, asian_grocery, cafe, restaurant, factory, warehouse, datacenter, lab, hospital, school, station, public, outdoor, other); checks that built-in screen pictures (shop ads) fit
+- `place`?: home|office|shop|convenience_store|supermarket|drugstore|home_center|hundred_yen_shop|bookstore|electronics_store|apparel_store|bakery|variety_store|florist|greengrocer|toy_store|pet_shop|garden_center|shoe_store|optician|liquor_store|bicycle_shop|wagashi_shop|record_store|sporting_goods_store|cosmetics_store|furniture_store|asian_grocery|dispensing_pharmacy|cafe|restaurant|factory|plant_factory|warehouse|datacenter|lab|hospital|school|station|public|outdoor|other — what the space is (home, office, shop, convenience_store, supermarket, drugstore, home_center, hundred_yen_shop, bookstore, electronics_store, apparel_store, bakery, variety_store, florist, greengrocer, toy_store, pet_shop, garden_center, shoe_store, optician, liquor_store, bicycle_shop, wagashi_shop, record_store, sporting_goods_store, cosmetics_store, furniture_store, asian_grocery, dispensing_pharmacy, cafe, restaurant, factory, warehouse, datacenter, lab, hospital, school, station, public, outdoor, other); checks that built-in screen pictures (shop ads) fit
 - `width`?: num — interior size along X [m] (set from plan if given)
 - `depth`?: num — interior size along Y [m] (set from plan if given)
 - `height`?: num

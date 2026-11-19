@@ -43,6 +43,7 @@ FOREIGN: dict[str, tuple[str, ...]] = {
     "shop": _SHOP,
     **{p: _SHOP for p in STORE_PLACES},
     "drugstore": ("automotive", "industrial", "lab", "airport", "agriculture"),
+    "dispensing_pharmacy": ("automotive", "industrial", "lab", "airport", "agriculture"),
     "home_center": ("medical", "lab", "airport"),
     # plants and growing gear belong in these shops
     "garden_center": ("medical", "lab", "airport"),
