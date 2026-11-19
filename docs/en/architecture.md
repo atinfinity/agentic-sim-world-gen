@@ -347,7 +347,7 @@ An object whose center is on a raised level is placed at that height by the solv
 - **Front convention**: an asset's front is +X (checked in Isaac Sim 6.1 by rendering about 40 assets from 4 directions).
   Exceptions go in `KNOWN_FRONTS` and `KNOWN_FRONT_PATTERNS`; for your own folders, in `front` in agentic-sim-world-gen.json; per object, in `front_offset_deg`. To set a direction by hand, use `facing_deg` (0 = east = +X, 90 = north = +Y).
 - **Repetition**: `array` places the whole block as one object, and expands it into units (`<id>.r<row>c<col>`) for checks, preview and USD.
-- **Displays**: `fill` puts goods on the shelf boards found in the fixture's geometry (`assets/shelves.py`).
+- **Displays**: `fill` puts goods on the shelf boards found in the fixture's geometry (`assets/shelves.py`). A board with thin dividers standing on it is split into cells and each cell is stocked; the floor of a sink (a board named basin or drain) is not stocked.
 - **Small items**: depending on `Room.density` (sparse / normal / lived_in), `create_scene` adds small items `decor_*`, like books on a desk or a rug in front of a sofa. Placements that add problems are discarded (`service._apply_density`).
 - **Store displays**: in stores (`shop` and the 25 kinds in `STORE_PLACES`: convenience store, supermarket, drugstore, bookstore, bakery, bike shop, furniture store, etc.), the same mechanism stocks empty fixtures with goods via `fill`.
   Goods come from per-store tables (`decor.PRODUCTS`, `COLD_PRODUCTS` for refrigerated cases, `HANG` for hooks), and each fixture starts with different goods from its neighbor.
