@@ -54,6 +54,6 @@ if "--per-query" in sys.argv:
     print("\nquery         A:top1 shown wrong | A2:top1 shown wrong flag")
     for q in queries:
         a, b = row("A", q), row("A2", q)
-        print(f"{q:13s} {str(g(q, runs['A'][q][0]) if runs['A'][q] else '-'):>6} {a['shown']:5d} {a['wrong']:5d} |"
-              f" {str(g(q, runs['A2'][q][0]) if runs['A2'][q] else '-'):>7} {b['shown']:5d} {b['wrong']:5d}"
+        print(f"{q:13s} {g(q, runs['A'][q][0]) if runs['A'][q] else '-'!s:>6} {a['shown']:5d} {a['wrong']:5d} |"
+              f" {g(q, runs['A2'][q][0]) if runs['A2'][q] else '-'!s:>7} {b['shown']:5d} {b['wrong']:5d}"
               f" {'*' if q in flag else ''}{' gap' if q in gap else ''}")

@@ -50,7 +50,7 @@ class Column(BaseModel):
         return v
 
     @model_validator(mode="after")
-    def _check(self) -> "Column":
+    def _check(self) -> Column:
         _color_ok(self.color)
         if self.diameter is not None and self.size is not None:
             raise ValueError(f"column {self.id}: give size (box) or diameter (round), not both")
@@ -101,7 +101,7 @@ class FloorArea(BaseModel):
     color: str | None = Field(default=None, description="#rrggbb, shorthand for a painted floor")
 
     @model_validator(mode="after")
-    def _check(self) -> "FloorArea":
+    def _check(self) -> FloorArea:
         _outline(self.polygon, self.rect, f"floor area {self.id}")
         _color_ok(self.color)
         if self.floor is None and self.color is None:

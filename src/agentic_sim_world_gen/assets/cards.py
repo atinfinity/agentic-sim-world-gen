@@ -49,7 +49,7 @@ def path() -> Path | None:
 def key(uri: str) -> str:
     """Folder and file name of a URI or path, without the query and the extension, lower case."""
     p = PurePosixPath(uri.split("?", 1)[0].replace("\\", "/"))
-    stem = re.sub(r"\.usd[acz]?$", "", p.name, flags=re.I)
+    stem = re.sub(r"\.usd[acz]?$", "", p.name, flags=re.IGNORECASE)
     return f"{p.parent.name}/{stem}".lower()
 
 

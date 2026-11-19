@@ -5,13 +5,13 @@ from __future__ import annotations
 import pytest
 
 pytest.importorskip("pxr")
-from pxr import Usd, UsdLux, UsdPhysics, UsdShade  # noqa: E402
+from pxr import Usd, UsdLux, UsdPhysics, UsdShade
 
-from agentic_sim_world_gen.assets.record import AssetRecord  # noqa: E402
-from agentic_sim_world_gen.preview.layout2d import render_svg  # noqa: E402
-from agentic_sim_world_gen.scene.looks import SURFACES, TEXTURES, builtin_texture, fixture_grid, resolve_surface  # noqa: E402
-from agentic_sim_world_gen.scene.spec import Placement, ResolvedScene, Room, SceneSpec, record_to_dict  # noqa: E402
-from agentic_sim_world_gen.usd.compose import compose  # noqa: E402
+from agentic_sim_world_gen.assets.record import AssetRecord
+from agentic_sim_world_gen.preview.layout2d import render_svg
+from agentic_sim_world_gen.scene.looks import SURFACES, TEXTURES, builtin_texture, fixture_grid, resolve_surface
+from agentic_sim_world_gen.scene.spec import Placement, ResolvedScene, Room, SceneSpec, record_to_dict
+from agentic_sim_world_gen.usd.compose import compose
 
 
 def _scene(**room) -> ResolvedScene:

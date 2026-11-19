@@ -192,7 +192,7 @@ def test_candidate_sheets(tmp_path, monkeypatch):
         return many, one, none
 
     many, one, none = asyncio.run(run())
-    kinds = lambda res: [c.type for c in res.content]  # noqa: E731
+    kinds = lambda res: [c.type for c in res.content]
     assert kinds(many) == ["text", "image", "text", "image"]  # an image per object
     assert kinds(one) == ["text", "image", "text", "text"]  # as before: an image per candidate (desk_b has none)
     assert kinds(none) == ["text", "image"]

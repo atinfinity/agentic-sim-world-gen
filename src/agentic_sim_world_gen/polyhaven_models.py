@@ -23,6 +23,7 @@ physics. Front: Blender's front view looks along +Y, so the models face -Y (FRON
 
 from __future__ import annotations
 
+import gzip
 import hashlib
 import io
 import json
@@ -30,7 +31,6 @@ import os
 import re
 import shutil
 import time
-import gzip
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -111,13 +111,13 @@ def kind_phrases(category: str | None) -> list[str]:
 
 def semantic_class(r: dict[str, Any]) -> str:
     """The model's title without the number: "Dining Chair 02" -> "dining chair"."""
-    words = [w for w in re.split(r"[\s_]+", r.get("title") or r["id"]) if w and not re.fullmatch(r"\d+[a-z]?", w, re.I)]
+    words = [w for w in re.split(r"[\s_]+", r.get("title") or r["id"]) if w and not re.fullmatch(r"\d+[a-z]?", w, re.IGNORECASE)]
     return " ".join(words).lower() or r["id"].lower()
 
 
 def caption(r: dict[str, Any]) -> str | None:
     """The description without the "Free 8K model:" lead."""
-    d = re.sub(r"^\s*free\s+\w+\s+(?:3d\s+)?model\s*[:,-]\s*", "", r.get("description") or "", flags=re.I).strip()
+    d = re.sub(r"^\s*free\s+\w+\s+(?:3d\s+)?model\s*[:,-]\s*", "", r.get("description") or "", flags=re.IGNORECASE).strip()
     return d or None
 
 

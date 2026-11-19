@@ -35,7 +35,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from build_isaac_index import BUCKET, list_keys, make_session  # noqa: E402
+from build_isaac_index import BUCKET, list_keys, make_session
 
 LIBRARIES = {"Base": "NVIDIA-Omniverse-Materials", "vMaterials_2": "NVIDIA-vMaterials"}  # see agentic_sim_world_gen.license.KNOWN
 SKIP_DIRS = {"Templates", "Styles", "Emissives", "Gems", "Liquids", "Food", "Carpaint", "CSV_Mapping_Files"}
@@ -55,7 +55,7 @@ def _get(session: requests.Session, url: str, cache: Path, binary: bool = False)
 
 
 _EXPORT = re.compile(r"export\s+material\s+(\w+)\s*\(")
-_BLOCK = re.compile(r"\[\[((?:(?!\]\]).)*)\]\]\s*=", re.S)  # the material's own annotations end with "]] ="
+_BLOCK = re.compile(r"\[\[((?:(?!\]\]).)*)\]\]\s*=", re.DOTALL)  # the material's own annotations end with "]] ="
 
 
 def _anno(block: str, name: str) -> str | None:

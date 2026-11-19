@@ -1,5 +1,9 @@
-import json, sys, random
+import json
+import random
+import sys
+
 from PIL import Image, ImageDraw, ImageFont
+
 E = sys.argv[1]
 r = {**json.load(open(f"{E}/runs_ab.json")), **json.load(open(f"{E}/runs_cde.json"))}
 qs = json.load(open(f"{E}/queries.json"))

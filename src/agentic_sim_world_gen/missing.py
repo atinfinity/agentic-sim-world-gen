@@ -193,7 +193,7 @@ def summary(top: int | None = None, why: str | None = None) -> dict[str, Any]:
     out, found = [], []
     checks = _found()
     for g in by.values():
-        top_of = lambda d, n: [k for k, _ in sorted(d.items(), key=lambda kv: (-kv[1], kv[0]))[:n]]  # noqa: E731
+        top_of = lambda d, n: [k for k, _ in sorted(d.items(), key=lambda kv: (-kv[1], kv[0]))[:n]]
         row = {"query": g["query"], "scenes": len(g["scenes"]), "objects": g["objects"],
                "by": {w: g["by"][w] for w in WHYS if w in g["by"]}, "places": top_of(g["places"], 3),
                "labels": top_of(g["labels"], 3), "used": top_of(g["used"], 3), "notes": top_of(g["notes"], 3),

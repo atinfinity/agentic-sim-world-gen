@@ -137,7 +137,7 @@ def refine(size: tuple[float, float, float], pose: tuple[float, float, float], f
     kept = best
     turned = False
     # the facing: free from the best center, held within MAX_TURN_DEG of the facing now
-    f3 = lambda v: residuals((v[0], v[1], v[2]), size, feet, outlines, cams)  # noqa: E731
+    f3 = lambda v: residuals((v[0], v[1], v[2]), size, feet, outlines, cams)
     for d0 in (0.0, -20.0, 20.0):
         x, c, _ = _lm(f3, [kept[0][0], kept[0][1], th0 + d0], [1.0, 1.0, 10.0], 60)
         if (abs((x[2] - th0 + 180) % 360 - 180) <= MAX_TURN_DEG and c < TURN_GAIN * kept[1] and c < best[1]

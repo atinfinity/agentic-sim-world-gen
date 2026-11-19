@@ -8,6 +8,7 @@ import sys
 
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.scene.spec import ObjectSpec
+
 ROOMS = {
  "study": [("desk","desk",["writing desk","computer desk"]),("chair","office chair",["desk chair","task chair"]),
            ("bookshelf","bookshelf",["bookcase","shelving unit"]),("lamp","desk lamp",["table lamp"]),

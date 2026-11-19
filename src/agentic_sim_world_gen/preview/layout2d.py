@@ -8,14 +8,15 @@ from pathlib import Path
 
 from agentic_sim_world_gen.layout.array import instances, placed_size
 from agentic_sim_world_gen.layout.frame import facing_of, half_extent
-from agentic_sim_world_gen.layout.validate import check, flat, footprint
 from agentic_sim_world_gen.layout.room import RoomGeometry, centroid
+from agentic_sim_world_gen.layout.validate import check, flat, footprint
 from agentic_sim_world_gen.scene.fixtures import KINDS, beams
 from agentic_sim_world_gen.scene.fixtures import plan as fixture_plan
 from agentic_sim_world_gen.scene.looks import LIGHTING, ceiling_surface, hex_color, resolve_surface
 from agentic_sim_world_gen.scene.spec import ResolvedScene
 from agentic_sim_world_gen.scene.walls import WALL_JA, applies, default_value, overrides
 from agentic_sim_world_gen.scene.zone_floors import zone_floors
+
 
 def image_size(path: str | Path) -> tuple[int, int] | None:
     """(width, height) in pixels of a PNG or JPEG, read from the header."""

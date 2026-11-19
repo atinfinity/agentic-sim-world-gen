@@ -19,13 +19,12 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import sys
 import threading
-
-from agentic_sim_world_gen.scene.spec import SceneSpec
+from pathlib import Path
 
 from agentic_sim_world_gen import service
+from agentic_sim_world_gen.scene.spec import SceneSpec
 
 
 def _print_status(st: dict) -> None:

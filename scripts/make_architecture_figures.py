@@ -88,7 +88,7 @@ def poly(pts, cls):
 def rbox(cx, cy, w, h, yaw, cls, front=False):
     """A w x h box centred at cx,cy turned by yaw (CCW on screen, y down), a front triangle on its local +x side."""
     c, s = math.cos(math.radians(yaw)), -math.sin(math.radians(yaw))
-    tr = lambda lx, ly: (cx + lx * c - ly * s, cy + lx * s + ly * c)  # noqa: E731
+    tr = lambda lx, ly: (cx + lx * c - ly * s, cy + lx * s + ly * c)
     out = poly([tr(-w / 2, -h / 2), tr(w / 2, -h / 2), tr(w / 2, h / 2), tr(-w / 2, h / 2)], cls)
     if front:
         out += poly([tr(w / 2, -6), tr(w / 2, 6), tr(w / 2 + 9, 0)], "front")
@@ -226,8 +226,8 @@ def room_geometry():
     S = 58  # px per m
     w, d = 4.6, 3.5
     ox, oy = 72, 294  # interior (0, 0)
-    X = lambda u: ox + u * S  # noqa: E731
-    Y = lambda v: oy - v * S  # noqa: E731
+    X = lambda u: ox + u * S
+    Y = lambda v: oy - v * S
     g = rect(X(0), Y(d), w * S, d * S, "floor")
     door = (0.75, 1.65)  # Opening(kind=door, wall=south, offset=1.2, width=0.9): keep_clear = min(0.9, 0.9)
     win = (1.15, 2.35)  # Opening(kind=window, wall=east, offset=1.75, width=1.2): keep_clear = 0
@@ -270,8 +270,8 @@ def room_geometry():
     S = 54
     w, d, part = 6.0, 4.4, 2.6  # outer walls on the centerline box, a partition wall at x = part
     ox, oy = 50, 312
-    X = lambda u: ox + u * S  # noqa: E731
-    Y = lambda v: oy - v * S  # noqa: E731
+    X = lambda u: ox + u * S
+    Y = lambda v: oy - v * S
     h = T / 2
     g = poly([(X(0) + h, Y(0) - h), (X(part) - h, Y(0) - h), (X(part) - h, Y(d) + h), (X(0) + h, Y(d) + h)], "zoneA")
     g += poly([(X(part) + h, Y(0) - h), (X(w) - h, Y(0) - h), (X(w) - h, Y(d) + h), (X(part) + h, Y(d) + h)], "zoneB")
@@ -335,7 +335,7 @@ def clip(subject, clipper):
     out = subject
     for i in range(len(clipper)):
         a, b = clipper[i], clipper[(i + 1) % len(clipper)]
-        side = lambda p, a=a, b=b: (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])  # noqa: E731
+        side = lambda p, a=a, b=b: (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])
         inp, out = out, []
         for j in range(len(inp)):
             p, q = inp[j], inp[(j + 1) % len(inp)]

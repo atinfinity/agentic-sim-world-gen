@@ -3,8 +3,8 @@ import json
 import random
 
 import pytest
-
 from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
+
 from agentic_sim_world_gen import service, variants
 
 

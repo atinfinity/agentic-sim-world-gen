@@ -459,7 +459,7 @@ def _products(place: str | None, host: ObjectSpec, host_heads: set[str]) -> tupl
     return PRODUCTS.get(place or "", ())
 
 
-def _stock(d: "Decor", h: ObjectSpec, a: AssetRecord, place: str | None, hh: set[str], n_host: int,
+def _stock(d: Decor, h: ObjectSpec, a: AssetRecord, place: str | None, hh: set[str], n_host: int,
            hung: set[str] = frozenset(), goods: tuple[Product, ...] = ()) -> list[Item]:
     """Shelf stock for fixture `h`: k products, level L holding product (L + n_host) mod k (neighboring fixtures
     start with different products), then one item for the levels left empty."""

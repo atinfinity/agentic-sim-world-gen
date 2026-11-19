@@ -3,12 +3,11 @@ import json
 import math
 
 import pytest
+from test_photo_fit import CAMS, D, H, W, _no_ceiling, _proj, _request
 
 from agentic_sim_world_gen import depth as dp
 from agentic_sim_world_gen import photo_fit as pf
 from agentic_sim_world_gen import service
-
-from test_photo_fit import CAMS, D, H, W, _no_ceiling, _proj, _request
 
 BIAS = {"s": 1.12, "ne": 0.9, "w": 1.05}  # the model's scale per photo (MoGe-2 is off by up to ~20 %)
 MEAN = math.exp(sum(math.log(b) for b in BIAS.values()) / len(BIAS))  # the scale the prior settles on

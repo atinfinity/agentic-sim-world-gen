@@ -1,12 +1,11 @@
 """The outside around an indoor room (Room.site): faces, layout outside, issues, USD, preview (no network)."""
 
 import pytest
+from test_outdoor import rec
 
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.layout.room import RoomGeometry
 from agentic_sim_world_gen.scene.spec import Room
-
-from test_outdoor import rec
 
 CATALOG = {"vending machine": [rec("vending", 0.9, 0.8, 1.8)], "car": [rec("car", 4.5, 1.8, 1.5)],
            "bench": [rec("bench", 0.6, 1.6, 0.8)], "shelf": [rec("shelf", 0.9, 0.4, 1.8)],

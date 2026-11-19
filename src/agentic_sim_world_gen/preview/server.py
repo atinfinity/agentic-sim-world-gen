@@ -176,7 +176,7 @@ def edit(scene_dir: Path, req: dict) -> dict:
                 if op == "note_delete":
                     service.resolve_notes(scene_dir, [str(req["id"])])
                 else:
-                    num = lambda k: float(req[k]) if req.get(k) is not None else None  # noqa: E731
+                    num = lambda k: float(req[k]) if req.get(k) is not None else None
                     service.add_note(scene_dir, str(req.get("text") or ""),
                                      position=_xy(req["position"]) if req.get("position") is not None else None,
                                      object=str(req["object"]) if req.get("object") else None,
@@ -195,7 +195,7 @@ def edit(scene_dir: Path, req: dict) -> dict:
                 service.ACTOR.reset(tok)
         return {"ok": True, "usd": _compose_later(scene_dir)}
     if op in ("restore", "remove", "duplicate", "density", "room", "light"):  # undo and the direct edits
-        num = lambda k: float(req[k]) if req.get(k) is not None else None  # noqa: E731
+        num = lambda k: float(req[k]) if req.get(k) is not None else None
         with _edit_lock:
             tok = service.ACTOR.set("preview")
             try:

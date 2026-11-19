@@ -26,7 +26,7 @@ from typing import Any
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
 sys.path.insert(0, str(HERE))
-import metrics  # noqa: E402
+import metrics
 
 TOOLS = ["mcp__agentic-sim-world-gen__*", "Read", "Skill", "Glob", "Grep"]
 JUDGE = ("あなたは採点者です。{png} は Isaac Sim で作ったワールドの画像です。Read で見て、次の依頼にどれだけ合っているかを "

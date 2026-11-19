@@ -10,7 +10,8 @@ from pathlib import Path
 import pytest
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade
 
-from agentic_sim_world_gen import polyhaven_models as ph, service
+from agentic_sim_world_gen import polyhaven_models as ph
+from agentic_sim_world_gen import service
 from agentic_sim_world_gen.assets.providers.base import SizeFilter
 from agentic_sim_world_gen.assets.providers.polyhaven import PolyHavenProvider
 from agentic_sim_world_gen.license import report, to_markdown

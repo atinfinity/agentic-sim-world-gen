@@ -27,7 +27,6 @@ from agentic_sim_world_gen.scene.plan import FloorPlan, Opening
 from agentic_sim_world_gen.scene.site import Area, Building, Site
 from agentic_sim_world_gen.scene.walls import Baseboard, Wainscot, check_trim_walls, check_walls, is_per_wall
 
-
 # kinds of shop (a picture made for "shop" fits each of them; see validate.place_fits)
 STORE_PLACES = ("convenience_store", "supermarket", "drugstore", "home_center", "hundred_yen_shop", "bookstore",
                 "electronics_store", "apparel_store", "bakery", "variety_store", "florist", "greengrocer", "toy_store",
@@ -221,13 +220,13 @@ class Room(BaseModel):
         return data
 
     @model_validator(mode="after")
-    def _goods_place(self) -> "Room":
+    def _goods_place(self) -> Room:
         if self.goods and self.place is None:
             self.place = "shop"  # goods are a shop's
         return self
 
     @model_validator(mode="after")
-    def _size(self) -> "Room":
+    def _size(self) -> Room:
         if self.outdoor:
             if self.plan is not None or self.openings:
                 raise ValueError("an outdoor site has no walls: drop plan / openings (use buildings and areas)")
@@ -399,7 +398,7 @@ class Layout(BaseModel):
     )
 
     @model_validator(mode="after")
-    def _on_only(self) -> "Layout":
+    def _on_only(self) -> Layout:
         if self.on is None and (self.on_height is not None or self.offset is not None):
             raise ValueError("on_height / offset need layout.on")
         if self.wall_height is not None and (self.on or self.ceiling):
@@ -648,7 +647,7 @@ class ObjectSpec(BaseModel):
         return [{"color": x} if isinstance(x, str) else x for x in v or []]
 
     @model_validator(mode="after")
-    def _fill_alone(self) -> "ObjectSpec":
+    def _fill_alone(self) -> ObjectSpec:
         if self.fill is not None and (self.layout is not None or self.array is not None):
             raise ValueError(f"{self.id}: fill places the products itself; drop layout / array")
         if self.fill is not None and self.fill.on == self.id:
@@ -939,7 +938,7 @@ class ObjectPatch(BaseModel):
     def _only_given(self, handler):  # a field left out must stay left out after save / load (not become "clear it")
         return {k: v for k, v in handler(self).items() if k in self.model_fields_set}
 
-    def apply(self, o: "ObjectSpec") -> None:
+    def apply(self, o: ObjectSpec) -> None:
         given = self.model_fields_set
         if "layout" in given:
             o.layout = self.layout
@@ -1067,7 +1066,7 @@ class SceneSpec(BaseModel):
                              "labels, request items, assumptions and room / zone names written in the user's words")
 
     @classmethod
-    def load(cls, path: str | Path) -> "SceneSpec":
+    def load(cls, path: str | Path) -> SceneSpec:
         return cls.model_validate_json(Path(path).read_text(encoding="utf-8"))
 
 
@@ -1131,5 +1130,5 @@ class ResolvedScene(BaseModel):
         tmp.replace(path)
 
     @classmethod
-    def load(cls, path: str | Path) -> "ResolvedScene":
+    def load(cls, path: str | Path) -> ResolvedScene:
         return cls.model_validate_json(Path(path).read_text(encoding="utf-8"))

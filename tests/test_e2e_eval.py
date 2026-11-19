@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 
 import pytest
-
 from test_service import SPEC, fake  # noqa: F401  (the offline provider)
 
 HERE = Path("scripts/e2e_eval")

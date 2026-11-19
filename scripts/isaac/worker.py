@@ -38,8 +38,8 @@ HERE = Path(__file__).resolve().parent
 SPOOL = Path(opts.dir)
 ALLOWED = {"check_scene.py", "front_views.py", "render_view.py"}  # what was tried in one Kit after another
 
-import isaacsim  # noqa: E402
-from isaacsim import SimulationApp  # noqa: E402
+import isaacsim
+from isaacsim import SimulationApp
 
 app = SimulationApp({"headless": True, "width": 1280, "height": 720})
 

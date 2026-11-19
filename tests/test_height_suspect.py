@@ -1,6 +1,5 @@
 """A fitted wall height the room's size disagrees with is flagged and not applied. Offline."""
 import pytest
-
 from test_photo_fit import CAMS, D, H, W, _proj, _wall
 from test_scale_evidence import _req
 

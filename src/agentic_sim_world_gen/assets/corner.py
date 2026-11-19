@@ -111,7 +111,7 @@ def find(uri: str, cache_dir: str | Path) -> int | None:
     key = cache / "corner" / f"{hashlib.sha1(f'{VERSION}:{uri}{_local_stamp(uri)}'.encode()).hexdigest()[:16]}.json"
     if key.exists():
         return json.loads(key.read_text())["deg"]
-    path = uri[7:] if uri.startswith("file://") else uri
+    path = uri.removeprefix("file://")
     if path.startswith(("polyhaven:", "generic:")):
         return None
     if path.startswith(("http://", "https://")):

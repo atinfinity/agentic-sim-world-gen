@@ -19,6 +19,7 @@ import os
 import re
 import shutil
 import subprocess
+from datetime import UTC
 from pathlib import Path
 from typing import Any
 
@@ -26,14 +27,31 @@ from pydantic import ValidationError
 
 from agentic_sim_world_gen import UA, isaac_worker, missing
 from agentic_sim_world_gen.assets import cards, generic_curtain
-from agentic_sim_world_gen.assets.providers.base import AssetProvider, fits, size_filter_for
 from agentic_sim_world_gen.assets.domain import off_place
-from agentic_sim_world_gen.assets.sizes import kind_of, off_size
+from agentic_sim_world_gen.assets.providers.base import AssetProvider, fits, size_filter_for
 from agentic_sim_world_gen.assets.record import AssetRecord, wants_box_collider
 from agentic_sim_world_gen.assets.rerank import rerank
+from agentic_sim_world_gen.assets.sizes import kind_of, off_size
 from agentic_sim_world_gen.layout.solver import solve
 from agentic_sim_world_gen.layout.validate import check
-from agentic_sim_world_gen.scene.spec import Array, Assumption, Fill, InputRef, Layout, LayoutOption, ObjectSpec, Placement, Requirement, ResolvedScene, SceneSpec, Screen, SdgSpec, STORE_PLACES, record_from_dict, record_to_dict
+from agentic_sim_world_gen.scene.spec import (
+    STORE_PLACES,
+    Array,
+    Assumption,
+    Fill,
+    InputRef,
+    Layout,
+    LayoutOption,
+    ObjectSpec,
+    Placement,
+    Requirement,
+    ResolvedScene,
+    SceneSpec,
+    Screen,
+    SdgSpec,
+    record_from_dict,
+    record_to_dict,
+)
 
 RESOLVED = "scene.resolved.json"
 DEFAULT_CANDIDATES = 6
@@ -1278,7 +1296,7 @@ def _size_options(s: ResolvedScene) -> list[LayoutOption]:
         if m := re.search(r"(\d+(?:\.\d+)?)\s*[×x]\s*(\d+(?:\.\d+)?)\s*m", text):
             sizes.append((float(m.group(1)), float(m.group(2))))
     cur = (room.width, room.depth)
-    area = lambda wd: wd[0] * wd[1]  # noqa: E731
+    area = lambda wd: wd[0] * wd[1]
     if len(sizes) >= 3 and any(abs(area(z) - area(cur)) < 0.05 * area(cur) for z in sizes):
         sizes = sorted(sizes, key=area)
         i = min(range(len(sizes)), key=lambda k: abs(area(sizes[k]) - area(cur)))
@@ -1330,7 +1348,7 @@ def propose_drafts(scene: str | Path, axis: str | None = None,
             raise ValueError("an option's room size needs a rectangular room")
         if bad := [i for i in [*o.without, *o.objects] if i not in ids]:
             raise ValueError(f"option '{o.name}': unknown object(s) {bad}")
-    same = lambda a, b: (a.room, sorted(a.without), a.objects) == (b.room, sorted(b.without), b.objects)  # noqa: E731
+    same = lambda a, b: (a.room, sorted(a.without), a.objects) == (b.room, sorted(b.without), b.objects)
     if any(same(a, b) for i, a in enumerate(opts) for b in opts[i + 1:]):
         raise ValueError("two drafts are the same: each must differ in the room, what it leaves out or the placement")
     s.spec.layout_options, s.spec.options_axis = opts, axis
@@ -3246,7 +3264,7 @@ def set_assumptions(scene: str | Path, assumptions: list[Assumption | dict[str, 
 def assumption_feedback(scene: str | Path, item: str, text: str, object: str | None = None) -> dict[str, Any]:
     """The user says an assumption row is wrong (preview page): keep their words on the row until the
     agent re-records it. Empty text withdraws the feedback. The scene itself is not changed here."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     from agentic_sim_world_gen.preview.page import item_ja
     from agentic_sim_world_gen.scene.spec import AssumptionFeedback
@@ -3260,7 +3278,7 @@ def assumption_feedback(scene: str | Path, item: str, text: str, object: str | N
     label = (names.get(row.object, row.object) + "：" if row.object else "") + item_ja(row.item)
     text = " ".join(text.split())[:500]
     if text:
-        row.feedback = AssumptionFeedback(text=text, at=datetime.now(timezone.utc).isoformat(timespec="seconds"))
+        row.feedback = AssumptionFeedback(text=text, at=datetime.now(UTC).isoformat(timespec="seconds"))
         msg = f"{FEEDBACK_EVENT}{label}：「{text}」"
     else:
         row.feedback = None
@@ -3274,7 +3292,7 @@ def add_note(scene: str | Path, text: str, position: tuple[float, float] | list[
     """The user writes at a spot on the preview: on the top view (position, and the object clicked if any)
     or on a frame of the check's orbit viewer (frame, u / v = 0..1 from the image's top left, aspect = width /
     height), which is turned into the spot by the frame's camera. Kept for the agent until resolve_notes."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     from agentic_sim_world_gen import notes as nt
     from agentic_sim_world_gen.layout.room import RoomGeometry
@@ -3306,7 +3324,7 @@ def add_note(scene: str | Path, text: str, position: tuple[float, float] | list[
         raise ValueError("that spot is outside the room")
     n = 1 + max((int(x.id[1:]) for x in s.spec.notes if x.id[1:].isdigit()), default=0)
     note = Note(id=f"n{n}", text=text, view="3d" if view == "3d" else "plan", frame=frame if view == "3d" else None,
-                at=datetime.now(timezone.utc).isoformat(timespec="seconds"), **spot)
+                at=datetime.now(UTC).isoformat(timespec="seconds"), **spot)
     s.spec.notes.append(note)
     return _save(s, d, f"{NOTE_EVENT}{n}（{nt.where_ja(s, note)}）：「{text}」", focus=(note.object or "").split(".")[0] or None)
 
@@ -3353,8 +3371,8 @@ FIXTURE_ITEM = "照明器具"  # its item (exact; a shop's "fixtures" rows are i
 # lights): with one the room keeps the preset's bare lights; emergency lights and exit signs are not one
 CEILING_LIGHT_RE = re.compile(
     r"lamp|luminaire|fluorescent|troffer|chandelier|pendant|\blights?\b|light(?:s|ing)? ?(?:fixture|strip|bar|panel)|"
-    r"(?:down|spot|track|ceiling|base|panel|linear|recessed|strip|tube|bay)[ _-]?lights?|照明|蛍光灯|ライト|シャンデリア|ペンダント", re.I)
-NOT_CEILING_LIGHT_RE = re.compile(r"emergency|\bexit\b|\bsigns?\b|signage|非常|誘導灯", re.I)
+    r"(?:down|spot|track|ceiling|base|panel|linear|recessed|strip|tube|bay)[ _-]?lights?|照明|蛍光灯|ライト|シャンデリア|ペンダント", re.IGNORECASE)
+NOT_CEILING_LIGHT_RE = re.compile(r"emergency|\bexit\b|\bsigns?\b|signage|非常|誘導灯", re.IGNORECASE)
 
 
 def _is_ceiling_light(o: ObjectSpec, p: Placement | None) -> bool:
@@ -3925,9 +3943,9 @@ def place_from_photos(scene: str | Path, objects: list[str] | None = None, apply
     from agentic_sim_world_gen import photo_refine
     from agentic_sim_world_gen.layout.array import placed_size
     from agentic_sim_world_gen.layout.frame import front_local_deg, norm_deg
-    from agentic_sim_world_gen.photo_fit import located_objects
     from agentic_sim_world_gen.layout.room import RoomGeometry
     from agentic_sim_world_gen.layout.validate import zone_of
+    from agentic_sim_world_gen.photo_fit import located_objects
     from agentic_sim_world_gen.photo_place import MISFIT_M, fit_pose
 
     s = load(scene)
@@ -3992,7 +4010,7 @@ def place_from_photos(scene: str | Path, objects: list[str] | None = None, apply
         front = front_local_deg(pl.asset, o)
         on_x = abs(math.cos(math.radians(front))) >= abs(math.sin(math.radians(front)))
         size = (w, dd) if on_x else (dd, w)
-        side = lambda e, oid=oid: [cams[lo["photo"]] for lo in located  # noqa: E731
+        side = lambda e, oid=oid: [cams[lo["photo"]] for lo in located
                                    if lo.get("object") == oid and lo.get("edge") == e and lo.get("photo") in cams]
         now = norm_deg(o.facing_deg if o.facing_deg is not None else o.yaw_deg + front)
         if len(pts) >= 2:
@@ -4212,7 +4230,7 @@ def try_move(scene: str | Path, object_id: str, position: tuple[float, float], y
     o = s.obj(object_id)
     o.layout = o.opening = o.covers = None  # a hand placement ends every placing rule
     o.position, o.yaw_deg = (float(position[0]), float(position[1])), float(yaw_deg)
-    mine = lambda i: any(x == object_id or x.startswith(object_id + ".") for x in i.objects)  # noqa: E731
+    mine = lambda i: any(x == object_id or x.startswith(object_id + ".") for x in i.objects)
     return [{"kind": i.kind, "objects": list(i.objects), "detail": i.detail} for i in check(s) if mine(i)]
 
 
@@ -4523,7 +4541,8 @@ def set_room(scene: str | Path, floor_alt_queries: list[str] | None = None, wall
         data["zone_floors"] = {k: v for k, v in data["zone_floors"].items() if k in zones}
     before = s.spec.room.model_dump(mode="json")
     s.spec.room = Room.model_validate(data)
-    from agentic_sim_world_gen.preferences import ROOM_ITEMS as PREF_ITEMS, room_target
+    from agentic_sim_world_gen.preferences import ROOM_ITEMS as PREF_ITEMS
+    from agentic_sim_world_gen.preferences import room_target
     from agentic_sim_world_gen.preview.changes import ROOM_FIELDS_JA
 
     after = s.spec.room.model_dump(mode="json")
@@ -5069,7 +5088,7 @@ def duplicate_object(scene: str | Path, object_id: str) -> dict[str, Any]:
     room = s.spec.room
     spots = [(x + step, y), (x - step, y), (x, y + step), (x, y - step)]
     inside = [q for q in spots if 0 <= q[0] <= room.width and 0 <= q[1] <= room.depth] or [(x + 0.3, y + 0.3)]
-    mine = lambda i: new.id in i.objects  # noqa: E731
+    mine = lambda i: new.id in i.objects
     new.position = inside[0]
     for q in inside:
         new.position = q
@@ -5157,7 +5176,8 @@ def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bo
     # Isaac bundled assets follow ISAAC_ASSETS_ROOT at compose time too (local/Nucleus copy)
     uri_map = {a.uri: u for p in s.placements if (a := p.asset) and (u := rebase_uri(a))}
     warnings: list[str] = []
-    from agentic_sim_world_gen.assets.localize import localize as _localize, screened_remote, tinted_remote
+    from agentic_sim_world_gen.assets.localize import localize as _localize
+    from agentic_sim_world_gen.assets.localize import screened_remote, tinted_remote
 
     if localize:
         uri_map.update(_localize(s))
@@ -6437,9 +6457,7 @@ def _apply_fit(scene: str | Path, req: Any, r: dict[str, Any], s: Any = None) ->
             warnings.append(f"apply: the fitted height {room['height']} m is suspect (see scale.height_suspect) - the "
                             f"scene's {s.spec.room.height} m was kept; fit again with fit_height=false, or set_room(height="
                             f"{room['height']}) if the ceiling really is that high")
-        elif room.get("height_fitted"):
-            data["height"] = room["height"]
-        elif held:
+        elif room.get("height_fitted") or held:
             data["height"] = room["height"]
         elif abs(room["height"] - s.spec.room.height) > 0.01:
             warnings.append(f"apply: the fit used the height {room['height']} m but the scene's room is "

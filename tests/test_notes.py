@@ -3,13 +3,12 @@
 import json
 
 import pytest
+from test_preview_edit import api, post  # noqa: F401  (fixture: the preview server for the study scene)
+from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
 
 from agentic_sim_world_gen import notes as nt
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.preview import page
-
-from test_preview_edit import api, post  # noqa: F401  (fixture: the preview server for the study scene)
-from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
 
 
 def _desk(d):

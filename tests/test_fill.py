@@ -398,7 +398,7 @@ def test_fill_lay_flat(tmp_path):
     stage = Usd.Stage.Open(out["usd"])
     first = stage.GetPrimAtPath("/World/Objects/p").GetChildren()[0]
     m = UsdGeom.Xformable(first).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-    pt = lambda x, y, z: m.Transform(Gf.Vec3d(x, y, z))  # noqa: E731
+    pt = lambda x, y, z: m.Transform(Gf.Vec3d(x, y, z))
     corners = [pt(x, y, z) for x in (-0.05, 0.05) for y in (-0.033, 0.033) for z in (0.0, 0.18)]
     zs = [c[2] for c in corners]
     i0 = next(i for i in items if first.GetName().endswith(i.id.split(".", 1)[1]))

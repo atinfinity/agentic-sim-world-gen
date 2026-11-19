@@ -13,8 +13,8 @@ from __future__ import annotations
 import json
 import math
 import os
+from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import Awaitable, Callable
 
 Step = Callable[[], Awaitable[None]]
 
@@ -263,7 +263,7 @@ def blown_up(objects: dict, since: int) -> list[str]:
         return []
     names = sorted(objects, key=len, reverse=True)  # "chairs/chairs_r0c3" before "chairs"
     out: list[str] = []
-    for m in re.finditer(r"Invalid PhysX transform detected for /World/Objects/(\S+?)\.?$", text, re.M):
+    for m in re.finditer(r"Invalid PhysX transform detected for /World/Objects/(\S+?)\.?$", text, re.MULTILINE):
         name = next((n for n in names if m[1] == n or m[1].startswith(n + "/")), None)
         if name and name not in out:
             out.append(name)
@@ -361,7 +361,7 @@ def _camera(stage, path: str = "/World/PreviewCamera") -> dict | None:
     m = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
     f = cam.GetFocalLengthAttr().Get() or 18.0
     ap = cam.GetHorizontalApertureAttr().Get() or 20.955
-    vec = lambda v: [round(float(x), 5) for x in v]  # noqa: E731
+    vec = lambda v: [round(float(x), 5) for x in v]
     return {"eye": vec(m.ExtractTranslation()), "forward": vec(m.TransformDir(Gf.Vec3d(0, 0, -1)).GetNormalized()),
             "up": vec(m.TransformDir(Gf.Vec3d(0, 1, 0)).GetNormalized()),
             "hfov_deg": round(math.degrees(2 * math.atan(ap / 2 / f)), 3)}

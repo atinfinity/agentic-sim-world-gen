@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import metrics  # noqa: E402
+import metrics
 
 
 def load(run_dir: str | Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:

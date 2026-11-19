@@ -3,8 +3,8 @@
 import json
 
 import pytest
-
 from test_preview_page import scene  # noqa: F401  (fixture)
+
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.preview import page, server
 

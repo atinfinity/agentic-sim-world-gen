@@ -1,6 +1,10 @@
 """Embed corpus thumbnails (SigLIP2) and corpus text (multilingual-e5), plus all queries (en + ja)."""
-import json, re, sys
-import numpy as np, torch
+import json
+import re
+import sys
+
+import numpy as np
+import torch
 from PIL import Image
 from transformers import AutoModel, AutoProcessor, AutoTokenizer
 

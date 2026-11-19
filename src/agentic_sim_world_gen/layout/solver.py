@@ -10,15 +10,15 @@ from __future__ import annotations
 
 import math
 import re
-from typing import Callable
+from collections.abc import Callable
 
 from agentic_sim_world_gen.assets.record import AssetRecord
 from agentic_sim_world_gen.layout.array import block_record, instances
-from agentic_sim_world_gen.layout.room import Face, RoomGeometry
 from agentic_sim_world_gen.layout.frame import facing_of, front_local_deg, half_extent, unit, yaw_for_facing  # noqa: F401
+from agentic_sim_world_gen.layout.room import Face, RoomGeometry
 from agentic_sim_world_gen.layout.validate import FLAT_PASS, Issue, flat, footprint, overlap_depth
-from agentic_sim_world_gen.scene.spec import FACING_DIRS, ObjectSpec, ResolvedScene
 from agentic_sim_world_gen.scene.fixtures import ceiling_at
+from agentic_sim_world_gen.scene.spec import FACING_DIRS, ObjectSpec, ResolvedScene
 from agentic_sim_world_gen.scene.walls import trim_depth
 
 WALL_GAP = 0.02  # between a wall and an object's back

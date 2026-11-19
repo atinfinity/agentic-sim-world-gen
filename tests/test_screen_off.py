@@ -9,18 +9,17 @@ import pytest
 
 pytest.importorskip("pxr")
 pytest.importorskip("PIL")
-from PIL import Image  # noqa: E402
-from pxr import Usd  # noqa: E402
+from PIL import Image
+from pxr import Usd
+from test_detected_screen import make_tv
+from test_screen import make_signage, poster
 
-from agentic_sim_world_gen import service  # noqa: E402
-from agentic_sim_world_gen.assets.localize import screened_remote  # noqa: E402
-from agentic_sim_world_gen.assets.providers.local_folder import build_index  # noqa: E402
-from agentic_sim_world_gen.assets.record import AssetRecord  # noqa: E402
-from agentic_sim_world_gen.layout.validate import screen_dark  # noqa: E402
-from agentic_sim_world_gen.scene.spec import ObjectSpec, ResolvedScene  # noqa: E402
-
-from test_detected_screen import make_tv  # noqa: E402
-from test_screen import make_signage, poster  # noqa: E402
+from agentic_sim_world_gen import service
+from agentic_sim_world_gen.assets.localize import screened_remote
+from agentic_sim_world_gen.assets.providers.local_folder import build_index
+from agentic_sim_world_gen.assets.record import AssetRecord
+from agentic_sim_world_gen.layout.validate import screen_dark
+from agentic_sim_world_gen.scene.spec import ObjectSpec, ResolvedScene
 
 
 @pytest.fixture(autouse=True)
@@ -53,7 +52,7 @@ def _front(tex: Path):
 
     im = Image.open(tex).convert("RGB")
     w, h = im.size
-    cell = lambda x0: ImageStat.Stat(im.crop((x0 + 10, 10, x0 + w // 3 - 10, h // 2 - 10))).mean  # noqa: E731
+    cell = lambda x0: ImageStat.Stat(im.crop((x0 + 10, 10, x0 + w // 3 - 10, h // 2 - 10))).mean
     return cell(0), cell(2 * w // 3)
 
 

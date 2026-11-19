@@ -17,7 +17,7 @@ from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade
 
 METAL = 0.5  # metallic at or above this is bare metal: not the "main color" a tint without materials paints
 # A metal by its name: SimReady's m_opaque__metal__chrome_a01 has its metallic in an ORM texture, no value
-METAL_NAME = re.compile(r"(^|_)(metal|chrome|steel|alumin(i)?um|brass|copper|iron)(_|$)", re.I)
+METAL_NAME = re.compile(r"(^|_)(metal|chrome|steel|alumin(i)?um|brass|copper|iron)(_|$)", re.IGNORECASE)
 OTHERS = 3  # materials listed next to the main color a tint painted, to pick another with `materials`
 
 

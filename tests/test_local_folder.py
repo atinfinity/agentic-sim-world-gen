@@ -7,11 +7,11 @@ from pathlib import Path
 import pytest
 
 pxr = pytest.importorskip("pxr")
-from pxr import Usd, UsdGeom  # noqa: E402
+from pxr import Usd, UsdGeom
 
-from agentic_sim_world_gen.assets.providers.base import SizeFilter  # noqa: E402
-from agentic_sim_world_gen.assets.providers.local_folder import LocalFolderProvider, build_index  # noqa: E402
-from agentic_sim_world_gen.license import detect  # noqa: E402
+from agentic_sim_world_gen.assets.providers.base import SizeFilter
+from agentic_sim_world_gen.assets.providers.local_folder import LocalFolderProvider, build_index
+from agentic_sim_world_gen.license import detect
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\0" * 16
 

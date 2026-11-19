@@ -3,11 +3,11 @@
 import pytest
 
 pxr = pytest.importorskip("pxr")
-from pxr import Gf, Usd, UsdGeom, UsdShade  # noqa: E402
+from pxr import Gf, Usd, UsdGeom, UsdShade
 
-from agentic_sim_world_gen.scene.fixtures import LENS, LENS_GLOW, LENS_OUT, LENS_T, kelvin_tint, plan  # noqa: E402
-from agentic_sim_world_gen.scene.spec import Room  # noqa: E402
-from agentic_sim_world_gen.usd.look import build_fixtures  # noqa: E402
+from agentic_sim_world_gen.scene.fixtures import LENS, LENS_GLOW, LENS_OUT, LENS_T, kelvin_tint, plan
+from agentic_sim_world_gen.scene.spec import Room
+from agentic_sim_world_gen.usd.look import build_fixtures
 
 
 def room(**kw):

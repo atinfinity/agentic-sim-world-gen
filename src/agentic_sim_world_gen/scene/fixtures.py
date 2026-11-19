@@ -73,7 +73,7 @@ class Fixtures(BaseModel):
                                        "(default 0.3 without uplight, 0 = off)")
 
     @model_validator(mode="after")
-    def _up(self) -> "Fixtures":
+    def _up(self) -> Fixtures:
         if self.uplight and self.kind != "pendant" and not self.drop:
             raise ValueError("uplight needs a hanging fixture: a pendant, or drop > 0 (a recessed light cannot "
                              "shine on the ceiling)")
@@ -112,7 +112,7 @@ class CeilingFeature(BaseModel):
         return {"s": "south", "n": "north", "w": "west", "e": "east"}.get(v.lower(), v.lower()) if isinstance(v, str) else v
 
     @model_validator(mode="after")
-    def _where(self) -> "CeilingFeature":
+    def _where(self) -> CeilingFeature:
         if self.kind == "soffit" and self.wall is None:
             raise ValueError("a soffit needs wall (south / north / west / east)")
         if self.kind == "beam" and not self.at and self.spacing is None:

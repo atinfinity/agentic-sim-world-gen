@@ -8,16 +8,16 @@ from pathlib import Path
 import pytest
 
 pytest.importorskip("pxr")
-from pxr import Usd, UsdGeom, UsdPhysics, UsdShade  # noqa: E402
+from pxr import Usd, UsdGeom, UsdPhysics, UsdShade
 
-from agentic_sim_world_gen import service  # noqa: E402
-from agentic_sim_world_gen.assets.record import AssetRecord  # noqa: E402
-from agentic_sim_world_gen.layout.room import RoomGeometry  # noqa: E402
-from agentic_sim_world_gen.preview.changes import diff, snapshot  # noqa: E402
-from agentic_sim_world_gen.preview.layout2d import render_svg  # noqa: E402
-from agentic_sim_world_gen.scene.spec import ResolvedScene, Room, SceneSpec  # noqa: E402
-from agentic_sim_world_gen.scene.walls import trim_depth, wall_surface  # noqa: E402
-from agentic_sim_world_gen.usd.compose import compose  # noqa: E402
+from agentic_sim_world_gen import service
+from agentic_sim_world_gen.assets.record import AssetRecord
+from agentic_sim_world_gen.layout.room import RoomGeometry
+from agentic_sim_world_gen.preview.changes import diff, snapshot
+from agentic_sim_world_gen.preview.layout2d import render_svg
+from agentic_sim_world_gen.scene.spec import ResolvedScene, Room, SceneSpec
+from agentic_sim_world_gen.scene.walls import trim_depth, wall_surface
+from agentic_sim_world_gen.usd.compose import compose
 
 PLAN = Path(__file__).parents[1] / "examples" / "plans" / "1ldk.json"
 DOOR = {"kind": "door", "wall": "south", "offset": 1.0, "width": 0.8}

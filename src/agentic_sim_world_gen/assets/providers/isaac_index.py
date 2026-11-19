@@ -13,8 +13,8 @@ from functools import lru_cache
 from pathlib import Path
 
 from agentic_sim_world_gen.assets.providers.base import SizeFilter
-from agentic_sim_world_gen.assets.record import AssetRecord
 from agentic_sim_world_gen.assets.providers.offline import search_records, size_ok
+from agentic_sim_world_gen.assets.record import AssetRecord
 from agentic_sim_world_gen.scene.spec import record_from_dict
 
 DATA = Path(__file__).resolve().parents[2] / "data"

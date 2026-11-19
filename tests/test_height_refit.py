@@ -3,7 +3,6 @@ import json
 
 import pytest
 from pydantic import ValidationError
-
 from test_height_suspect import _misread_ceiling
 from test_photo_fit import CAMS, D, W
 from test_scale_evidence import _req

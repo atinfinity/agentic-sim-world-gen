@@ -799,7 +799,7 @@ def _inward(wall, X, W, D):
     return {"south": X[1], "north": D - X[1], "west": X[0], "east": W - X[0]}[wall]
 
 
-def _ray(m: "_Model", p: dict, cid: str, px):
+def _ray(m: _Model, p: dict, cid: str, px):
     c = m.req.photos[cid]
     fw, rt, up = _cam_axes(p, cid)
     f = c.size[0] / 2 / math.tan(math.radians(m.hfov(p, cid)) / 2)
@@ -814,7 +814,7 @@ def _on_plane(pos, ray, axis, value):
     return tuple(pos[i] + t * ray[i] for i in range(3))
 
 
-def _sight(m: "_Model", p: dict, cid: str, wall: str):
+def _sight(m: _Model, p: dict, cid: str, wall: str):
     """Where the sight lines of a camera beyond `wall` cross that wall, for each of its pixels (points, lines,
     surfaces) that sees something in the room: ({opening id: n} through an opening, n through the wall itself,
     n floor / ceiling pixels beyond the wall). Pixels on that wall tell nothing."""

@@ -114,7 +114,7 @@ def _scan_cached(kind: str, fn, uri: str, cache_dir: str | Path) -> list[dict[st
         return json.loads(key.read_text())
     from pxr import Usd
 
-    path = uri[7:] if uri.startswith("file://") else uri
+    path = uri.removeprefix("file://")
     if path.startswith(("polyhaven:", "generic:")):
         return []
     if path.startswith(("http://", "https://")):

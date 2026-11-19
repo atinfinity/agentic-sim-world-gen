@@ -6,6 +6,7 @@ from test_photo_fit import CAMS, D, H, W, _request
 from agentic_sim_world_gen import photo_fit as pf
 from agentic_sim_world_gen import service
 
+
 def _zdepth(cid, X):
     pos, la, _ = CAMS[cid]
     d0 = [la[i] - pos[i] for i in range(3)]

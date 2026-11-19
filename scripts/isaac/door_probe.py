@@ -31,20 +31,20 @@ ap.add_argument("--gif", help="assemble the frames into this GIF (needs ffmpeg)"
 args = ap.parse_args()
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
-from agentic_sim_world_gen.layout.room import RoomGeometry  # noqa: E402
-from agentic_sim_world_gen.scene.spec import ResolvedScene  # noqa: E402
+from agentic_sim_world_gen.layout.room import RoomGeometry
+from agentic_sim_world_gen.scene.spec import ResolvedScene
 
 scene = ResolvedScene.load(Path(args.usd).parent / "scene.resolved.json")
 geom = RoomGeometry(scene.spec.room)
 
-from isaacsim import SimulationApp  # noqa: E402
+from isaacsim import SimulationApp
 
 app = SimulationApp({"headless": True, "width": 1280, "height": 720})
 
-import omni.timeline  # noqa: E402
-import omni.usd  # noqa: E402
-from pxr import Gf, UsdGeom, UsdPhysics  # noqa: E402
-from view import FrameRecorder, dollhouse_camera, wait_frames  # noqa: E402
+import omni.timeline
+import omni.usd
+from pxr import Gf, UsdGeom, UsdPhysics
+from view import FrameRecorder, dollhouse_camera, wait_frames
 
 ctx = omni.usd.get_context()
 assert ctx.open_stage(args.usd), f"failed to open {args.usd}"
@@ -95,7 +95,7 @@ hidden = dollhouse_camera(stage)
 wait_frames(app, 30)
 rec = FrameRecorder(args.frames)
 
-from omni.physx import get_physx_interface  # noqa: E402
+from omni.physx import get_physx_interface
 
 phx = get_physx_interface()
 timeline = omni.timeline.get_timeline_interface()

@@ -25,11 +25,12 @@ import os
 import re
 import sys
 import tempfile
-from typing import Any, Iterator
+from collections.abc import Iterator
+from typing import Any
 
 CJK = re.compile(r"[\u3005-\u3007\u3040-\u30ff\u3400-\u9fff\uff10-\uff19\uff21-\uff3a\uff41-\uff5a\uff66-\uff9f]")  # 々〆, full-width 0-9 A-Z a-z
 LATIN_WORD = re.compile(r"[A-Za-z]{2,}")
-CODE = re.compile(r"```.*?```|`[^`\n]*`", re.S)
+CODE = re.compile(r"```.*?```|`[^`\n]*`", re.DOTALL)
 PATHISH = re.compile(r"[\x21-\x7e]*(?:[/\\_]|\w\.\w)[\x21-\x7e]*")  # paths, ids, 1.8 (ASCII only; not "Done.")
 HEAD_BYTES = 2 << 20  # the first prompt, when no prompt is left in the tail (a long turn)
 TAIL_BYTES = 4 << 20  # how far back to look for the last prompt once the text is found
@@ -105,7 +106,7 @@ def _prompt_text(r: dict[str, Any]) -> str | None:
     else:
         return None
     text = re.sub(r"<(system-reminder|task-notification|bash-[a-z]+|command-[a-z]+|local-command-[a-z]+)>.*?</\1>",
-                  " ", text, flags=re.S)  # bash-input/stdout/stderr: what the user ran with `!` and its output
+                  " ", text, flags=re.DOTALL)  # bash-input/stdout/stderr: what the user ran with `!` and its output
     if text.strip().startswith("[Request interrupted"):
         return None  # Claude Code's own line when the user pressed Esc
     return text if text.strip() else None

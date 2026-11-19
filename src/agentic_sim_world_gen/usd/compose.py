@@ -28,14 +28,13 @@ from agentic_sim_world_gen.origin import origin
 from agentic_sim_world_gen.scene import levels as levels_mod
 from agentic_sim_world_gen.scene.fixtures import beams, ceiling_glow, ceiling_tint, feature_surface, linear_rgb
 from agentic_sim_world_gen.scene.looks import ceiling_surface, resolve_surface
-from agentic_sim_world_gen.scene.walls import applies, default_value, overrides, wall_surface
-from agentic_sim_world_gen.sdg import semantic_class
 from agentic_sim_world_gen.scene.spec import ResolvedScene
+from agentic_sim_world_gen.scene.walls import applies, default_value, overrides, wall_surface
 from agentic_sim_world_gen.scene.zone_floors import zone_floors
+from agentic_sim_world_gen.sdg import semantic_class
 from agentic_sim_world_gen.usd.door import build_doors
-from agentic_sim_world_gen.usd.window import build_windows
 from agentic_sim_world_gen.usd.look import bind, box_mesh, build_lights, make_material, prism_mesh
-
+from agentic_sim_world_gen.usd.window import build_windows
 
 # usd-core has no http(s) resolver, so every remote reference warns "Could not open asset @https:...".
 # Isaac Sim resolves them; the warnings only confuse users, so compose() drops those lines.
@@ -559,8 +558,16 @@ def _add_screen(stage: Usd.Stage, paths: list[str], a, o, scene_dir: Path, place
     off = bool(screen_dark(o, a, place))  # None when an image is set
     if o.screen is None and not off:
         return
-    from agentic_sim_world_gen.usd.screen import (apply_screen, black_image, detect_screens, find_material,
-                                                  panel_screens, printed_screens, screen_faces, uninstance)
+    from agentic_sim_world_gen.usd.screen import (
+        apply_screen,
+        black_image,
+        detect_screens,
+        find_material,
+        panel_screens,
+        printed_screens,
+        screen_faces,
+        uninstance,
+    )
 
     by_place = off and o.screen_on is None
     if off:

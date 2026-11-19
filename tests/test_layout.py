@@ -189,7 +189,7 @@ def test_back_to_back_island(tmp_path):
     # <- r0 r1 -> | aisle | <- r2 r3 ->: the outer rows face out, each pair stands back to back
     assert yaw == {0: {flip}, 1: {o.yaw_deg % 360}, 2: {flip}, 3: {o.yaw_deg % 360}}
     c = {r: next(u.position for u in units if u.id.startswith(f"isle.r{r}")) for r in range(4)}
-    d = lambda a, b: ((c[a][0] - c[b][0]) ** 2 + (c[a][1] - c[b][1]) ** 2) ** 0.5  # noqa: E731
+    d = lambda a, b: ((c[a][0] - c[b][0]) ** 2 + (c[a][1] - c[b][1]) ** 2) ** 0.5
     assert d(0, 1) == pytest.approx(1.1 + 0.05) and d(1, 2) == pytest.approx(1.1 + 1.2)
 
 
@@ -365,7 +365,6 @@ def test_ifc_furniture_scene(tmp_path):
     front faces facing_deg; the USD prim keeps the GlobalId."""
     pytest.importorskip("ifcopenshell")
     from pxr import Usd
-
     from test_plan import _ifc_flat
 
     _ifc_flat(tmp_path / "f.ifc", furniture=True)

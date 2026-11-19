@@ -2,13 +2,11 @@
 
 import json
 
+import pytest
 from test_service import CATALOG, SPEC, fake, rec  # noqa: F401
 
 from agentic_sim_world_gen import cli, missing, service
 from agentic_sim_world_gen.scene.spec import DecorSkip
-
-
-import pytest
 
 LAMP = [rec("uv_robot", 0.4, 0.4, 1.5, "A UV disinfection robot")]
 

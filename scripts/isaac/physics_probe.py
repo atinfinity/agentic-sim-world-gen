@@ -27,14 +27,14 @@ ap.add_argument("--frames", help="save PNG frames of the run in this folder")
 ap.add_argument("--gif", help="assemble the frames into this GIF (needs ffmpeg)")
 args = ap.parse_args()
 
-from isaacsim import SimulationApp  # noqa: E402
+from isaacsim import SimulationApp
 
 app = SimulationApp({"headless": True, "width": 1280, "height": 720})
 
-import omni.timeline  # noqa: E402
-import omni.usd  # noqa: E402
-from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics, UsdShade  # noqa: E402
-from view import FrameRecorder, dollhouse_camera  # noqa: E402
+import omni.timeline
+import omni.usd
+from pxr import Gf, PhysxSchema, Usd, UsdGeom, UsdPhysics, UsdShade
+from view import FrameRecorder, dollhouse_camera
 
 ctx = omni.usd.get_context()
 assert ctx.open_stage(args.usd), f"failed to open {args.usd}"
@@ -97,7 +97,7 @@ for _ in range(30):  # let RTX settle before recording
     app.update()
 rec = FrameRecorder(args.frames)
 
-from omni.physx import get_physx_interface  # noqa: E402
+from omni.physx import get_physx_interface
 
 phx = get_physx_interface()
 

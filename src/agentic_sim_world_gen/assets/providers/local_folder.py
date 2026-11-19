@@ -57,7 +57,6 @@ from pathlib import Path
 from typing import Any
 
 from agentic_sim_world_gen import atomic
-
 from agentic_sim_world_gen.assets.providers.base import SizeFilter
 from agentic_sim_world_gen.assets.providers.offline import search_records
 from agentic_sim_world_gen.assets.record import AssetRecord
@@ -68,7 +67,7 @@ COLLECTION_MIN = 5  # a file referencing this many USD files in >= 2 folders is 
 SIDECAR = "asset.json"
 _TOOL_STAMP = re.compile(r"^[A-Za-z][\w .-]* v?\d+(\.\d+)+$")  # "Blender v4.4.0": who wrote the file, not what it is
 _AXES = {"+x": 0.0, "x": 0.0, "+y": 90.0, "y": 90.0, "-x": 180.0, "-y": 270.0}
-LICENSE_FILES = re.compile(r"^(license|licence|copying)(\.(txt|md))?$", re.I)
+LICENSE_FILES = re.compile(r"^(license|licence|copying)(\.(txt|md))?$", re.IGNORECASE)
 CACHE_VERSION = 8  # 2: remote references fetched for the bbox; 3: tool-stamp captions dropped; 4: variant sets;
 # 5: asset.json `picture` read into screens; 6: the picture's text / lang / audience; 7: polygons;
 # 8: `stamps` of every file the entry depends on, and failed opens read again

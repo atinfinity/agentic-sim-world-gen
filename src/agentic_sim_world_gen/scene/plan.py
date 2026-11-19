@@ -116,7 +116,7 @@ class FloorPlan(BaseModel):
     underlay: Underlay | None = None
 
     @model_validator(mode="after")
-    def _ids(self) -> "FloorPlan":
+    def _ids(self) -> FloorPlan:
         for i, w in enumerate(self.walls):
             if w.id is None:
                 w.id = f"w{i}"

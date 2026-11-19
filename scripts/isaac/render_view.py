@@ -43,14 +43,14 @@ for j in jobs:
     pw, ph = j.get("size") or (1600, 1200)
     j["H"] = round(W * ph / pw / 2) * 2
 
-from isaacsim import SimulationApp  # noqa: E402
+from isaacsim import SimulationApp
 
 app = SimulationApp({"headless": True, "width": W, "height": jobs[0]["H"]})
 
-import omni.usd  # noqa: E402
-from omni.kit.viewport.utility import get_active_viewport  # noqa: E402
-from PIL import Image, ImageDraw, ImageFont  # noqa: E402  (bundled with Isaac Sim)
-from view import capture_settled, hide_guides  # noqa: E402
+import omni.usd
+from omni.kit.viewport.utility import get_active_viewport
+from PIL import Image, ImageDraw, ImageFont  # bundled with Isaac Sim
+from view import capture_settled, hide_guides
 
 ctx = omni.usd.get_context()
 assert ctx.open_stage(args.usd), f"failed to open {args.usd}"

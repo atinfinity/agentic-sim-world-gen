@@ -1131,7 +1131,7 @@ def _room_edit(scene: ResolvedScene) -> str:
     from agentic_sim_world_gen.scene.decor import DENSITY_JA
 
     room = scene.spec.room
-    num = lambda k, v, lo, hi, step: (  # noqa: E731
+    num = lambda k, v, lo, hi, step: (
         f"<input type='number' name='{k}' value='{v:g}' min='{lo}' max='{hi}' step='{step}'>")
     size = ""
     if room.plan is None and not room.outdoor:  # a floor plan / a site has its own shape
@@ -1472,7 +1472,8 @@ def _references(scene: ResolvedScene, d: Path) -> str:
 
 def _moods(scene: ResolvedScene, d: Path) -> str:
     """「雰囲気」: sample pictures of the looks the place offers; one click applies the room part."""
-    from agentic_sim_world_gen.scene import looks, moods as md
+    from agentic_sim_world_gen.scene import looks
+    from agentic_sim_world_gen.scene import moods as md
 
     room = scene.spec.room
     offered = [] if room.outdoor else md.for_place(room.place)

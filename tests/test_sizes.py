@@ -60,7 +60,7 @@ def test_skill_table_matches_the_code():
     """SKILL.md lists the same typical sizes the code uses (one source: assets/sizes.py)."""
     text = (Path(__file__).parents[1] / ".claude/skills/world-gen/SKILL.md").read_text()
     table = text.split("## Typical sizes", 1)[1].split("\n## ", 1)[0]
-    rows = re.findall(r"^\| ([^|]+?) \| ([\d.]+), ([\d.]+), ([\d.]+) \| ([\d.]+), ([\d.]+), ([\d.]+) \|$", table, re.M)
+    rows = re.findall(r"^\| ([^|]+?) \| ([\d.]+), ([\d.]+), ([\d.]+) \| ([\d.]+), ([\d.]+), ([\d.]+) \|$", table, re.MULTILINE)
     assert len(rows) >= 10
     for name, *v in rows:
         kind = re.sub(r"\s*\(.*\)", "", name).strip().lower()

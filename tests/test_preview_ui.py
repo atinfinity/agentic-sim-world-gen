@@ -1,16 +1,15 @@
 """Preview fixes from the retail trials: steady port, grouped check problems, choices, grips, aisle naming."""
 
-import pytest
-
 import json
+
+import pytest
+from test_preview_page import scene  # noqa: F401  (fixture: a study with a desk and a chair)
+from test_usability import DOOR, detail, fake, make  # noqa: F401
 
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.preview import page, server
 from agentic_sim_world_gen.preview.layout2d import render_svg
 from agentic_sim_world_gen.scene.spec import Assumption
-
-from test_preview_page import scene  # noqa: F401  (fixture: a study with a desk and a chair)
-from test_usability import DOOR, detail, fake, make  # noqa: F401
 
 
 def test_port_is_remembered(tmp_path, monkeypatch):
