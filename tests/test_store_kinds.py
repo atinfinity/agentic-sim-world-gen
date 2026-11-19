@@ -101,3 +101,68 @@ def test_shop_goods_and_foreign_kinds():
     assert ceiling_surface(True, "office", "wagashi_shop")["name"] == "ceiling_board"
     assert usability.AISLE_WIDTH["furniture_store"] == 1.2
     assert "automotive" not in FOREIGN["bicycle_shop"]
+
+
+# dispensing pharmacy (調剤薬局): waiting room at the entrance, dispensary at the back
+@pytest.mark.parametrize("text,place", [
+    ("調剤薬局を作って", "dispensing_pharmacy"), ("処方せんを受け付ける薬局", "dispensing_pharmacy"),
+    ("門前の保険薬局", "dispensing_pharmacy"), ("a small dispensing pharmacy", "dispensing_pharmacy"),
+    ("ドラッグストアを作って", "drugstore"), ("駅前の薬局", "drugstore"), ("pharmacy", "drugstore"),
+])
+def test_guess_place_dispensing_pharmacy(text, place):
+    assert guess_place(text) == place
+
+
+def test_dispensing_pharmacy():
+    from agentic_sim_world_gen.assets.domain import FOREIGN
+    from agentic_sim_world_gen.assets.record import AssetRecord
+    from agentic_sim_world_gen.scene.fixtures import PLACE_KINDS
+
+    p = "dispensing_pharmacy"
+    assert p in STORE_PLACES and Room(place=p, width=8, depth=6).place == p
+    assert STORE_SIZES[p] == ("標準（8 × 6 m）", "小さめ（6 × 5 m）", "大きめ（12 × 8 m）")
+    assert TABLE[p][0].key == "size" and "cold_cases" not in [q.key for q in TABLE[p]]
+    assert PLACE_KINDS[p] == "line" and usability.AISLE_WIDTH[p] == 1.0
+    assert "medical" not in FOREIGN[p] and "industrial" in FOREIGN[p]
+    assert decor.HANG[p] == ()
+
+    def first(query, heads):
+        return decor._products(p, ObjectSpec(id="f1", query=query), heads)[0][0]
+
+    assert first("picking shelf rack", {"rack"}) == "ptp medicine box"
+    assert first("powder dispensing table", {"table"}) == "powder medicine bottle"
+    assert first("dispensing sink", {"sink"}) == "syrup dosing bottle"
+    assert first("medicine cart", {"cart"}) == "prescription medicine bag"
+    assert first("pamphlet rack", {"rack"}) == "medication notebook"
+    assert first("medicine refrigerator", {"refrigerator"}) == "ptp medicine box"  # not soft drinks
+    assert {"table", "sink", "cart"} <= decor.fixture_heads(p)
+
+    def rec(name, caption, tags=()):
+        return AssetRecord(id=name, source="fake", uri=f"https://example.com/{name}.usd", name=name, caption=caption,
+                           tags=list(tags), bbox_min=(0, 0, 0), bbox_max=(0.2, 0.2, 0.2))
+
+    assert decor.fits_kind(p, rec("ptp_medicine_box", "tablet box", ("pharmacy", "prescription drug")))
+    assert decor.fits_kind(p, rec("syrup_dosing_bottle", "dosing bottle", ("pharmacy supplies",)))
+    assert not decor.fits_kind(p, rec("shampoo_bottle", "shampoo pump bottle"))
+    assert not decor.fits_kind(p, rec("baby_powder", "baby powder bottle"))
+
+
+def test_pharmacy_work_places_are_not_display_shelves(tmp_path):
+    """A packaging machine and a counseling counter have shelf boards but are work places: no empty_shelves."""
+    from test_density import SHELVES, rec
+
+    from agentic_sim_world_gen import service
+    from agentic_sim_world_gen.layout.usability import shelf_fixtures
+
+    cat = {q: [rec(q.replace(" ", "_"), q, 1.0, 0.6, 1.2, shelves=SHELVES)]
+           for q in ("tablet packaging machine", "counseling counter", "picking shelf rack")}
+    service.set_provider(type("P", (), {"name": "f", "search": lambda self, q, limit=10, size=None: cat.get(q, [])})())
+    try:
+        objects = [{"id": "packager", "query": "tablet packaging machine", "layout": {"against_wall": "north", "along": 0.0}},
+                   {"id": "counter", "query": "counseling counter", "position": [2.0, 1.5]},
+                   {"id": "shelf", "query": "picking shelf rack", "layout": {"against_wall": "north", "along": 1.0}}]
+        service.create_scene({"name": "rx", "room": {"width": 4.0, "depth": 3.0, "place": "dispensing_pharmacy"},
+                              "objects": objects}, tmp_path / "rx")
+        assert shelf_fixtures(service.load(tmp_path / "rx")) == {"shelf"}
+    finally:
+        service.set_provider(None)

@@ -108,12 +108,17 @@ PRODUCTS: dict[str, tuple[Product, ...]] = {
                         ("flower vase", ("vase",))),
     "asian_grocery": (("asian noodle bag", ("instant noodles", "noodle pack")), ("jasmine rice bag", ("rice bag",)),
                       ("chili oil jar", ("chili crisp",)), ("oyster sauce bottle", ("sauce bottle",))),
+    # the original boxes of prescription drugs on the picking shelves
+    "dispensing_pharmacy": (("ptp medicine box", ("prescription medicine box",)), ("inhaler box", ("inhaler",)),
+                            ("suppository box", ("suppository",)), ("prescription patch", ("pain relief patch",))),
 }
 # what a cold case holds in these shops instead of soft drinks (DRINK)
 COLD_PRODUCTS: dict[str, tuple[Product, ...]] = {
     "liquor_store": (("beer can", ("beer",)), ("chuhai can", ("drink can",)), ("sake bottle 300ml", ("small sake bottle",))),
     "greengrocer": (("cut fruit cup", ("fruit cup",)), ("lettuce", ("vegetable",)), ("strawberry pack", ("strawberry",))),
     "florist": (("flower bouquet", ("bouquet", "cut flowers")),),
+    # a medicine refrigerator holds medicine, not drinks
+    "dispensing_pharmacy": (("ptp medicine box", ("prescription medicine box",)), ("inhaler box", ("inhaler",))),
 }
 # what hangs on a shop's hooks (blister packs), by place
 HANG: dict[str, tuple[Product, ...]] = {
@@ -131,7 +136,7 @@ HANG: dict[str, tuple[Product, ...]] = {
     "garden_center": (("seed packet", ("flower seed packet",)), ("garden gloves blister pack", ("garden gloves",))),
     "optician": (("glasses cleaner blister pack", ("lens cloth",)),),
     "shoe_store": (("shoe insole pack", ("insole",)), ("shoelace blister pack", ("shoelaces",))),
-    "florist": (), "greengrocer": (), "liquor_store": (),
+    "florist": (), "greengrocer": (), "liquor_store": (), "dispensing_pharmacy": (),
 }
 DEFAULT_HANG: tuple[Product, ...] = (("aa battery blister pack", ("battery blister",)),
                                      ("usb cable blister pack", ("usb cable blister",)),
@@ -173,6 +178,9 @@ KIND_WORDS: dict[str, frozenset[str]] = {
                            "nightstand", "wardrobe", "chair", "table", "sofa", "interior"),
     "asian_grocery": _kw("asian", "noodle", "noodles", "ramen", "rice", "sauce", "chili", "oyster", "soy", "curry",
                          "spice", "seasoning", "condiment", "kimchi", "tea", "sesame"),
+    # every pharmacy asset names "pharmacy"; no bare "powder" or "bag" (baby powder, any bag)
+    "dispensing_pharmacy": _kw("pharmacy", "prescription", "medicine", "medication", "dispensing", "dispensary",
+                               "inhaler", "suppository", "ointment", "dosing"),
     "electronics_store": _kw("electronics", "headphones", "headphone", "earphones", "charger", "usb", "bulb", "led",
                              "battery", "cable", "laptop", "phone", "smartphone", "tablet", "camera", "speaker", "audio"),
 }
@@ -409,6 +417,16 @@ KIND_BY_FIXTURE: dict[str, tuple[tuple[frozenset[str], tuple[Product, ...]], ...
                                            ("monaka", ("monaka pack",)))),
     ),
     "record_store": ((frozenset({"bin", "crate"}), (("lp record", ("vinyl record",)),)),),
+    # the dispensary by its fixtures; the waiting room's pamphlet rack holds medication notebooks
+    "dispensing_pharmacy": (
+        (frozenset({"powder", "balance"}), (("powder medicine bottle", ("stock bottle", "pharmacy bottle")),
+                                            ("electronic balance", ("analytical balance", "pharmacy balance")))),
+        (frozenset({"sink", "syrup", "liquid"}), (("syrup dosing bottle", ("dosing bottle", "syrup bottle")),
+                                                  ("ointment jar", ("cream container",)))),
+        (frozenset({"cart", "wagon", "tray"}), (("prescription medicine bag", ("medicine bag", "prescription bag")),)),
+        (frozenset({"pamphlet", "brochure", "leaflet", "waiting"}), (("medication notebook", ("medicine record book",)),)),
+        (frozenset({"picking", "drawer"}), (("ptp medicine box", ("prescription medicine box",)), ("inhaler box", ("inhaler",)), ("suppository box", ("suppository",)))),
+    ),
 }
 # what else a shop kind stocks besides FIXTURES (a liquor store's wine crate, a garden center's nursery bench;
 # a bench in a shoe store is a seat)
@@ -419,6 +437,8 @@ KIND_FIXTURES: dict[str, frozenset[str]] = {
     # (a sports shop's ball cart has no shelf levels, so it is placed as a fixture and not stocked)
     "record_store": frozenset({"bin", "crate"}),
     "cosmetics_store": frozenset({"island", "tester", "table"}),
+    # the powder dispensing table, the dispensing sink's shelf, the medicine cart
+    "dispensing_pharmacy": frozenset({"table", "sink", "cart"}),
 }
 
 

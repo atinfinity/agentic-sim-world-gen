@@ -238,7 +238,7 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
    - **Room kind**: always set `room.place` (home, office, shop, convenience_store, supermarket, drugstore, home_center,
      hundred_yen_shop, bookstore, electronics_store, apparel_store, bakery, variety_store, florist, greengrocer,
      toy_store, pet_shop, garden_center, shoe_store, optician, liquor_store, bicycle_shop, wagashi_shop, record_store,
-     sporting_goods_store, cosmetics_store, furniture_store, asian_grocery, cafe, restaurant, factory, warehouse,
+     sporting_goods_store, cosmetics_store, furniture_store, asian_grocery, dispensing_pharmacy, cafe, restaurant, factory, warehouse,
      datacenter, lab, hospital, school, station, public, outdoor, other). Use the specific kind of shop when there
      is one ("shop" = any other shop). The check uses it: e.g. a signage screen or a poster showing its own shop ad
      is a `screen_content` issue outside shops and cafés, and a picture made for "shop" fits every kind of shop.

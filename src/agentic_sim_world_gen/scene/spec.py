@@ -33,7 +33,7 @@ STORE_PLACES = ("convenience_store", "supermarket", "drugstore", "home_center", 
                 "electronics_store", "apparel_store", "bakery", "variety_store", "florist", "greengrocer", "toy_store",
                 "pet_shop", "garden_center", "shoe_store", "optician", "liquor_store",
                 "bicycle_shop", "wagashi_shop", "record_store", "sporting_goods_store", "cosmetics_store",
-                "furniture_store", "asian_grocery")
+                "furniture_store", "asian_grocery", "dispensing_pharmacy")
 PLACES = ("home", "office", "shop", *STORE_PLACES, "cafe", "restaurant", "factory", "plant_factory",
           "warehouse", "datacenter", "lab", "hospital", "school", "station", "public", "outdoor", "other")
 Place = Literal[PLACES]  # type: ignore[valid-type]
@@ -46,7 +46,7 @@ class Room(BaseModel):
         description="what the space is (home, office, shop, convenience_store, supermarket, drugstore, home_center, "
         "hundred_yen_shop, bookstore, electronics_store, apparel_store, bakery, variety_store, florist, greengrocer, "
         "toy_store, pet_shop, garden_center, shoe_store, optician, liquor_store, bicycle_shop, wagashi_shop, "
-        "record_store, sporting_goods_store, cosmetics_store, furniture_store, asian_grocery, cafe, restaurant, "
+        "record_store, sporting_goods_store, cosmetics_store, furniture_store, asian_grocery, dispensing_pharmacy, cafe, restaurant, "
         "factory, warehouse, datacenter, lab, hospital, school, station, public, outdoor, other); checks that "
         "built-in screen pictures (shop ads) fit",
     )

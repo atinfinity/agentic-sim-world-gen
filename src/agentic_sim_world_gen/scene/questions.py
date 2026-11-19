@@ -155,6 +155,7 @@ STORE_SIZES = {
     "cosmetics_store": ("標準（10 × 8 m）", "小さめ（6 × 5 m）", "大きめ（15 × 10 m）"),
     "furniture_store": ("標準（30 × 20 m）", "小さめ（15 × 10 m）", "大きめ（40 × 30 m）"),
     "asian_grocery": ("標準（8 × 6 m）", "小さめ（6 × 5 m）", "大きめ（12 × 8 m）"),
+    "dispensing_pharmacy": ("標準（8 × 6 m）", "小さめ（6 × 5 m）", "大きめ（12 × 8 m）"),
 }
 # which shop questions apply (cold cases only where food is sold)
 _STORE_KEYS = {k: ("size", "entrance", "register", "cold_cases")
@@ -287,6 +288,9 @@ PLACE_WORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("asian_grocery", ("アジア食材", "アジアン食材", "アジアンスーパー", "輸入食材店", "エスニック食材", "中華食材", "韓国食材",
                        "asian grocery", "asian food shop", "asian food store", "asian supermarket")),
     ("supermarket", ("スーパー", "supermarket")),
+    # before drugstore: 「調剤薬局」 has 「薬局」, "dispensing pharmacy" has "pharmacy"; a bare 「薬局」 stays a drugstore
+    ("dispensing_pharmacy", ("調剤薬局", "処方せん", "処方箋", "保険薬局", "門前薬局", "dispensing pharmacy",
+                             "prescription pharmacy")),
     ("drugstore", ("ドラッグストア", "薬局", "drugstore", "pharmacy")),
     ("home_center", ("ホームセンター", "home center", "hardware store")),
     # after drugstore: a drugstore's cosmetics corner is the drugstore

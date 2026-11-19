@@ -59,6 +59,8 @@ FRONTS = {"shelf", "shelve", "shelving", "bookcase", "bookshelf", "rack", "refri
           "cooler", "showcase", "multideck", "gondola", "pegboard", "register", "checkout", "counter", "vending", "machine", "locker",
           "wardrobe", "atm", "display"}
 REGISTERS = {"register", "checkout", "cashier", "pos"}
+# a pharmacy's packaging machines and counseling counters are work places, not display fixtures
+WORK = {"packaging", "packing", "counseling", "consultation"}
 MOVERS = {"forklift", "truck", "cart", "trolley", "jack", "car", "robot", "amr", "agv"}  # drive away: not in the way
 
 CHAIR_NEAR = 1.0  # a chair this close to a table (gap) belongs to it
@@ -730,7 +732,7 @@ def shelf_fixtures(scene: ResolvedScene) -> set[str]:
     return {o.id for o in scene.spec.objects
             if o.id in asset and o.fill is None and not o.decor and o.opening is None
             and heads(o, asset[o.id]) & kinds and not heads(o, asset[o.id]) & REGISTERS
-            and not _mods(o) & REGISTERS}
+            and not _mods(o) & (REGISTERS | WORK)}
 
 
 def _shelves(scene: ResolvedScene) -> list[Issue]:

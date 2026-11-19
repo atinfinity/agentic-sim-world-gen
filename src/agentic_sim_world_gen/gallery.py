@@ -31,7 +31,7 @@ FIXTURES = 8  # fixture names per entry
 
 PLACE_JA = {"home": "住まい", "office": "オフィス", "shop": "店", "convenience_store": "コンビニ", "supermarket": "スーパー",
             "drugstore": "ドラッグストア", "home_center": "ホームセンター", "hundred_yen_shop": "100 円ショップ",
-            "bookstore": "書店", "electronics_store": "家電量販店", "apparel_store": "衣料品店", "bakery": "パン屋",
+            "bookstore": "書店", "electronics_store": "家電量販店", "apparel_store": "衣料品店", "bakery": "パン屋", "dispensing_pharmacy": "調剤薬局",
             "cafe": "カフェ", "restaurant": "飲食店", "factory": "工場", "plant_factory": "植物工場", "warehouse": "倉庫",
             "datacenter": "データセンター", "lab": "実験室", "hospital": "病院", "school": "学校", "station": "駅",
             "public": "公共施設", "outdoor": "屋外", "other": "その他"}

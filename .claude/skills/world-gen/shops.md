@@ -35,6 +35,7 @@ substitutes. Appliances from SimReady Central.
 | cosmetics_store | 化粧品店 | 10 × 8 × 2.7 | tile_white + paint_white + office | wall shelves of lotion, lipstick and sunscreen, tester islands and tables in the middle (they get stock too) |
 | furniture_store | 家具店 | 30 × 20 × 3.5 | wood_light + paint_white + office | beds, sofas, tables and wardrobes are floor objects grouped as showroom corners (aisles 1.2 m); shelves get cushions, lamps, frames and vases |
 | asian_grocery | アジア食材店 | 8 × 6 × 2.7 | tile_white + paint_white + office, ceiling board | gondolas of noodles, rice, chili oil and sauces, a reach-in cooler (asked as cold cases) |
+| dispensing_pharmacy | 調剤薬局 | 8 × 6 × 2.7 | tile_white + paint_white + office | waiting sofas, a pamphlet rack and a ticket machine by the door; counseling counters and low partitions divide off the dispensary at the back: picking shelves (Rx boxes), a powder table (powder bottles, a balance; give it `min_size`/`max_size`, it is taller than a table), a dispensing sink (syrup dosing bottles), a medicine cart (medicine bags), packaging machines and counters are work places, not shelves |
 
 **Other kinds**: a shop not in the table (鮮魚店・文房具店・楽器店 …) is `place="shop"` plus
 `set_room(goods=[English product queries], goods_words=[the kind])`:
