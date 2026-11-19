@@ -432,6 +432,8 @@ def _save(scene: ResolvedScene, scene_dir: Path, event: str | None = None, focus
 
     if fix and event is not None:
         event += _default_fixtures(scene)  # the place's ceiling fixtures
+    if (made := _ensure_corners(scene)) and event is not None:  # (_ensure_shelves measures them too, for check)
+        event += f" ({', '.join(made)}: a corner piece, into a room corner when against a wall)"
     _ensure_shelves(scene)
     solve(scene)  # objects with `layout` get position/yaw/z from their relations
     if fix and event is not None and scene.spec.decor_skipped and (more := _retry_decor(scene)):
@@ -499,6 +501,43 @@ def _ensure_shelves(scene: ResolvedScene) -> None:
                 except Exception:
                     c["hooks"] = []
     _ensure_knees(scene)
+    _ensure_corners(scene)
+
+
+def _ensure_corners(scene: ResolvedScene) -> list[str]:
+    """Measure whether a chosen asset is a corner piece (corner.find, once per asset and corner.VERSION, kept in the
+    candidate), whatever its layout. Only a name or file name with "corner". A corner piece gets corner: true and its
+    open corner as front_deg (the asset's own front is kept in front_deg_own to go back to); not when the object's
+    front was corrected by hand (front_offset_deg). Unreadable (offline, no meshes fetched): measured again after
+    KNEE_RETRY_S. Returns the objects made corner pieces now."""
+    import time
+
+    from agentic_sim_world_gen.assets import corner
+
+    by, made = {p.object_id: p for p in scene.placements}, []
+    for o in scene.spec.objects:
+        p = by.get(o.id)
+        if p is None or not p.candidates:
+            continue
+        c = p.candidates[p.selected]
+        if c.get("corner_v") == corner.VERSION or time.time() - c.get("corner_failed", 0) < KNEE_RETRY_S:
+            continue
+        if not corner.named(f"{c.get('name') or ''} {Path(str(c.get('uri') or '')).name}"):
+            continue
+        try:
+            deg = corner.find(c["uri"], _cache_dir())
+        except Exception as e:  # unreadable asset: not a corner piece for now
+            c["corner_failed"], c["corner_error"] = time.time(), str(e)
+            continue
+        for k in ("corner_failed", "corner_error"):
+            c.pop(k, None)
+        c["corner_v"] = corner.VERSION
+        if "front_deg_own" in c:  # measured before: back to the asset's own front first
+            c["front_deg"], c["corner"] = c.pop("front_deg_own"), False
+        if deg is not None and not o.front_offset_deg:
+            c["front_deg_own"], c["front_deg"], c["corner"] = c.get("front_deg"), float(deg), True
+            made.append(o.id)
+    return made
 
 
 KNEE_RETRY_S = 3600  # an asset that could not be read is tried again after this long (offline for a while)

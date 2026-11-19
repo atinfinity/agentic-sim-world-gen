@@ -1413,8 +1413,8 @@ Relational placement, turned into position / yaw_deg / z by agentic_sim_world_ge
 Walls: south y=0, north y=depth, west x=0, east x=width. "Front" is the side a person uses
 (desk/shelf/sofa front); see agentic_sim_world_gen.layout.solver for the asset front convention.
 
-- `against_wall`?: str — back to this wall, front facing into the room: north/south/east/west/any, or a plan wall id (w3)
-- `along`?: num — position along the wall, 0..1 (west->east for north/south, south->north for east/west); omit to pick a free spot
+- `against_wall`?: str — back to this wall, front facing into the room: north/south/east/west/any, or a plan wall id (w3); a corner piece (candidate with corner: true; measured once chosen, when the name says corner) goes into a corner at an end of the wall, open side in
+- `along`?: num — position along the wall, 0..1 (west->east for north/south, south->north for east/west); omit to pick a free spot; a corner piece: < 0.5 the corner at the start, >= 0.5 at the end
 - `in_front_of`?: str — object id; stand at its front, facing it (chair at desk)
 - `next_to`?: str — object id; stand beside it with the same facing
 - `side`?: left|right — for next_to: right/left as seen by a person facing the target's front (sitting at the desk)

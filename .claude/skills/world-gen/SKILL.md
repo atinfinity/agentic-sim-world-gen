@@ -191,7 +191,7 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
 
      | `layout` key | use |
      |---|---|
-     | `against_wall` | north / south / east / west / any; `along` 0..1 |
+     | `against_wall` | north / south / east / west / any; `along` 0..1. A corner piece (`corner: true` in the candidates: corner desks, corner wall cabinets, corner sofas) goes into a corner of that wall with its open side to the room: `along` < 0.5 the corner at its start, >= 0.5 at its end |
      | `in_front_of` | a chair at a desk goes under it by itself as far as the desk's measured knee space and the chair's parts allow (up to 40% of the chair's depth; none if a panel or a leg is in the way); leave `gap` out for that. A `gap` overrides it (positive keeps it out; negative only when the thumbnail shows open knee space: overlaps explode in PhysX). A chair at a table's corner hits its leg: put chairs along a side, clear of the corners. |
      | `next_to` | with `side` |
      | `on` | a lamp on a desk. `on_height` = surface height above the support's bottom when something sticks up above it (a counter top under a POS terminal, the inside of an open stand). `offset` = (right, front) from its center, right as seen facing its front. `facing` turns it, e.g. `"facing": "east"` toward the clerk side. A flat TV with no foot on a stand falls over (`tips_over`): hang it with `wall_height`. |
@@ -539,6 +539,8 @@ pass no limits; keep the two in step (tests/test_sizes.py checks every row below
   `left_out` defaults. Never search a left-out source from Python outside the agentic-sim-world-gen tools: tell the user.
   If they mention their own assets, suggest `agentic-sim-world-gen index <dir> --list` and a `agentic-sim-world-gen.json` with the license.
   A license `see <path>` means the LICENSE file was not recognized: tell the user to check it.
+- An asset whose name or file name says corner (a corner sofa or L desk in a `local:` folder) is measured once it is
+  chosen: a corner piece then shows `corner: true` and takes a room corner with `against_wall`.
 
 ## Don'ts
 
