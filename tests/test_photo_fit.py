@@ -208,7 +208,8 @@ def test_door_top_holds_only_its_photos(monkeypatch):
         assert abs(on["room"]["width"] - off["room"]["width"]) < 0.05 and abs(on["room"]["width"] - W) > 0.6
         assert [d["of"] for d in on["size_priors"]] == ["door_s.top"] and abs(on["size_priors"][0]["fitted"] - 2) < 0.05
         by = {s["by"]: s for s in on["scale"]["sources"]}
-        assert not by["door top"]["used"] and by["eye height"]["used"], on["scale"]
+        assert by["door top"]["used"] and by["door top"]["holds"] == "only the photos it is in", on["scale"]
+        assert "reaches" not in by["door top"] and by["eye height"]["used"]  # used: it holds the fit, reaching nothing
         assert by["eye height"]["sets"] == ["depth", "width"]
         rests = _rests(on)
         assert set(rests) == {"width", "depth"}, on["warnings"]
@@ -220,7 +221,8 @@ def test_door_top_holds_only_its_photos(monkeypatch):
         r = service.fit_photos({**_no_ceiling(_request()), "eye_height": eye})
         assert abs(r["room"]["width"] - W) < 0.25, r["room"]
         by = {s["of"]: s for s in r["scale"]["sources"] if s["by"] == "door top"}
-        assert by["door_n.top"]["used"] and not by["door_s.top"]["used"]
+        assert by["door_n.top"]["reaches"] == ["width"] and "holds" not in by["door_n.top"], by
+        assert "reaches" not in by["door_s.top"] and by["door_s.top"]["holds"] and by["door_s.top"]["used"]
         assert set(_rests(r)) == {"depth"}, r["warnings"]
 
 

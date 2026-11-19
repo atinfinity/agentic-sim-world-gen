@@ -1288,12 +1288,11 @@ def _fit(req: FitRequest, compare: bool, solved: tuple | None = None) -> dict:
                            " - a door's top (seen) or a shared point at a typical height (a desk or counter top, "
                            "points: z with z_sigma) holds it within a few %"))
     scale = _scale_evidence(m, req, p, cams, H)  # its warnings join below, after the size priors'
-    on_eye = scale.pop("on_eye")
+    on_eye, priors_reach = scale.pop("on_eye"), scale.pop("priors_reach")
     if not m.scale_seen:  # the typical sizes are named only when they reach the width or depth
-        held = any(s.get("used") for s in scale["sources"] if s["by"] in ("door top", "typical height"))
         warnings.append(f"no landmark at the ceiling is seen: the room's scale comes from the camera height "
                         f"{req.eye_height} m (eye_height)"
-                        + (" and the typical sizes (size_priors)" if held else "")
+                        + (" and the typical sizes (size_priors)" if priors_reach else "")
                         + (f"; the camera height alone holds the {' and '.join(on_eye)} (see below)" if on_eye else "")
                         + " - add a ceiling corner / line, a door's top, or give eye_height if known")
     if rms > 6:
@@ -1478,27 +1477,26 @@ def _scale_evidence(m: _Model, req: FitRequest, p, cams: dict, H: float) -> dict
     # which sources reach the photos that measure the width / depth; a dimension none reaches rests on the
     # camera height (each photo's own, near eye_height), whatever else is seen elsewhere
     metric, reach, on_eye, measured = _dims_on_eye(m, req)
-    held_srcs = []  # the sources that hold the fit, for the outlier below: as before the per-dimension reach
+    priors_reach = False  # a door top / typical height reaches the room (not only its own photos)
     ds = [c["depth_scale"] for c in cams.values() if "depth_scale" in c]
     if ds:
         add("depth", _median(ds), max(DEPTH_ERR_FLOOR, SCALE_ERR["depth"] / math.sqrt(len(ds))), n=len(ds),
             spread=[round(min(ds), 3), round(max(ds), 3)], used=True)
-        held_srcs.append(src[-1])
     for u, v, sg in m.size_priors:
         if p[u] > 0.05:
-            # nothing measures the width or depth: a prior in a held photo is used as before
-            ok = bool(reach.get(u)) or (not measured and u in metric)
-            add("door top" if u.endswith(".top") else "typical height", v / p[u], sg / v, of=u,
-                used=ok, **({} if ok else {"holds": "only the photos it is in"}))
-            held_srcs.append(src[-1])
+            # used: it holds the fit (the outlier check below weighs it); reaches: the measured width / depth it
+            # sets; nothing measures the width or depth: a prior in a held photo holds it as before
+            r = reach.get(u)
+            ok = bool(r) or (not measured and u in metric)
+            priors_reach |= ok
+            more = {"reaches": r} if r else {} if ok else {"holds": "only the photos it is in"}
+            add("door top" if u.endswith(".top") else "typical height", v / p[u], sg / v, of=u, used=True, **more)
     zs = [p[f"{cid}.z"] for cid in req.photos]
     mean_z = sum(zs) / len(zs)
-    if mean_z > 0.05:  # always listed; it holds the fit only when nothing better is seen
+    if mean_z > 0.05:  # always listed; used (weighed for the outlier) only when nothing better is seen: handheld
+        # cameras are anywhere from 1.0 to 1.6 m. `sets` = the dimensions it alone holds, whether used or not
         add("eye height", req.eye_height / mean_z, SCALE_ERR["eye height"], camera_height_m=round(mean_z, 2),
-            used=bool(not m.scale_seen or m.depth_only or on_eye),
-            **({"sets": sorted(on_eye)} if on_eye else {}))
-        if not m.scale_seen or m.depth_only:
-            held_srcs.append(src[-1])
+            used=bool(not m.scale_seen or m.depth_only), **({"sets": sorted(on_eye)} if on_eye else {}))
     if _ceiling_seen(req):
         if m.fit_H:
             lo, hi = CEILING_TYPICAL_M
@@ -1506,7 +1504,7 @@ def _scale_evidence(m: _Model, req: FitRequest, p, cams: dict, H: float) -> dict
                         "range": [round(lo / H, 3), round(hi / H, 3)], "height_m": round(H, 2), "used": False})
         else:
             src.append({"by": "height (given)", "scale": 1.0, "range": [1.0, 1.0], "height_m": round(H, 2), "used": True})
-    out: dict[str, Any] = {"sources": src, "warnings": [], "on_eye": sorted(on_eye)}
+    out: dict[str, Any] = {"sources": src, "warnings": [], "on_eye": sorted(on_eye), "priors_reach": priors_reach}
     for d, (ph, one) in on_eye.items():  # something of known height is seen, but not by the photos measuring these
         far = " and ".join(DIM_WALLS[d]) + " walls"
         if one:
@@ -1530,7 +1528,7 @@ def _scale_evidence(m: _Model, req: FitRequest, p, cams: dict, H: float) -> dict
     # one source apart from the others, which agree among themselves: the others' ranges share an interval,
     # this one's range misses it. Among the sources that hold the fit (an eye height that is only listed
     # neither is named nor has a say: handheld cameras are anywhere from 1.0 to 1.6 m)
-    held = [s for s in free if any(s is h for h in held_srcs) or s["by"] == "ceiling (typical)"]
+    held = [s for s in free if s["used"] or s["by"] == "ceiling (typical)"]
     if len(held) >= 3:
         for s in held:
             others = [o for o in held if o is not s]
