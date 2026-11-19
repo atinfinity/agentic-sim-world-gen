@@ -1014,7 +1014,7 @@ def kind_availability(queries: list[str]) -> dict[str, Any] | None:
         log.warning("kind availability failed: %s", e)
         out = None
     if (board := generic.kind_of(queries[0] if queries else None, queries[1:])) is not None \
-            and not generic.wants_standing(queries[0]):
+            and (board == "rug" or not generic.wants_standing(queries[0])):  # "floor rug" is still a rug
         out = {**(out or {"kind": board, "counts": {}, "absent": True}), "generic": board,
                "generic_hint": generic.hint(board)}
         if local := sum(n for s, n in (out.get("counts") or {}).items() if s.startswith("local:") and n):

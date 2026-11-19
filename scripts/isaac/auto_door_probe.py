@@ -36,7 +36,7 @@ SX, SY, SZ = (float(v) for v in args.size.split(","))
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from agentic_sim_world_gen.layout.room import RoomGeometry  # noqa: E402
 from agentic_sim_world_gen.scene.spec import ResolvedScene  # noqa: E402
-from agentic_sim_world_gen.usd.door import prim_name
+from agentic_sim_world_gen.usd.door import prim_name  # noqa: E402
 
 scene = ResolvedScene.load(Path(args.usd).parent / "scene.resolved.json")
 geom = RoomGeometry(scene.spec.room)

@@ -102,6 +102,12 @@ def test_kind_availability_offers_the_rug():
     assert a["generic"] == "rug" and "plain rug" in a["generic_hint"]
 
 
+def test_kind_availability_offers_a_floor_rug():
+    """"floor" asks for a standing board, not for a different rug: a floor rug or mat is still built."""
+    for q in ("floor rug", "floor mat"):
+        assert service.kind_availability([q])["generic"] == "rug", q
+
+
 def make(tmp_path, objects, **room):
     return service.create_scene({"name": "s", "room": {"width": 6, "depth": 5, "height": 2.7, **room},
                                  "objects": objects}, tmp_path / "s")
