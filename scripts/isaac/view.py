@@ -1,7 +1,8 @@
 """Shared viewport helpers for the Isaac Sim scripts (import after SimulationApp starts).
 
 dollhouse_camera(): camera above the south-west corner looking at the room (or outdoor site) center,
-with the ceiling and the camera-side walls hidden (from the camera only for a room with its site: they still
+with the ceiling and the camera-side walls (and the windows, doors and curtains in their openings) hidden
+(from the camera only for a room with its site: they still
 shade it; show() undoes either); `azimuth_deg` moves it around the room on the same
 ellipse (DOLLHOUSE_AZIMUTH is the default view) for the orbit frames of the check. FrameRecorder: PNG frames while physics runs, turned
 into a GIF with ffmpeg (if installed).
@@ -177,6 +178,15 @@ def dollhouse_camera(stage, room_root: str = "/World/Room", azimuth_deg: float |
             hidden.append(f"Objects/{p.GetName()}")
         else:
             UsdGeom.Imageable(p).MakeVisible()
+    # the room's own plain windows and automatic doors (agentic_sim_world_gen.usd.window / door) likewise
+    for group in ("Windows", "Doors"):
+        g = stage.GetPrimAtPath(f"{room_root}/{group}")
+        for p in g.GetChildren() if g else []:
+            if p.GetCustomDataByKey("agentic_sim_world_gen:opening") in gone:
+                hide(p, shade)
+                hidden.append(f"{group}/{p.GetName()}")
+            else:
+                show(p)
     cam = UsdGeom.Camera.Define(stage, "/World/PreviewCamera")
     m = Gf.Matrix4d().SetLookAt(eye, Gf.Vec3d(c[0], c[1], 0.4), Gf.Vec3d(0, 0, 1)).GetInverse()
     xf = UsdGeom.Xformable(cam)

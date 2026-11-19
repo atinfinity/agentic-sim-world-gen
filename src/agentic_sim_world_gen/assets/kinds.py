@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from agentic_sim_world_gen.assets.record import AssetRecord
-from agentic_sim_world_gen.assets.rerank import _AFTER_NOUN, _lead, _measure, noun_last, phrases, score, words
+from agentic_sim_world_gen.assets.rerank import _AFTER_NOUN, _closed_form, _lead, _measure, noun_last, phrases, score, words
 
 VERSION = 1
 DATA = Path(__file__).resolve().parents[1] / "data"
@@ -36,7 +36,7 @@ def table_path() -> Path:
 
 def kind_words(query: str) -> list[str]:
     """The query's words as rerank reads them (singular, trailing quantities moved to the front, then dropped)."""
-    tw = noun_last(words(query), join=True)
+    tw = _closed_form(noun_last(words(query), join=True), set())  # "white board" is a whiteboard
     while len(tw) > 1 and _measure(tw[0]):  # "6pack water bottle" is a water bottle
         tw = tw[1:]
     return tw
@@ -166,6 +166,18 @@ def other_kinds(query: str, table: dict[str, Any], n: int = OTHER_KINDS) -> list
     return [{"kind": k, "assets": c} for k, _, c in rows[:n]]
 
 
+def _synonyms_table(found: list[tuple[str, dict[str, int]] | None], table: dict[str, Any]) -> list:
+    """The table rows that count for a query and its synonyms: the query's own, and a synonym's only when the
+    table lists its kind (not the head noun's plain count: "marker board" counted 4 plain boards for a whiteboard)
+    and it is not a bare word another kind ends with ("board" next to "chalkboard" counted 80 wooden boards)."""
+    if not found:
+        return []
+    asked = [f[0] for f in found if f]
+    return [found[0], *(f for f in found[1:]
+                        if f and f[0] in table["kinds"]
+                        and not any(k != f[0] and " " not in f[0] and k.endswith(f[0]) for k in asked))]
+
+
 _exact: dict[tuple, tuple[Any, int]] = {}  # (source, id(records), size, queries) -> (records, count); status runs on every save
 
 
@@ -201,7 +213,7 @@ def availability(queries: list[str], provider: Any = None, table: dict[str, Any]
             counts[name] = _exact[ck][1]
         elif table and name in table["sources"]:
             found = [lookup(q, table) for q in queries]
-            counts[name] = max((c.get(name, 0) for _, c in filter(None, found)), default=0)
+            counts[name] = max((c.get(name, 0) for _, c in filter(None, _synonyms_table(found, table))), default=0)
             if found[0]:
                 key = found[0][0]
         else:

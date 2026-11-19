@@ -25,7 +25,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from agentic_sim_world_gen import UA, isaac_worker, missing
-from agentic_sim_world_gen.assets import cards
+from agentic_sim_world_gen.assets import cards, generic_curtain
 from agentic_sim_world_gen.assets.providers.base import AssetProvider, fits, size_filter_for
 from agentic_sim_world_gen.assets.domain import off_place
 from agentic_sim_world_gen.assets.sizes import kind_of, off_size
@@ -284,7 +284,45 @@ def _find_candidates(o: ObjectSpec, n: int, place: str | None = None,
         if r.id in tall:
             d["match"]["too_tall"] = round(r.size_m[2], 2)
         out.append(d)
-    return out
+    return _with_generic(o, out)
+
+
+def _with_generic(o: ObjectSpec, out: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """A chalkboard / whiteboard search gets a plain board built in compose as one more candidate: first when
+    no candidate is that kind of board itself (by class or name: a chalk stick tagged "chalkboard" does not count),
+    or when the object hangs on a wall and the real boards stand on the floor (an A-frame chalkboard sign); last
+    otherwise (a local: folder's own board stays first) and when the query asks for a standing / mobile board.
+    A board hung on a wall puts the standing boards after the plain one. A rug search gets plain rugs, and a
+    curtain over a window pleated fabric, the same way."""
+    from agentic_sim_world_gen.assets import generic
+
+    if generic_curtain.wanted(o):  # a curtain over a window: pleated fabric built in compose
+        return generic_curtain.with_curtain(o, out)
+    kind = generic.kind_of(o.query, o.alt_queries)
+    if kind is None:
+        return out
+    made = generic.candidates(kind, o.query, o.alt_queries, o.min_size, o.max_size)
+    hung = o.layout is not None and o.layout.wall_height is not None
+    if kind == "rug":  # a 0.5 m woven cloth tagged "rug" is no floor rug: only rug-sized real ones count
+        from agentic_sim_world_gen.assets.rug import MIN_LONG
+
+        real = [c for c in out if not (c.get("match") or {}).get("weak") and not c["match"].get("off_size")
+                and max(record_from_dict(c).size_m[:2]) >= MIN_LONG]
+        return [*made, *out] if not real else [*out, *made]
+    board = made[0]
+    real = [c for c in out if not (c.get("match") or {}).get("weak") and generic.is_board(c, kind)
+            and not (hung and generic.standing(c))]
+    if generic.wants_standing(o.query):  # a wall board for a mobile / standing one: a substitute, said so
+        board["match"] = {**board["match"], "score": 0.5, "weak": True,
+                          "matched": ["a plain wall board, not a standing / mobile one"]}
+        return [*out, board]
+    # hung on a wall: a standing board (an A-frame sign whose class says chalkboard) goes after the wall boards
+    # and the plain one, however well it matched by name
+    stand = [c for c in out if hung and generic.is_board(c, kind) and generic.standing(c)]
+    out = [c for c in out if not any(c is s for s in stand)]
+    if not real:
+        return [board, *out, *stand]
+    return [*out, board, *stand]
 
 
 def _size_misses(o: ObjectSpec, cands: list[dict[str, Any]], n: int = 3) -> list[dict[str, Any]]:
@@ -709,6 +747,16 @@ def _draw_view(s: ResolvedScene) -> dict[str, Any]:
                           "(select_asset; faces_each over 100 k is a scan) or stock fewer rows (set_fill rows=1)")}
 
 
+def _generic_windows(s: ResolvedScene) -> dict[str, Any]:
+    """Window openings no asset fills: compose puts a plain frame and glass in them."""
+    have = {p.object_id for p in s.placements if p.asset is not None}
+    filled = {o.opening for o in s.spec.objects if o.opening and o.id in have}
+    from agentic_sim_world_gen.layout.room import RoomGeometry
+
+    ids = [o.id for w in RoomGeometry(s.spec.room).walls for o in w.openings if o.kind == "window" and o.id not in filled]
+    return {"generic": ids} if ids else {}
+
+
 def _window_view(s: ResolvedScene) -> dict[str, Any]:
     """Windows (or a glass door) in a room with nothing outside: they show a gray void in the renders."""
     room = s.spec.room
@@ -720,7 +768,7 @@ def _window_view(s: ResolvedScene) -> dict[str, Any]:
     if _assumed(s, WINDOW_VIEW_ITEMS):
         return {}  # the agent recorded that the windows are not seen / covered
     home = room.place in (None, "home") or (room.place or "").endswith(("cafe", "restaurant", "bakery"))
-    return {"window_view": {"openings": seen, "stops_finish": True},
+    return {"window_view": {"openings": seen, **_generic_windows(s), "stops_finish": True},
             "window_view_hint": ("window_view: nothing is outside the room, so its windows show a gray void, and "
                                  "finish() stops here" + (" (with lighting daylight it is the issue window_void too)"
                                                           if room.lighting == "daylight" else "")
@@ -958,13 +1006,22 @@ NOT_IN_CATALOG_CHOICES = ["代用（近いものを使う）", "手持ちの USD
 def kind_availability(queries: list[str]) -> dict[str, Any] | None:
     """How many assets of the queries' kind each source has: the kind table for SimReady Central,
     the records themselves for the Isaac index and local: folders. None when no source can tell."""
-    from agentic_sim_world_gen.assets import kinds
+    from agentic_sim_world_gen.assets import generic, kinds
 
     try:
-        return kinds.availability(queries, get_provider())
+        out = kinds.availability(queries, get_provider())
     except Exception as e:  # the table is a hint; never break a status over it
         log.warning("kind availability failed: %s", e)
-        return None
+        out = None
+    if (board := generic.kind_of(queries[0] if queries else None, queries[1:])) is not None \
+            and (board == "rug" or not generic.wants_standing(queries[0])):  # "floor rug" is still a rug
+        out = {**(out or {"kind": board, "counts": {}, "absent": True}), "generic": board,
+               "generic_hint": generic.hint(board)}
+        if local := sum(n for s, n in (out.get("counts") or {}).items() if s.startswith("local:") and n):
+            # a real one in a local: folder comes first; the built one is the fallback
+            out["generic_hint"] = (f"a local: folder has {local} {board} asset(s): use one of them (the search ranks "
+                                   f"them first); the plain {board} built in compose is only the fallback")
+    return out
 
 
 def _substitute_view(o: ObjectSpec, p: Placement) -> dict[str, Any]:
@@ -2498,6 +2555,8 @@ def create_scene(spec: SceneSpec | dict[str, Any], out_dir: str | Path, candidat
     found = _room_words(spec, Path(out_dir).expanduser())
     with _searching(spec.objects, candidates):
         placements = [_placement_for(o, candidates, spec.room.place, spec.room.height) for o in spec.objects]
+    for o, pl in zip(spec.objects, placements, strict=True):
+        _fit_generic_curtain(spec.room, o, pl)
     applied = prefs.apply(spec, placements) if preferences else []
     s = ResolvedScene(spec=spec, placements=placements)
     _default_fixtures(s, start=True)  # the place's ceiling fixtures, unless the spec decides them
@@ -2677,7 +2736,8 @@ def start_scene(spec: SceneSpec | dict[str, Any], out_dir: str | Path, candidate
             started["purpose"] = (purpose or "demo") + ("" if purpose and purpose_given else " (a guess: say so)")
     if "windows" not in skip and any(o.kind == "window" for o in load(d).spec.room.openings):
         w = fill_windows(d)
-        started["windows"] = {k: w[k] for k in ("added", "not_found", "not_found_hint") if w.get(k)} or "nothing to add"
+        started["windows"] = {k: w[k] for k in ("added", "generated", "not_found", "not_found_hint") if w.get(k)} \
+            or "nothing to add"
     if drafts:  # three plans to pick from instead of one draft in 3D
         try:
             got = propose_drafts(d, None if drafts == "auto" else drafts)
@@ -4660,6 +4720,9 @@ def research_object(
     if max_size is not None:
         o.max_size = tuple(max_size)
     fresh = _placement_for(o, candidates, s.spec.room.place, s.spec.room.height)
+    # a curtain agentic-sim-world-gen builds keeps its style and color, and is sized to its window again
+    _fit_generic_curtain(s.spec.room, o, fresh,
+                         like=current["uri"] if current and generic_curtain.is_generic(current) else None)
     keep = current is not None and (select is False or (select is None and fresh.substitute))
     p.candidates, p.size_misses, p.selected = fresh.candidates, fresh.size_misses, 0
     if keep:
@@ -4701,7 +4764,8 @@ def add_objects(scene: str | Path, objs: list[ObjectSpec | dict[str, Any]],
     with _searching(new, candidates):
         for o in new:
             s.spec.objects.append(o)
-            s.placements.append(_placement_for(o, candidates, s.spec.room.place, s.spec.room.height))
+            s.placements.append(pl := _placement_for(o, candidates, s.spec.room.place, s.spec.room.height))
+            _fit_generic_curtain(s.spec.room, o, pl)
     event = f"{new[0].label or new[0].id} を追加" if len(new) == 1 else \
         f"{len(new)} 点を追加（{'、'.join(o.label or o.id for o in new[:5])}{' ほか' if len(new) > 5 else ''}）"
     st = _save(s, _resolved_path(scene).parent, event, new[0].id, decor_for={o.id for o in new})
@@ -4764,7 +4828,8 @@ def cover_query(op, wall_h: float, kind: str) -> tuple[str, list[str]] | None:
     return "waist window curtain", ["curtain", "curtains"]
 
 
-def fill_windows(scene: str | Path, covers: str | None = "auto", candidates: int = DEFAULT_CANDIDATES) -> dict[str, Any]:
+def fill_windows(scene: str | Path, covers: str | None = "auto", candidates: int = DEFAULT_CANDIDATES,
+                 curtain_style: str = "open", curtain_color: str | None = None) -> dict[str, Any]:
     """Put a window asset in every window opening that has none (win_<opening>, stretched to fit), and a
     curtain or blind over it (curtain_<opening> / blind_<opening>). covers: "auto" (curtains at home, blinds
     in offices, schools, labs and hospitals, none elsewhere), "curtain", "blind" or None. Small windows
@@ -4773,6 +4838,9 @@ def fill_windows(scene: str | Path, covers: str | None = "auto", candidates: int
 
     if covers not in ("auto", "curtain", "blind", None):
         raise ValueError(f"covers must be auto, curtain, blind or None, not {covers!r}")
+    # no curtain asset fits (SimReady Central has hospital cubicle curtains and blinds): pleated fabric is built in
+    # compose, in this style and color
+    generic_curtain.check_style(curtain_style, curtain_color)
     s = load(scene)
     place = s.spec.room.place
     kind = ("curtain" if place in (None, "home") else "blind" if place in BLIND_PLACES else None) \
@@ -4782,6 +4850,7 @@ def fill_windows(scene: str | Path, covers: str | None = "auto", candidates: int
     ids = {o.id for o in s.spec.objects}
     added: list[str] = []
     not_found: list[dict[str, Any]] = []
+    generated: list[str] = []
     for w in RoomGeometry(s.spec.room).walls:
         for op in w.openings:
             if op.kind != "window":
@@ -4802,6 +4871,8 @@ def fill_windows(scene: str | Path, covers: str | None = "auto", candidates: int
                 if o.id in ids:
                     continue
                 pl = _placement_for(o, candidates, place, s.spec.room.height)
+                if _fit_generic_curtain(s.spec.room, o, pl, curtain_style, curtain_color):
+                    generated.append(o.id)
                 if why := _unfit_window_asset(pl):  # a car door for a window, a fence for a curtain
                     nearest = pl.candidates[0]["name"] if pl.candidates else None
                     not_found.append({"id": o.id, "query": o.query, "nearest": nearest, "why": why, "opening": op.id})
@@ -4811,15 +4882,62 @@ def fill_windows(scene: str | Path, covers: str | None = "auto", candidates: int
                 added.append(o.id)
     event = f"窓 {len(added)} 点を追加" if added else "窓はすべて埋まっている"
     if not_found:
-        event = (f"窓 {len(added)} 点を追加、" if added else "") + f"{len(not_found)} 点は合うアセットが無く空けたまま"
+        event = (f"窓 {len(added)} 点を追加、" if added else "") + f"{len(not_found)} 点は合うアセットが無い（窓は汎用の枠とガラス）"
+    if generated:
+        event += f"（カーテン{len(generated)}点は合うアセットが無く、ひだのある布を作った）"
     st = _save(s, _resolved_path(scene).parent, event, added[0] if added else None, windows_missing=not_found)
     st["added"] = added
+    ignored = [i for i in added if i.startswith(("curtain_", "blind_")) and i not in generated]
+    if ignored and (curtain_style != "open" or curtain_color):
+        st["curtain_style_ignored"] = (f"{', '.join(ignored)}: a curtain / blind asset was found, so curtain_style / "
+                                       "curtain_color (only for the curtain agentic-sim-world-gen builds) were not "
+                                       "used")
+    if generated:
+        st["generated"] = generated
+        st["generated_hint"] = ("no curtain asset fits these windows, so they got a plain pleated curtain built in "
+                                f"compose (source 'generic', style {curtain_style}): tell the user it is generated. "
+                                "Another style or color (from a photo): remove_object them and fill_windows again "
+                                "with curtain_style / curtain_color")
     if not_found:
         st["not_found"] = [{k: v for k, v in w.items() if k != "opening"} for w in not_found]
         st["not_found_hint"] = ("no window / curtain asset fits these openings in the asset sources (the nearest is "
-                                "another kind of thing), so they stay empty: tell the user. A local:<dir> source "
-                                "with window assets can fill them (fill_windows again)")
+                                "another kind of thing): a window gets a plain aluminium frame and glass, a curtain "
+                                "is left out: tell the user. A local:<dir> source with window assets can fill them "
+                                "(fill_windows again)")
     return st
+
+
+def _generic_curtain_size(op, wall_h: float, room_h: float) -> tuple[float, float]:
+    """Width and height of the pleated curtain built over this window: the cover's width, and from its rail
+    above the window head down to below the sill (or to the floor)."""
+    from agentic_sim_world_gen.layout.solver import COVER_RISE, COVER_WIDER
+
+    sill, top = op.resolved(wall_h)
+    return round(op.width + COVER_WIDER, 3), generic_curtain.drop(sill, top, room_h, COVER_RISE)[1]
+
+
+def _fit_generic_curtain(room, o: ObjectSpec, p: Placement, style: str | None = None, color: str | None = None,
+                         like: str | None = None) -> bool:
+    """Size the curtain agentic-sim-world-gen builds among p's candidates to the window o covers (its width and
+    drop are in the uri, so the solver's fit_scale stays about 1 and the rail stays round), in `style` / `color`,
+    else those of `like` (the uri it had before research_object), else its own. A window too big to build one for
+    loses it. True when it is the first candidate."""
+    idx = [i for i, c in enumerate(p.candidates) if generic_curtain.is_generic(c)]
+    if not idx or o.covers is None:
+        return False
+    from agentic_sim_world_gen.layout.room import RoomGeometry
+
+    at = next(((op, w) for w in RoomGeometry(room).walls for op in w.openings if op.id == o.covers), None)
+    if at is None:
+        return idx[0] == 0
+    size = _generic_curtain_size(at[0], at[1].height, room.height)
+    if not generic_curtain.fits_size(*size):
+        p.candidates = [c for i, c in enumerate(p.candidates) if i not in idx]
+        return False
+    for i in idx:
+        st0, col0 = generic_curtain.style_of(like or p.candidates[i]["uri"])
+        p.candidates[i] = generic_curtain.candidate(*size, style or st0, color or col0)
+    return idx[0] == 0
 
 
 def _unfit_window_asset(p: Placement) -> str | None:

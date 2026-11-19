@@ -16,7 +16,7 @@ from agentic_sim_world_gen.assets.record import AssetRecord
 from agentic_sim_world_gen.layout.array import block_record, instances
 from agentic_sim_world_gen.layout.room import Face, RoomGeometry
 from agentic_sim_world_gen.layout.frame import facing_of, front_local_deg, half_extent, unit, yaw_for_facing  # noqa: F401
-from agentic_sim_world_gen.layout.validate import Issue, footprint, overlap_depth
+from agentic_sim_world_gen.layout.validate import FLAT_PASS, Issue, flat, footprint, overlap_depth
 from agentic_sim_world_gen.scene.spec import FACING_DIRS, ObjectSpec, ResolvedScene
 from agentic_sim_world_gen.scene.fixtures import ceiling_at
 from agentic_sim_world_gen.scene.walls import trim_depth
@@ -84,6 +84,10 @@ def _cover(o: ObjectSpec, a: AssetRecord, geom: RoomGeometry, room_h: float) -> 
     o.fit_scale = _fit(o, a, op.width + COVER_WIDER, tall if blind and a.size_m[2] > tall else None)
     from agentic_sim_world_gen.layout.array import placed_size, unit_size
 
+    if a.uri.startswith("generic:curtain") and a.size_m[2] > 0:  # one agentic-sim-world-gen builds: its own drop
+        from agentic_sim_world_gen.assets.generic_curtain import drop
+
+        o.fit_scale = (*o.fit_scale[:2], round(drop(sill, top, room_h, COVER_RISE)[1] / a.size_m[2], 4))
     d = unit_size(o, a)[1]
     h = placed_size(o, a)[2]
     off = w.thickness / 2 + COVER_GAP + d / 2
@@ -151,9 +155,12 @@ def _penetration(scene: ResolvedScene, asset: dict[str, AssetRecord], o: ObjectS
     a = asset[o.id]
     mine = _polys(o, a, pos, yaw)
     total = 0.0
+    on_floor = flat(o, a)  # a rug: furniture stands on it, it lies in front of doors
     for pid in placed:
         q, qa = scene.obj(pid), asset.get(pid)
         if qa is None or q.position is None or q.fill is not None:
+            continue
+        if flat(q, qa) != on_floor:
             continue
         if q.layout is not None and q.layout.on:
             continue  # sits on another placed object, which counts already
@@ -166,6 +173,8 @@ def _penetration(scene: ResolvedScene, asset: dict[str, AssetRecord], o: ObjectS
         top = o.z + a.size_m[2]
         for ob in geom.obstacles:
             if ob.zone is not None and ob.zone == o.zone:
+                continue
+            if on_floor and ob.id.split(":", 1)[0] in FLAT_PASS:
                 continue
             if ob.z[0] < top and ob.z[1] > o.z:
                 for pa in mine:

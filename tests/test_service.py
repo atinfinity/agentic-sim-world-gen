@@ -473,9 +473,9 @@ def test_windows_with_nothing_outside(fake, tmp_path):
     d = tmp_path / "s"
     st = service.create_scene(SPEC, d)
     assert "window_view" not in st
-    room = {**SPEC["room"], "openings": [{"kind": "window", "wall": "N", "offset": 1.0, "width": 1.2}]}
+    room = {**SPEC["room"], "openings": [{"kind": "window", "wall": "north", "offset": 1.0, "width": 1.2}]}
     st = service.create_scene({**SPEC, "room": room}, d)
-    assert st["window_view"] == {"openings": ["window_0"], "stops_finish": True}
+    assert st["window_view"] == {"openings": ["window_0"], "generic": ["window_0"], "stops_finish": True}
     assert "site=true" in st["window_view_hint"] and "grass" in st["window_view_hint"]
     assert 'item: "window_view"' in st["window_view_hint"]  # the way out when the windows are not seen
     service.set_assumptions(d, [{"item": "window_view", "value": "窓はカーテンで隠れる"}])

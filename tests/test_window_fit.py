@@ -166,10 +166,11 @@ def test_fill_windows_leaves_no_window_assets_out(tmp_path):
     try:
         service.create_scene({"name": "s", "room": {**ROOM, "place": "home"}, "objects": []}, tmp_path / "s")
         st = service.fill_windows(tmp_path / "s")
-        assert st["added"] == [] and "win_win" not in objs(st) and "curtain_win" not in objs(st)
+        assert st["added"] == ["curtain_win"] and "win_win" not in objs(st)
         nf = {x["id"]: x for x in st["not_found"]}
         assert nf["win_win"]["nearest"] == "car_door" and nf["win_win"]["why"].startswith("made for automotive")
-        assert nf["curtain_win"]["nearest"] == "fence" and nf["curtain_win"]["why"].startswith("weak match")
+        # the curtain is built instead of the fence
+        assert "curtain_win" not in nf and st["generated"] == ["curtain_win"]
         assert "tell the user" in st["not_found_hint"]
     finally:
         for k, v in keep.items():

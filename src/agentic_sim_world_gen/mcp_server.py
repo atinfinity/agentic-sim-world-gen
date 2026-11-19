@@ -251,7 +251,8 @@ def kind_availability(queries: list[str]) -> dict[str, Any]:
     other_kinds (same head noun, e.g. desk lamp for floor lamp), table {built}}: SimReady Central from the shipped
     kind table (its whole catalog on the build date), the Isaac index and local: folders scored in full. Use it
     before create_scene for unusual objects, or when a search found only substitutes: absent = do not search
-    again; ask the user: substitute / their own USD (local:) / drop it."""
+    again; ask the user: substitute / their own USD (local:) / drop it. `generic` (chalkboard / whiteboard /
+    rug): the search offers a plain board / rug built in compose, so there is nothing to ask."""
     return {q: service.kind_availability([q]) for q in queries}
 
 
@@ -570,7 +571,9 @@ def set_collider(scene_dir: str, object_id: str, collider: Literal["auto", "box"
 
 
 @mcp.tool()
-def fill_windows(scene_dir: str, covers: Literal["auto", "curtain", "blind"] | None = "auto") -> dict[str, Any]:
+def fill_windows(scene_dir: str, covers: Literal["auto", "curtain", "blind"] | None = "auto",
+                 curtain_style: Literal["open", "closed", "sheer", "open_sheer"] = "open",
+                 curtain_color: str | None = None) -> dict[str, Any]:
     """Put a window asset in every empty window opening (stretched to fit; opening_fit beyond 0.75-1.33x), chosen
     by shape (shop window / floor-length / small / casement / fixed / sliding), plus a curtain or blind: covers auto = curtains
     at home, blinds in offices / schools / labs / hospitals, none elsewhere. Swap them like any object.
@@ -584,9 +587,21 @@ def fill_windows(scene_dir: str, covers: Literal["auto", "curtain", "blind"] | N
     never get one. When photos show the windows, pass what they show (covers="blind" for slats or a roller,
     "curtain", or None for bare glass). Swap them like any object (view_candidates, select_asset).
     An opening whose best asset is no window / curtain (only weak matches, or made for another line of work: a
-    car door tagged window) is left empty and listed in not_found: tell the user."""
-    st = service.fill_windows(scene_dir, covers)
+    car door tagged window) is listed in not_found: tell the user. compose puts a plain aluminium frame and glass
+    in a window opening no asset fills (status window_view.generic), not a gray hole.
+    A curtain no asset fits (SimReady Central has only hospital cubicle curtains and blinds) is built in compose
+    instead: pleated fabric on a thin rail, listed in `generated` (tell the user it is generated).
+    curtain_style: open (two opaque panels gathered to the sides, default) / closed / sheer (one translucent white
+    panel, no shadow) / open_sheer (sheer across + opaque panels at the sides, the usual Japanese home);
+    curtain_color "#rrggbb" for the opaque panels (a sheer one alone takes it). Pick both from a photo when there is
+    one; to change them later, remove_object the curtain and call fill_windows again. When a real curtain or a
+    blind was found instead, they are not used: `curtain_style_ignored` says so."""
+    st = service.fill_windows(scene_dir, covers, curtain_style=curtain_style, curtain_color=curtain_color)
     out = {**service.reply(st), "added": st["added"]}
+    if st.get("generated"):
+        out["generated"], out["generated_hint"] = st["generated"], st["generated_hint"]
+    if st.get("curtain_style_ignored"):
+        out["curtain_style_ignored"] = st["curtain_style_ignored"]
     if st.get("not_found"):
         out["not_found"], out["not_found_hint"] = st["not_found"], st["not_found_hint"]
     return out

@@ -104,6 +104,26 @@ ceiling equipment).
   It hangs flat on the wall above the腰壁 / 巾木. The picture comes from `set_screen` (or `{"Picture": "Blank"}`),
   as for signage. A row of posters: `array {count, spacing}` with the same layout.
 
+## Rugs (「ソファの前にラグ」「玄関マット」「丸いラグ」)
+
+A `local:` folder's floor rugs rank first. No other source has a floor rug (SimReady's "rug" finds placemats,
+cloth mats and towels; "carpet" a carpet extractor; Isaac and Poly Haven nothing), so as the fallback a search
+whose query is a rug / carpet / mat (area rug, doormat, hallway runner; not a placemat, table mat or mouse mat)
+offers plain rugs built in compose: candidates `source: generic`, `match.generic: true`, one per CC0 carpet /
+fabric texture of the PBR index (up to 3, picked by the color / material words of the query: "beige wool rug",
+"red shag carpet"), uri `generic:rug?w=2&d=1.4&t=0.012&mat=ambientCG%2FCarpet016[&shape=round]`. With
+AGENTIC_SIM_WORLD_GEN_PBR=0 there is one, plain.
+
+- Query `"rug"` (alt `"area rug"`, `"carpet"`). Size: `min_size: [long side, short side, thickness]` (default
+  2.0 × 1.4 m, 1.2 cm; door / bath mat 0.8 × 0.5, yoga mat 1.83 × 0.61, hallway runner 2.4 × 0.75; thickness
+  0.4–3 cm). Round: put "round" in the query (default 1.6 m across).
+- Color from a photo: `tint: "#7a2e2a"` (multiplies the texture). Another texture: choose another candidate
+  (`select_asset`), or search again with other words.
+- Place it with `layout: {in_front_of: "sofa"}` or a position. A coffee table, the sofa's front legs, a bed on it
+  are no overlap; it is no obstacle for aisles, doors (a doormat inside the door swing is fine) or robots.
+- In the USD it is a slab with a beveled edge (no collider) and an invisible 1 mm static collider: furniture on
+  it is not lifted when physics starts, robots drive over it.
+
 ## Wall and ceiling equipment (「エアコン」「窓の下の暖房器」「壁のスピーカー」「天井の換気口」「コンセント」)
 
 Equipment fixed to the walls or the ceiling is neither furniture nor clutter, so it is easy to leave out (a
@@ -141,6 +161,31 @@ synthetic data of these things).
   another shape or trade (a car radiator, a rooftop unit, a megaphone). Leave it out and name it in the report
   (「窓の下のラジエーターは該当アセットが無いので置いていない」); the user's own USD can add it (`local:<dir>`).
   Do not build boxes for it either.
+
+## Chalkboards and whiteboards (「教室の黒板」「会議室のホワイトボード」)
+
+A `local:` folder's wall boards rank first, and `kind_availability` says so. No other source has a wall-mounted
+board (Poly Haven's standing chalkboard is an A-frame sign on the floor), so as the fallback a search whose query
+names one also returns a plain board built from boxes in compose: candidate `source: generic`,
+`match.generic: true`, license CC0 (made by agentic-sim-world-gen). Like the automatic doors, it is simple boxes,
+not generated 3D.
+
+- Query `"chalkboard"` (alt `"blackboard"`) or `"whiteboard"` (alt `"white board"`, `"marker board"`). Do not add a
+  bare `"board"`: it names cutting boards.
+- Hang it: `layout: {against_wall: "<wall>", along: 0..1, wall_height: <bottom above the floor>}`. Classroom
+  chalkboard: bottom 0.9 m on the front wall (the teacher's side), centered; meeting room / coffee room whiteboard:
+  bottom 0.8–0.9 m.
+- Size: chalkboard 3.6 x 1.2 m (dark green #2f4a3a, matte), whiteboard 1.8 x 0.9 m (white, glossy), both with a thin
+  aluminium frame and a tray; 8 cm off the wall. `min_size` / `max_size` (long side, short side, height) set the
+  width and height: `min_size: [2.4, 0, 1.2]` gives a 2.4 x 1.2 m whiteboard. A `max_size` short side under 0.08
+  leaves the tray out. After changing the size, `research_object` (the size is fixed when it is searched).
+- It goes first unless a candidate is that board itself (by class or name; a chalk stick tagged "chalkboard" does
+  not count; for a board hung on the wall, a standing / A-frame one does not count either, and goes after the
+  plain board). A `local:` folder's real board stays first. For a mobile / standing board (移動式・自立: "mobile whiteboard",
+  "standing chalkboard") the plain wall board is last and weak: a substitute, say so.
+- An existing scene that used a wall display for the board: `research_object(scene, id, query="chalkboard",
+  alt_queries=["blackboard"])` selects the plain board.
+- Writing on it (a drawn lesson, a printed schedule) is not supported; it is a plain surface.
 
 ## Steps, stairs and railings (「奥が一段高い」「小上がり」「階段がある」「ステージ」)
 

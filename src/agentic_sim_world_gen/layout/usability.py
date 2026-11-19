@@ -23,7 +23,7 @@ import re
 from collections import deque
 from typing import TYPE_CHECKING, Any
 
-from agentic_sim_world_gen.layout.validate import SHOP_PLACES, Issue, _inside, footprint, overlap_depth, zone_of
+from agentic_sim_world_gen.layout.validate import SHOP_PLACES, Issue, _inside, flat, footprint, overlap_depth, zone_of
 from agentic_sim_world_gen.layout.widths import INF, narrowest, ridge, widest  # noqa: F401
 from agentic_sim_world_gen.layout.widths import edt as _edt
 from agentic_sim_world_gen.layout.widths import edt1d as _edt1d  # noqa: F401
@@ -165,6 +165,8 @@ def _units(scene: ResolvedScene) -> list[_Unit]:
         o = scene.obj(p.object_id)
         if p.asset is None or o.position is None or o.fill is not None or o.opening is not None or o.covers:
             continue  # products sit inside their fixture; door / window assets fill their opening; curtains hang
+        if flat(o, p.asset):
+            continue  # a rug: walked and driven over
         out += [_Unit(i, o, p.asset) for i in instances(o, p.asset)]
     return out
 

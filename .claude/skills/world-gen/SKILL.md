@@ -171,8 +171,17 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
      asset had to stretch past 0.75–1.33x, or a curtain is taller than the room (a long one raises its rail up
      to the ceiling): pick another candidate. Windows and curtains come from an asset folder
      (`local:`) if there is one. Without them, an opening whose best asset is no window / curtain (only weak matches, or one
-     made for another line of work, such as a car door tagged window) is left empty and listed in `not_found`
-    : tell the user the windows stay open holes (or use `set_room(site=true)` so they show the outside).
+     made for another line of work, such as a car door tagged window) is listed in `not_found`; compose puts a
+     plain aluminium frame and glass in such a window (`window_view.generic`): tell the user (and use
+     `set_room(site=true)` so the glass shows the outside).
+     A curtain no asset fits (SimReady Central has only hospital cubicle curtains and blinds; a `local:` curtain
+     ranks first when there is one) is built in compose instead: pleated fabric on a thin rail, listed in
+     `generated` (source `generic`): tell the user it is a generated plain curtain. `curtain_style`: `open`
+     (default: two panels gathered to the sides), `closed`, `sheer` (one translucent white lace panel),
+     `open_sheer` (lace across + panels at the sides, the usual Japanese home); `curtain_color` `"#rrggbb"` for
+     the opaque panels. When photos show the windows, pick both from them; to change them later,
+     `remove_object` the curtain and `fill_windows` again (`research_object` keeps its style and color).
+     `curtain_style_ignored` means a real curtain or a blind was found, so the style and color were not used.
 2. **Write the SceneSpec** and call `create_scene`.
    - **Preferences first**: call `get_preferences(place=<the place>)`. Its `defaults` are the user's own
      corrections from 2+ earlier scenes: leave them out of the spec unless the user asked otherwise this time.
@@ -204,8 +213,9 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
      mug on a desk, a plant beside it, magazine / fruit bowl on a coffee table, photo frame / vase / candle on a
      TV stand, monitor / tray on office desks, books on bookshelves, products on every empty shop shelf. Do not
      write those in `objects` too. Each is kept only where it adds no issue or usability warning, is recorded as
-     an assumption「生活感のため追加」, and is left out when the catalog has no matching asset (cushions, rugs and
-     remotes are not in SimReady / Isaac today; the message names them). Change the level with
+     an assumption「生活感のため追加」, and is left out when the catalog has no matching asset (cushions and
+     remotes are not in SimReady / Isaac today; the message names them). The rug in front of the sofa is the plain
+     rug compose builds, so it is not left out. Change the level with
      `set_room(density=...)` (rebuilds all `decor_*`). Remove one with `remove_object` (a list removes several;
      removing a desk also removes what was on or beside it).
      What was left out is in status `decor_skipped` (reason `no_asset` / `no_spot` / `crowded` / `no_kind`;
@@ -307,6 +317,14 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
    - For an unusual object, `kind_availability(["floor lamp", "standing lamp"])` answers before `create_scene`
      (absent → tell the user up front and ask the same three choices). Mention that a `local:` folder can add
      the real asset.
+   - 黒板 / ホワイトボード: a `local:` folder's wall-mounted ones rank first. Without one, the search itself offers
+     a plain board built in compose (candidate `source: generic`, match `generic: true`; `kind_availability` says
+     `generic`). Do not ask代用for it or use a wall display instead. See [interior.md](interior.md) "Chalkboards
+     and whiteboards".
+   - ラグ / カーペット / 玄関マット: a `local:` folder's floor rugs rank first; the other sources have none
+     (SimReady's "rug" / "mat" are placemats and towels), so a `rug` / `carpet` / `mat` search offers plain rugs
+     built in compose (`source: generic`, one per CC0 carpet / fabric texture). Pick one, set its size with
+     `min_size`, its color with `tint`. Furniture may stand on it. See [interior.md](interior.md) "Rugs".
 4. **Fix the layout** until `issues == []`: change `layout` with `set_layout`, or use `move_object` for a
    manual position (this drops the relation). Give a manual direction as `facing_deg` (where the front points
    in the world: 0 east, 90 north, 180 west, 270 south), not `yaw_deg` (the asset's raw rotation; status shows
@@ -523,7 +541,7 @@ pass no limits; keep the two in step (tests/test_sizes.py checks every row below
   query's class matches. Choose the color from the captions ("White …", "Black …") and thumbnails.
 - Japanese → English examples: 本棚bookshelf/bookcase, 収納棚storage cabinet, 観葉植物potted plant,
   ゴミ箱trash can, 段ボールcardboard box, 台車hand truck, パレットpallet, 会議机conference table,
-  ホワイトボードwhiteboard, ロッカーlocker.
+  ホワイトボードwhiteboard, 黒板chalkboard (no bare "board" synonym), ロッカーlocker.
 - SimReady Central is strong on office, warehouse, retail and hospital props, and weaker on home decor. Say so if
   the user wants something unusual.
 - Results also include Isaac Sim bundled assets (`source: isaac-6.1`; Props such as KLT bins, pallets, racks,
@@ -532,8 +550,8 @@ pass no limits; keep the two in step (tests/test_sizes.py checks every row below
 - Poly Haven's CC0 models (`source: polyhaven`, uri `polyhaven:<id>`) fill the home-decor gap: dining tables, sofas,
   beds, armchairs, side / coffee tables, vases, clocks, lamps, potted plants, books, fruit, picture frames. They are
   fetched (1k USD, a few MB each) only when the scene is composed. They have no physics of their own: they get a
-  static box collider, and nothing is stocked on their shelves. Poly Haven has no rugs, floor lamps, remotes, mugs
-  or fridges either.
+  static box collider, and nothing is stocked on their shelves. Poly Haven has no rugs (compose builds one), floor
+  lamps, remotes, mugs or fridges either.
 - The user's own USD folders appear as `source: local:<folder>` when added to AGENTIC_SIM_WORLD_GEN_SOURCES (`+local:<dir>` = the
   defaults plus that folder; a plain list replaces the defaults). status `sources` shows what is searched and the
   `left_out` defaults. Never search a left-out source from Python outside the agentic-sim-world-gen tools: tell the user.

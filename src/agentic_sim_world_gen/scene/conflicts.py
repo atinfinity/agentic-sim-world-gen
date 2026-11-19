@@ -54,7 +54,9 @@ def _stated(scene: ResolvedScene, items: tuple[str, ...]) -> tuple[float, Any] |
 
 def _floor_units(scene: ResolvedScene) -> list[tuple[Any, Any, int]]:
     """(object, asset, units) for what stands on the floor: not products on a shelf, things on a table, on the
-    wall or the ceiling, door / window assets, curtains."""
+    wall or the ceiling, door / window assets, curtains, rugs."""
+    from agentic_sim_world_gen.layout.validate import flat
+
     out = []
     for p in scene.placements:
         o = scene.obj(p.object_id)
@@ -65,6 +67,8 @@ def _floor_units(scene: ResolvedScene) -> list[tuple[Any, Any, int]]:
             continue
         if p.asset is not None and not _asked_size(scene, p, o):
             continue
+        if flat(o, p.asset):
+            continue  # a rug takes no floor
         out.append((o, p.asset, o.array.count * o.array.rows if o.array else 1))
     return out
 

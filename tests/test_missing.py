@@ -30,11 +30,11 @@ PLAIN = _spec()
 
 def test_missing_is_recorded_per_scene_and_summed(fake, tmp_path, monkeypatch, capsys):
     lamp = {"id": "lamp", "query": "Floor  Lamp", "label": "フロアランプ", "position": [2.5, 0.5]}
-    rug = {"id": "rug", "query": "rug", "position": [1.8, 1.0]}  # nothing in the catalog at all
+    hammock = {"id": "hammock", "query": "hammock", "position": [1.8, 1.0]}  # nothing in the catalog (a rug is built)
 
     assert missing.summary()["rows"] == []
     a, b = tmp_path / "a", tmp_path / "b"
-    st = service.create_scene(_spec(lamp, rug), a)
+    st = service.create_scene(_spec(lamp, hammock), a)
     assert next(o for o in st["objects"] if o["id"] == "lamp")["substitute"]
     service.create_scene(_spec({**lamp, "id": "lamp1"}, {**lamp, "id": "lamp2"}), b)
     service.create_scene(PLAIN, tmp_path / "c")  # nothing missing: no file
@@ -42,16 +42,16 @@ def test_missing_is_recorded_per_scene_and_summed(fake, tmp_path, monkeypatch, c
 
     s = missing.summary()
     assert s["scenes"] == 2 and [(r["query"], r["scenes"], r["objects"]) for r in s["rows"]] == [
-        ("floor lamp", 2, 3), ("rug", 1, 1)]
+        ("floor lamp", 2, 3), ("hammock", 1, 1)]
     row = s["rows"][0]
     assert row["by"] == {"substitute": 3} and row["labels"] == ["フロアランプ"] and row["used"] == ["uv_robot"]
     assert s["rows"][1]["by"] == {"none": 1}
-    assert missing.summary(why="none")["rows"][0]["query"] == "rug" and missing.summary(top=1)["queries"] == 2
+    assert missing.summary(why="none")["rows"][0]["query"] == "hammock" and missing.summary(top=1)["queries"] == 2
 
     service.move_object(a, "desk", position=(1.1, 2.3))  # saving again does not count the scene twice
     assert missing.summary()["rows"][0]["objects"] == 3
     service.remove_object(a, "lamp")  # no longer wanted there
-    service.remove_object(a, "rug")
+    service.remove_object(a, "hammock")
     s = missing.summary()
     assert [(r["query"], r["scenes"]) for r in s["rows"]] == [("floor lamp", 1)]
 

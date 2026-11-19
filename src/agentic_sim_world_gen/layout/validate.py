@@ -26,6 +26,31 @@ FLAT_SCREENS = {"tv", "television"}  # a tips_over one of these can be hung on t
 TIP_RATIO = 0.2  # a free body standing on something with base / height below this falls over
 
 
+FLAT_H = 0.02  # a rug / mat this thin on the floor is sunk into it by compose (compose.FLOOR_COVER)
+GENERIC_RUG_H = 0.03  # a generic rug has a 1 mm collider whatever its thickness
+FLAT_PASS = {"door", "area"}  # obstacles a rug may lie in: a door's swing / keep-clear area (people walk over it)
+
+
+def flat(o: ObjectSpec, a: AssetRecord | None) -> bool:
+    """A rug or mat lying on the floor: furniture stands on it (no overlap), it is no obstacle for aisles,
+    doors and robots (nav ignores things below Robot.min_height). The generic rug of compose
+    (agentic_sim_world_gen.usd.rug: 1 mm collider), or an asset at most FLAT_H high that compose sinks into the
+    floor and that is a rug / mat by its query, class or tags (agentic_sim_world_gen.assets.rug.kind_of)."""
+    if a is None or o.fill is not None or abs(o.z) > 1e-6:
+        return False
+    if o.layout is not None and (o.layout.on or o.layout.ceiling or o.layout.wall_height is not None):
+        return False
+    h = a.size_m[2]
+    if a.source == "generic":
+        return (a.semantic_class or "") == "rug" and h <= GENERIC_RUG_H
+    if o.array is not None or h > FLAT_H:
+        return False
+    # a laptop or a tray on the floor is no rug
+    from agentic_sim_world_gen.assets.rug import kind_of
+
+    return any(kind_of(s) for s in [o.query, a.semantic_class, *(a.tags or [])[:6]])
+
+
 def footprint(center: Pt, size_wd: tuple[float, float], yaw_deg: float) -> list[Pt]:
     """Corners of a w x d rectangle centered at `center`, rotated by yaw (CCW, degrees)."""
     cx, cy = center
@@ -227,6 +252,7 @@ def check(scene: ResolvedScene, tol: float = 0.01, allow_tuck: bool = True) -> l
     ob_box = [(min(x for x, _ in ob.poly), min(y for _, y in ob.poly), max(x for x, _ in ob.poly),
                max(y for _, y in ob.poly)) for ob in geom.obstacles]
     polys: dict[str, list[Pt]] = {}
+    flats = {p.object_id for p in scene.placements if flat(scene.obj(p.object_id), p.asset)}
     zr: dict[str, tuple[float, float]] = {}
     assets = {}
     parent: dict[str, str] = {}
@@ -282,6 +308,8 @@ def check(scene: ResolvedScene, tol: float = 0.01, allow_tuck: bool = True) -> l
                     continue
                 if ob.zone is not None and ob.zone == zone:
                     continue  # e.g. a car whose zone is the road
+                if o.id in flats and ob.id.split(":", 1)[0] in FLAT_PASS:
+                    continue  # a rug in front of a door
                 if ob.z[0] < inst.z + h - tol and ob.z[1] > inst.z + tol:
                     dep = overlap_depth(poly, ob.poly)
                     name = ob.id.split("#")[0]
@@ -348,6 +376,8 @@ def check(scene: ResolvedScene, tol: float = 0.01, allow_tuck: bool = True) -> l
                 continue  # units of one array are laid out side by side on purpose
             if objs[pa].covers or objs[pb].covers:
                 continue  # a curtain / blind hangs over what stands under the window (its fabric has no collider)
+            if (pa in flats) != (pb in flats):
+                continue  # furniture standing on a rug
             if pb in below.get(pa, ()) or pa in below.get(pb, ()):
                 continue  # resting on it, directly or through other objects
             dz = min(zr[a_id][1], zr[b_id][1]) - max(zr[a_id][0], zr[b_id][0])

@@ -36,6 +36,7 @@ SX, SY, SZ = (float(v) for v in args.size.split(","))
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from agentic_sim_world_gen.layout.room import RoomGeometry  # noqa: E402
 from agentic_sim_world_gen.scene.spec import ResolvedScene  # noqa: E402
+from agentic_sim_world_gen.usd.door import prim_name  # noqa: E402
 
 scene = ResolvedScene.load(Path(args.usd).parent / "scene.resolved.json")
 geom = RoomGeometry(scene.spec.room)
@@ -72,9 +73,9 @@ from omni.physx import get_physx_interface  # noqa: E402
 
 phx = get_physx_interface()
 timeline = omni.timeline.get_timeline_interface()
-results = []
+results, used = [], set()
 for w, o in doors:
-    base = f"/World/Room/Doors/{o.id}"
+    base = f"/World/Room/Doors/{prim_name(o.id, used)}"
     info = dict(stage.GetPrimAtPath(base).GetCustomDataByKey("agentic_sim_world_gen:door") or {})
     inner = geom.inner_side(w, (sum(w.interval(o))) / 2)
     um = sum(w.interval(o)) / 2

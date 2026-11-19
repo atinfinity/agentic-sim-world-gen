@@ -326,7 +326,7 @@ def _local_stamp(uri: str) -> str:
     The geometry of an exported asset sits in layers next to it (`payloads/`), so the files in the asset's
     folder and one level below count too. Remote and Poly Haven uris have no stamp (they are pinned)."""
     path = Path(uri[7:] if uri.startswith("file://") else uri)
-    if uri.startswith(("http://", "https://", "polyhaven:")) or not path.is_file():
+    if uri.startswith(("http://", "https://", "polyhaven:", "generic:")) or not path.is_file():
         return ""
     files = [path]
     for f in sorted([*path.parent.glob("*"), *path.parent.glob("*/*")])[:STAMP_FILES]:
@@ -346,7 +346,7 @@ def scan(uri: str, cache_dir: str | Path) -> dict[str, list[dict[str, Any]]]:
 
     none: dict[str, list] = {"shelves": [], "hooks": []}
     path = uri[7:] if uri.startswith("file://") else uri
-    if path.startswith("polyhaven:"):
+    if path.startswith(("polyhaven:", "generic:")):  # a generic board / rug / curtain has no shelves either
         # Poly Haven models get one static box collider: stock on their shelf boards would sit inside it
         # and be pushed out, so they offer no shelves (fill reports shelf_fit, decor skips them)
         return none

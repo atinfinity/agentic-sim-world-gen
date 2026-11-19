@@ -237,10 +237,20 @@ offices / schools / labs / hospitals (cut to the window, down to the sill), none
 never get one. When photos show the windows, pass what they show (covers="blind" for slats or a roller,
 "curtain", or None for bare glass). Swap them like any object (view_candidates, select_asset).
 An opening whose best asset is no window / curtain (only weak matches, or made for another line of work: a
-car door tagged window) is left empty and listed in not_found: tell the user.
+car door tagged window) is listed in not_found: tell the user. compose puts a plain aluminium frame and glass
+in a window opening no asset fills (status window_view.generic), not a gray hole.
+A curtain no asset fits (SimReady Central has only hospital cubicle curtains and blinds) is built in compose
+instead: pleated fabric on a thin rail, listed in `generated` (tell the user it is generated).
+curtain_style: open (two opaque panels gathered to the sides, default) / closed / sheer (one translucent white
+panel, no shadow) / open_sheer (sheer across + opaque panels at the sides, the usual Japanese home);
+curtain_color "#rrggbb" for the opaque panels (a sheer one alone takes it). Pick both from a photo when there is
+one; to change them later, remove_object the curtain and call fill_windows again. When a real curtain or a
+blind was found instead, they are not used: `curtain_style_ignored` says so.
 
 - `scene_dir`: str
 - `covers`?: auto|curtain|blind
+- `curtain_style`?: open|closed|sheer|open_sheer
+- `curtain_color`?: str
 
 ## finish
 
@@ -417,7 +427,8 @@ query + alt_queries). Returns per query {kind, counts {source: assets that match
 other_kinds (same head noun, e.g. desk lamp for floor lamp), table {built}}: SimReady Central from the shipped
 kind table (its whole catalog on the build date), the Isaac index and local: folders scored in full. Use it
 before create_scene for unusual objects, or when a search found only substitutes: absent = do not search
-again; ask the user: substitute / their own USD (local:) / drop it.
+again; ask the user: substitute / their own USD (local:) / drop it. `generic` (chalkboard / whiteboard /
+rug): the search offers a plain board / rug built in compose, so there is nothing to ask.
 
 - `queries`: [str]
 
