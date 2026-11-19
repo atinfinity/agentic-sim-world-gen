@@ -340,3 +340,17 @@ def test_a_good_match_too_tall_for_the_room_hides_no_substitute(tmp_path):
         assert names[0] == "interior_door" and names[-1] == "sm_structure_wall_entrance"
     finally:
         service.set_provider(None)
+
+
+def test_with_names_a_modifier_not_the_head():
+    """"cabinet with drawers" asks for a cabinet: a desk whose class is "desk with drawers" ranked first because
+    the last word was taken as the head. A tag naming the whole phrase still matches it whole."""
+    desk = rec("desk", "desk with drawers", ["oak desk"])
+    cab = rec("cab", "cabinet", ["drawer cabinet", "storage"])
+    whole = rec("whole", "storage unit", ["cabinet with drawers"])
+    got = [r.name for r, _ in rerank([desk, cab, whole], "cabinet with drawers")]
+    assert set(got[:2]) == {"whole", "cab"} and got[-1] == "desk", got
+    assert score(desk, "cabinet with drawers").weak and not score(whole, "cabinet with drawers").weak
+    assert not score(rec("sofa", "sofa"), "sofa with 3 seats").weak  # a quantity after "with" stays one token
+    assert [r.name for r, _ in rerank([cab, desk], "desk with drawers")][0] == "desk"
+    assert [r.name for r, _ in rerank([desk, cab], "chest of drawers")] == ["desk", "cab"]  # "of": unchanged order
