@@ -40,8 +40,9 @@ def levels(shelves: list[dict]) -> list[list[dict]]:
 
 def _board_frame(s: dict, front_deg: float):
     """(front edge point, back direction, lateral direction (left -> right seen from the front),
-    width, depth) of a board in the fixture frame. The front snaps to the nearest axis."""
-    k = round(norm_deg(front_deg) / 90.0) % 4  # 0 +X, 1 +Y, 2 -X, 3 -Y
+    width, depth) of a board in the fixture frame. The front snaps to the nearest axis; a corner piece's diagonal
+    front (45, 135, ...) to the one counterclockwise of it, not by round()'s half-to-even."""
+    k = math.floor(norm_deg(front_deg) / 90.0 + 0.5 + 1e-9) % 4  # 0 +X, 1 +Y, 2 -X, 3 -Y
     cx, cy = (s["x0"] + s["x1"]) / 2, (s["y0"] + s["y1"]) / 2
     w, d = s["x1"] - s["x0"], s["y1"] - s["y0"]
     if k == 0:

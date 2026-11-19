@@ -176,19 +176,24 @@ def _penetration(scene: ResolvedScene, asset: dict[str, AssetRecord], o: ObjectS
     return total
 
 
-def _against_face(scene, geom, ext, asset, o, a, face: Face, along, placed) -> tuple[tuple[float, float], float, float]:
-    """Best (position, yaw, penetration) with the back to one wall face. along 0..1 runs p0 -> p1."""
+def _against_face(scene, geom, ext, asset, o, a, face: Face, along, placed,
+                  yaw: float | None = None) -> tuple[tuple[float, float], float, float]:
+    """Best (position, yaw, penetration) with the back to one wall face. along 0..1 runs p0 -> p1. yaw given (a corner
+    piece): turned so, and kept the gap off the wall at the ends too."""
+    if a.corner and yaw is None:
+        return _into_corner(scene, geom, ext, asset, o, a, face, along, placed)
     e = ext[o.id]
-    yaw = yaw_for_facing(a, o, face.facing)
+    (x0, y0), (x1, y1) = face.p0, face.p1
+    corner, yaw = yaw is not None, yaw_for_facing(a, o, face.facing) if yaw is None else yaw
     gap = (WALL_GAP if o.layout.wall_height is None else HANG_GAP) if o.layout.gap is None else o.layout.gap
     length = face.length
-    (x0, y0), (x1, y1) = face.p0, face.p1
     dx, dy = (x1 - x0) / length, (y1 - y0) / length
     nx, ny = unit(face.facing)
     # wainscot / baseboards stand out of the walls: the gap counts from their face, and the ends keep
     # clear of the trim on the walls at the corners (their colliders would push the object out)
     trim = trim_depth(geom.room, face.wall, above=o.z) if face.kind == "wall" else 0.0
     ends = max((trim_depth(geom.room, w.id) for w in geom.walls), default=0.0) if face.kind == "wall" else 0.0
+    ends += max(gap, WALL_GAP) if corner else 0.0  # never into the side wall (a negative gap tucks only the back)
     off = half_extent(e, yaw, face.facing) + gap + trim
     t_half = half_extent(e, yaw, math.degrees(math.atan2(dy, dx))) + ends
     lo, hi = t_half, length - t_half
@@ -215,6 +220,44 @@ def _against_face(scene, geom, ext, asset, o, a, face: Face, along, placed) -> t
             best = (at(t), yaw, pen)
         if pen == 0:
             break
+    return best
+
+
+CORNER_SNAP = 0.05  # m: a face end within this of another wall face's end is a room corner
+
+
+def _concave_end(geom, face: Face, end: int) -> bool:
+    """A room corner at this end of the face: another wall face starts or ends there and runs into the room along
+    this face's normal (a free wall end, a re-entrant corner or a non-square one is not)."""
+    p = face.p0 if end == 0 else face.p1
+    nx, ny = unit(face.facing)
+    for f in geom.faces:
+        if f is face or f.kind != "wall":
+            continue
+        for a, b in ((f.p0, f.p1), (f.p1, f.p0)):
+            if math.hypot(a[0] - p[0], a[1] - p[1]) <= CORNER_SNAP:
+                ln = math.hypot(b[0] - a[0], b[1] - a[1]) or 1.0
+                if ((b[0] - a[0]) * nx + (b[1] - a[1]) * ny) / ln > 0.99:
+                    return True
+    return False
+
+
+def _into_corner(scene, geom, ext, asset, o, a, face: Face, along, placed) -> tuple[tuple[float, float], float, float]:
+    """A corner piece (AssetRecord.corner) at an end of the face that is a room corner: its front (the open corner of
+    its footprint) turned to the room's diagonal there, so the filled corner across goes into the corner.
+    along < 0.5 takes the p0 end, along >= 0.5 the p1 end; None the end with less penetration. No square room corner
+    at that end (a free wall end, a plan's T, a non-square corner): along the face as given, turned the same way."""
+    (x0, y0), (x1, y1) = face.p0, face.p1
+    dd = math.degrees(math.atan2(y1 - y0, x1 - x0))
+    nx, ny = unit(face.facing)
+    best = None
+    for end in ((0,) if along is not None and along < 0.5 else (1,) if along is not None else (0, 1)):
+        ux, uy = unit(dd if end == 0 else dd + 180.0)  # from the corner along the face
+        yaw = yaw_for_facing(a, o, math.degrees(math.atan2(ny + uy, nx + ux)))
+        at = float(end) if face.kind == "wall" and _concave_end(geom, face, end) else along
+        cand = _against_face(scene, geom, ext, asset, o, a, face, at, placed, yaw)
+        if best is None or cand[2] < best[2] - 1e-9:
+            best = cand
     return best
 
 
@@ -345,6 +388,8 @@ def solve(scene: ResolvedScene) -> list[Issue]:
                 issues.append(Issue("bad_layout", (oid,), f"target '{tid}' is not placed"))
                 continue
             tf = facing_of(ta, t)
+            if ta.corner:  # not the diagonal (outside the bbox's open corner) but the side 45 deg clockwise of it
+                tf -= 45.0
             if lay.in_front_of:
                 o.yaw_deg = yaw_for_facing(a, o, tf + 180.0)  # face the target
                 # Under a desk only as far as its measured knee space allows: the bbox can't tell whether
