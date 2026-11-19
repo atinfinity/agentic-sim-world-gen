@@ -7,12 +7,12 @@ from pathlib import Path
 import pytest
 
 pytest.importorskip("pxr")
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade  # noqa: E402
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade
 
-from agentic_sim_world_gen import service  # noqa: E402
-from agentic_sim_world_gen.assets.providers.local_folder import build_index  # noqa: E402
-from agentic_sim_world_gen.scene.spec import ObjectSpec  # noqa: E402
-from agentic_sim_world_gen.usd.tint import linear  # noqa: E402
+from agentic_sim_world_gen import service
+from agentic_sim_world_gen.assets.providers.local_folder import build_index
+from agentic_sim_world_gen.scene.spec import ObjectSpec
+from agentic_sim_world_gen.usd.tint import linear
 
 WHITE = Gf.Vec3f(0.9, 0.9, 0.9)
 

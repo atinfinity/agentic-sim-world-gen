@@ -2,10 +2,10 @@
 import json
 import math
 
-from tests.test_photo_place import _scene, fake  # noqa: F401  (the fixture)
-from tests.test_photo_placement import DESK
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.photo_refine import LOOSE, camera, corners, project, refine
+from tests.test_photo_place import _scene, fake  # noqa: F401  (the fixture)
+from tests.test_photo_placement import DESK
 
 SIZE = (0.6, 1.2, 0.74)
 CAMS = {"a": camera({"position": [0.5, 0.5, 1.5], "yaw_deg": 35, "pitch_deg": 20, "hfov_deg": 70}, (1280, 960)),

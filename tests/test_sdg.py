@@ -9,9 +9,9 @@ import pytest
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.assets.record import AssetRecord
 from agentic_sim_world_gen.layout.room import point_in_polygon
-from agentic_sim_world_gen.sdg import boxes, plan
 from agentic_sim_world_gen.scene.plan import Opening
 from agentic_sim_world_gen.scene.spec import PurposeSpec, SdgSpec
+from agentic_sim_world_gen.sdg import boxes, plan
 
 
 def rec(name, cls, w, d, h):

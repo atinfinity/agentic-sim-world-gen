@@ -2,13 +2,11 @@
 
 import json
 
+import pytest
 from test_service import CATALOG, SPEC, fake, rec  # noqa: F401
 
 from agentic_sim_world_gen import cli, missing, service
 from agentic_sim_world_gen.scene.spec import DecorSkip
-
-
-import pytest
 
 LAMP = [rec("uv_robot", 0.4, 0.4, 1.5, "A UV disinfection robot")]
 
@@ -28,7 +26,7 @@ def _spec(*objects):
 PLAIN = _spec()
 
 
-def test_missing_is_recorded_per_scene_and_summed(fake, tmp_path, monkeypatch, capsys):
+def test_missing_is_recorded_per_scene_and_summed(fake, tmp_path, monkeypatch, capsys):  # noqa: F811
     lamp = {"id": "lamp", "query": "Floor  Lamp", "label": "フロアランプ", "position": [2.5, 0.5]}
     hammock = {"id": "hammock", "query": "hammock", "position": [1.8, 1.0]}  # nothing in the catalog (a rug is built)
 
@@ -62,7 +60,7 @@ def test_missing_is_recorded_per_scene_and_summed(fake, tmp_path, monkeypatch, c
     assert json.loads(capsys.readouterr().out)["rows"][0]["query"] == "floor lamp"
 
 
-def test_decor_and_windows(fake, tmp_path):
+def test_decor_and_windows(fake, tmp_path):  # noqa: F811
     d = tmp_path / "s"
     service.create_scene(PLAIN, d)
     s = service.load(d)
@@ -78,7 +76,7 @@ def test_decor_and_windows(fake, tmp_path):
     assert "不足しているアセット：2 種" in missing.text(missing.summary())
 
 
-def test_off_and_unwritable(fake, tmp_path, monkeypatch):
+def test_off_and_unwritable(fake, tmp_path, monkeypatch):  # noqa: F811
     lamp = {"id": "lamp", "query": "floor lamp", "position": [2.5, 0.5]}
     monkeypatch.setenv("AGENTIC_SIM_WORLD_GEN_MISSING", "0")
     service.create_scene(_spec(lamp), tmp_path / "a")
@@ -89,7 +87,7 @@ def test_off_and_unwritable(fake, tmp_path, monkeypatch):
     assert service.move_object(tmp_path / "a", "desk", position=(1.1, 2.3))["objects"]
 
 
-def test_removed_for_want_of_an_asset_and_noted_stay(fake, tmp_path):
+def test_removed_for_want_of_an_asset_and_noted_stay(fake, tmp_path):  # noqa: F811
     """An object taken out because nothing fits, and an asset only reported, stay in the record."""
     lamp = {"id": "lamp", "query": "floor lamp", "alt_queries": ["standing lamp"], "position": [2.5, 0.5]}
     d = tmp_path / "a"
@@ -110,7 +108,7 @@ def test_removed_for_want_of_an_asset_and_noted_stay(fake, tmp_path):
     assert missing.summary()["rows"][0]["by"].get("removed") is None
 
 
-def test_recheck_moves_what_was_added_since(fake, tmp_path, monkeypatch, capsys):
+def test_recheck_moves_what_was_added_since(fake, tmp_path, monkeypatch, capsys):  # noqa: F811
     """After assets were added to a source, recheck finds them and the summary moves them to `found`."""
     service.create_scene(_spec({"id": "lamp", "query": "floor lamp", "position": [2.5, 0.5]},
                                {"id": "hammock", "query": "hammock", "position": [1.8, 1.0]}), tmp_path / "a")
@@ -131,7 +129,7 @@ def test_recheck_moves_what_was_added_since(fake, tmp_path, monkeypatch, capsys)
     assert [x["query"] for x in missing.summary()["found"]] == ["floor lamp"]
 
 
-def test_missed_again_after_the_recheck_stays(fake, tmp_path):
+def test_missed_again_after_the_recheck_stays(fake, tmp_path):  # noqa: F811
     """A scene that still lacked the asset after the recheck found it keeps the query in the main list."""
     service.create_scene(_spec({"id": "lamp", "query": "floor lamp", "position": [2.5, 0.5]}), tmp_path / "a")
     missing.recheck(lambda q, alts: {"name": "floor_lamp_a", "source": "local:x"})

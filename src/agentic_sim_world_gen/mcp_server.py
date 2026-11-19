@@ -19,14 +19,25 @@ from pydantic import ValidationError
 
 from agentic_sim_world_gen import mcp_schema, service
 from agentic_sim_world_gen.photo_fit import FitRequest
-from agentic_sim_world_gen.scene.fixtures import CeilingFeature, Fixtures
 from agentic_sim_world_gen.scene.columns import Column, FloorArea
+from agentic_sim_world_gen.scene.fixtures import CeilingFeature, Fixtures
 from agentic_sim_world_gen.scene.levels import Level, Stairs
 from agentic_sim_world_gen.scene.looks import Surface
 from agentic_sim_world_gen.scene.plan import Opening
 from agentic_sim_world_gen.scene.site import Area, Building, Site
+from agentic_sim_world_gen.scene.spec import (
+    Array,
+    Assumption,
+    Fill,
+    InputRef,
+    Layout,
+    LayoutOption,
+    ObjectSpec,
+    Requirement,
+    SceneSpec,
+    SdgSpec,
+)
 from agentic_sim_world_gen.scene.walls import Baseboard, Wainscot
-from agentic_sim_world_gen.scene.spec import Array, Assumption, Fill, InputRef, Layout, LayoutOption, ObjectSpec, Requirement, SceneSpec, SdgSpec
 
 INSTRUCTIONS = """\
 Build Isaac Sim worlds (USD) from furniture/props chosen from SimReady Central, the Isaac Sim

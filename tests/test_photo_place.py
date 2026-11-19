@@ -4,10 +4,10 @@ import math
 
 import pytest
 
-from tests.test_photo_fit import _request
-from tests.test_photo_placement import CATALOG, DESK, _feet
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.photo_place import fit_pose
+from tests.test_photo_fit import _request
+from tests.test_photo_placement import CATALOG, DESK, _feet
 
 
 @pytest.fixture(autouse=True)

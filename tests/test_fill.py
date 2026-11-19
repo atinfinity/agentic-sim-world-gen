@@ -247,7 +247,7 @@ def test_ceiling_hanging(tmp_path):
     assert st["issues"] == []  # above the gondola, not overlapping it
     s = service.load(tmp_path / "s")
     assert s.obj("sign").z == pytest.approx(2.7 - 0.4)
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError, match="fill places the products itself"):
         make(tmp_path, [{"id": "sign", "query": "sign", "layout": {"center": True, "ceiling": True},
                          "fill": {"on": "x"}}])
 
@@ -280,7 +280,7 @@ def test_auto_door(tmp_path):
     assert types.count("omni.graph.nodes.WritePrimAttribute") == 2
     w = stage.GetPrimAtPath(f"{base}/Sensor/writeR")
     assert w.GetAttribute("inputs:primPath").Get() == f"{base}/Joint_R"
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError, match="auto_sliding is for doors"):
         make(tmp_path, [], openings=[{"kind": "window", "wall": "south", "offset": 2, "style": "auto_sliding"}])
 
 
@@ -386,7 +386,7 @@ def test_fill_lay_flat(tmp_path):
     ])
     assert st["issues"] == []
     s = service.load(tmp_path / "s")
-    g, o = s.obj("g"), s.obj("p")
+    _g, o = s.obj("g"), s.obj("p")
     items = instances(o, s.placements[1].asset)
     ys = sorted({i.position[1] for i in items})
     assert len(ys) == 2 and ys[1] - ys[0] == pytest.approx(0.19)  # 0.4 m board: 2 rows of 0.18 + gap
@@ -398,7 +398,7 @@ def test_fill_lay_flat(tmp_path):
     stage = Usd.Stage.Open(out["usd"])
     first = stage.GetPrimAtPath("/World/Objects/p").GetChildren()[0]
     m = UsdGeom.Xformable(first).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
-    pt = lambda x, y, z: m.Transform(Gf.Vec3d(x, y, z))  # noqa: E731
+    pt = lambda x, y, z: m.Transform(Gf.Vec3d(x, y, z))
     corners = [pt(x, y, z) for x in (-0.05, 0.05) for y in (-0.033, 0.033) for z in (0.0, 0.18)]
     zs = [c[2] for c in corners]
     i0 = next(i for i in items if first.GetName().endswith(i.id.split(".", 1)[1]))

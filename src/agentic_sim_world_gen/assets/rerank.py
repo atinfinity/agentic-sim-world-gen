@@ -137,9 +137,7 @@ def _names(seq: list[str], sub: list[str]) -> bool:
 
 # what a thing is made of or its color: "metal locker" asks for a locker, not a kind of locker, so a "storage
 # locker" made of metal is one (the rebuilt kind table had no metal locker left)
-_LOOKS = frozenset("""metal metallic steel stainless iron aluminum aluminium chrome brass copper wood wooden timber oak
-    pine walnut birch bamboo plastic glass ceramic porcelain leather fabric velvet marble stone concrete rattan wicker
-    white black gray grey silver gold red blue green yellow orange pink purple brown beige cream ivory""".split())
+_LOOKS = frozenset(["metal", "metallic", "steel", "stainless", "iron", "aluminum", "aluminium", "chrome", "brass", "copper", "wood", "wooden", "timber", "oak", "pine", "walnut", "birch", "bamboo", "plastic", "glass", "ceramic", "porcelain", "leather", "fabric", "velvet", "marble", "stone", "concrete", "rattan", "wicker", "white", "black", "gray", "grey", "silver", "gold", "red", "blue", "green", "yellow", "orange", "pink", "purple", "brown", "beige", "cream", "ivory"])
 
 
 # the shape or build of a thing: "oval table" asks for a table, so a round table is one and a rectangular

@@ -6,12 +6,11 @@ import struct
 import zlib
 
 import pytest
+from test_service import SPEC, fake  # noqa: F401  (fixture)
 
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.inputs import focal_mm, image_size, resolve
 from agentic_sim_world_gen.scene.spec import InputRef, PhotoCamera
-
-from test_service import SPEC, fake  # noqa: F401  (fixture)
 
 
 def png(path, w, h):

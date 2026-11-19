@@ -175,8 +175,8 @@ def test_light_objects_replace_the_default(tmp_path):
     d = service.create_scene(classroom(), tmp_path / "c")["scene_dir"]
     service.add_objects(d, [{"id": "elight", "query": "emergency light", "layout": {"ceiling": True}}])
     assert service.load(d).spec.room.fixtures is not None  # an emergency light is not a fixture row
-    st = service.add_objects(d, [{"id": "ceiling_light", "query": "ceiling base light", "position": [2, 2],
-                                  "layout": {"ceiling": True}}])
+    service.add_objects(d, [{"id": "ceiling_light", "query": "ceiling base light", "position": [2, 2],
+                             "layout": {"ceiling": True}}])
     s = service.load(d)
     assert s.spec.room.fixtures is None and not fixture_rows(s)
     service.remove_object(d, "ceiling_light")

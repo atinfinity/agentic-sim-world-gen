@@ -1,13 +1,12 @@
 """What the scene is for: the purpose question and the defaults it sets."""
 
 import pytest
+from test_density import CATALOG, STUDY, make, provider  # noqa: F401  (fixture: the fake catalog)
 
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.layout import usability
 from agentic_sim_world_gen.scene import purpose as pp
 from agentic_sim_world_gen.scene.questions import options_for, plan_questions
-
-from test_density import CATALOG, STUDY, make, provider  # noqa: F401  (fixture: the fake catalog)
 
 
 @pytest.mark.parametrize("text,name", [

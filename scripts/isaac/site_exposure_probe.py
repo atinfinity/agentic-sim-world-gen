@@ -28,15 +28,15 @@ ap.add_argument("--point", action="append", default=[], help="name,x,y,z")
 ap.add_argument("--frames", type=int, default=90)
 args = ap.parse_args()
 
-from isaacsim import SimulationApp  # noqa: E402
+from isaacsim import SimulationApp
 
 W, H = 1280, 720
 app = SimulationApp({"headless": True, "width": W, "height": H})
 
-import omni.usd  # noqa: E402
-from omni.kit.viewport.utility import get_active_viewport  # noqa: E402
-from pxr import Gf, Sdf, Usd, UsdGeom  # noqa: E402
-from view import capture, dollhouse_camera, wait_frames  # noqa: E402
+import omni.usd
+from omni.kit.viewport.utility import get_active_viewport
+from pxr import Gf, Sdf, Usd, UsdGeom
+from view import capture, dollhouse_camera, wait_frames
 
 ctx = omni.usd.get_context()
 assert ctx.open_stage(args.usd), args.usd

@@ -8,15 +8,15 @@ from pathlib import Path
 import pytest
 
 pytest.importorskip("pxr")
-from pxr import Usd, UsdGeom, UsdPhysics, UsdShade  # noqa: E402
+from pxr import UsdGeom, UsdPhysics, UsdShade
 
-from agentic_sim_world_gen import service  # noqa: E402
-from agentic_sim_world_gen.preview.changes import diff, snapshot  # noqa: E402
-from agentic_sim_world_gen.preview.layout2d import render_svg  # noqa: E402
-from agentic_sim_world_gen.scene.looks import SURFACES, hex_color  # noqa: E402
-from agentic_sim_world_gen.scene.spec import ResolvedScene, Room, SceneSpec  # noqa: E402
-from agentic_sim_world_gen.scene.zone_floors import infer, zone_floors  # noqa: E402
-from agentic_sim_world_gen.usd.compose import compose  # noqa: E402
+from agentic_sim_world_gen import service
+from agentic_sim_world_gen.preview.changes import diff, snapshot
+from agentic_sim_world_gen.preview.layout2d import render_svg
+from agentic_sim_world_gen.scene.looks import SURFACES, hex_color
+from agentic_sim_world_gen.scene.spec import ResolvedScene, Room, SceneSpec
+from agentic_sim_world_gen.scene.zone_floors import infer, zone_floors
+from agentic_sim_world_gen.usd.compose import compose
 
 PLAN = Path(__file__).parents[1] / "examples" / "plans" / "1ldk.json"
 

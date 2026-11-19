@@ -5,8 +5,9 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 JA = re.compile(r"[぀-ヿ一-鿿]")
 WORD = re.compile(r"[A-Za-z]{2,}")
@@ -197,7 +198,7 @@ def context_breakdown(turns: Iterable[list[dict[str, Any]]]) -> dict[str, Any]:
                         add(by, "user / harness text", len(c.get("text") or ""))
                     elif c.get("type") == "image":
                         add(by, "user / harness text", 0, 1)
-    order = lambda t: dict(sorted(t.items(), key=lambda kv: (-kv[1]["chars"], kv[0])))  # noqa: E731
+    order = lambda t: dict(sorted(t.items(), key=lambda kv: (-kv[1]["chars"], kv[0])))
     return {"chars": sum(r["chars"] for r in by.values()), "images": sum(r["images"] for r in by.values()),
             "by": order(by), "files": order(files)}
 
@@ -206,7 +207,7 @@ def breakdown_table(rows: list[tuple[str, dict[str, Any]]], top: int = 8) -> str
     """Markdown: per case, the biggest sources of the conversation's text."""
     lines = ["| 指示 | 文字 | 画像 | 多い順（千文字。× = 回数、画 = 画像の数） |", "|---|---|---|---|"]
     for case, b in rows:
-        cell = lambda k, r: (f"{k} {r['chars'] / 1000:.1f}k×{r['n']}"  # noqa: E731
+        cell = lambda k, r: (f"{k} {r['chars'] / 1000:.1f}k×{r['n']}"
                              + (f" 画{r['images']}" if r["images"] else ""))
         best = "、".join(cell(k, r) for k, r in list(b["by"].items())[:top])
         read = "、".join(cell(k, r) for k, r in list(b["files"].items())[:4])

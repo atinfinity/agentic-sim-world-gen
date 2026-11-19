@@ -65,7 +65,7 @@ class Level(BaseModel):
         return [_side(str(e)) for e in v] if v is not None else []
 
     @model_validator(mode="after")
-    def _check(self) -> "Level":
+    def _check(self) -> Level:
         _outline(self.polygon, self.rect, f"level {self.id}")
         _color_ok(self.color)
         n = len(self.poly)
@@ -120,7 +120,7 @@ class Stairs(BaseModel):
         return _side(str(v)) if isinstance(v, (str, int)) and not isinstance(v, bool) and not isinstance(v, float) else v
 
     @model_validator(mode="after")
-    def _check(self) -> "Stairs":
+    def _check(self) -> Stairs:
         _color_ok(self.color)
         if self.level is None and (self.at is None or self.up is None):
             raise ValueError(f"stairs {self.id}: give level + edge, or at + up")

@@ -103,7 +103,7 @@ def record(scene_dir: str | Path, scene: Any, status: dict[str, Any],
         if not rows and not path.exists():
             return
         _write(path, d, scene, rows)
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         log.warning("missing assets not recorded: %s", e)
 
 
@@ -128,7 +128,7 @@ def add(scene_dir: str | Path, scene: Any, rows: list[dict[str, Any]]) -> bool:
         old = [r for r in (_read(path) or {}).get("rows") or [] if (r.get("why"), _key(r.get("query", "")), r.get("id")) not in new]
         _write(path, d, scene, old + rows)
         return True
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         log.warning("missing assets not recorded: %s", e)
         return False
 
@@ -193,7 +193,7 @@ def summary(top: int | None = None, why: str | None = None) -> dict[str, Any]:
     out, found = [], []
     checks = _found()
     for g in by.values():
-        top_of = lambda d, n: [k for k, _ in sorted(d.items(), key=lambda kv: (-kv[1], kv[0]))[:n]]  # noqa: E731
+        top_of = lambda d, n: [k for k, _ in sorted(d.items(), key=lambda kv: (-kv[1], kv[0]))[:n]]
         row = {"query": g["query"], "scenes": len(g["scenes"]), "objects": g["objects"],
                "by": {w: g["by"][w] for w in WHYS if w in g["by"]}, "places": top_of(g["places"], 3),
                "labels": top_of(g["labels"], 3), "used": top_of(g["used"], 3), "notes": top_of(g["notes"], 3),
@@ -224,7 +224,7 @@ def recheck(find: Any) -> dict[str, Any]:
     for q, alts in queries.items():
         try:
             hit = find(q, alts)
-        except Exception as e:  # noqa: BLE001  one failed search must not lose the others
+        except Exception as e:  # one failed search must not lose the others
             log.warning("recheck of %r failed: %s", q, e)
             continue
         checks[q] = {"checked": now, "asset": None, **({"asset": hit["name"], "source": hit.get("source"),

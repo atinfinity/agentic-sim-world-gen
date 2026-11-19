@@ -911,7 +911,7 @@ def _check_section(d: Path, st: dict[str, Any], labels: dict[str, str], notes: l
                      f"{'・古い画像なので書き込みのピンは上面図だけ' if st['check'] == 'stale' and notes else ''}"
                      f"{'<span class=edit-hint>・ダブルクリックで書き込み</span>' if cams else ''}</span></div>")
         if "check.gif" in fresh:
-            parts.append("<div class='muted'><a href='check.gif?v=%d'>物理の様子（check.gif）</a></div>" % v)
+            parts.append(f"<div class='muted'><a href='check.gif?v={v}'>物理の様子（check.gif）</a></div>")
     elif fresh:
         parts.append(f"<img src='{fresh[0]}?v={v}' alt='{fresh[0]}'>")
     rows = []
@@ -1131,7 +1131,7 @@ def _room_edit(scene: ResolvedScene) -> str:
     from agentic_sim_world_gen.scene.decor import DENSITY_JA
 
     room = scene.spec.room
-    num = lambda k, v, lo, hi, step: (  # noqa: E731
+    num = lambda k, v, lo, hi, step: (
         f"<input type='number' name='{k}' value='{v:g}' min='{lo}' max='{hi}' step='{step}'>")
     size = ""
     if room.plan is None and not room.outdoor:  # a floor plan / a site has its own shape
@@ -1341,7 +1341,7 @@ def render(scene: ResolvedScene, d: Path, issues: list[dict[str, Any]], event: d
         _notes(scene),
         _references(scene, d),
         f"<section><h2>レイアウトの問題{usd_note}</h2>{iss}</section>",
-        (f"<section><h2>使い勝手の注意 <span class='muted'>置けるが使いにくい（警告）</span></h2><ul class='issues soft'>"
+        ("<section><h2>使い勝手の注意 <span class='muted'>置けるが使いにくい（警告）</span></h2><ul class='issues soft'>"
          + "".join(_issue_line(scene, i) for i in usability) + "</ul></section>") if usability else "",
         _taste(scene, d, taste),
         _nav(d),
@@ -1472,7 +1472,8 @@ def _references(scene: ResolvedScene, d: Path) -> str:
 
 def _moods(scene: ResolvedScene, d: Path) -> str:
     """「雰囲気」: sample pictures of the looks the place offers; one click applies the room part."""
-    from agentic_sim_world_gen.scene import looks, moods as md
+    from agentic_sim_world_gen.scene import looks
+    from agentic_sim_world_gen.scene import moods as md
 
     room = scene.spec.room
     offered = [] if room.outdoor else md.for_place(room.place)
@@ -1500,9 +1501,9 @@ def _moods(scene: ResolvedScene, d: Path) -> str:
             btn = ""
         cards += (f"<div class='opt-card mood{' best' if on else ''}'><h3>{badge}"
                   f"{escape(m.label)}</h3>{pic}<div class='note'>{escape(m.note)}</div>{btn}</div>")
-    head = (f"雰囲気 <span class='muted'>見本は標準の部屋です（家具はこのシーンと違います）。選ぶと床・壁・照明の色が"
-            f"変わり、家具は次のターンで Claude が近い色の物を探します<span class='edit-hint'>。「これにする」で決まります"
-            f"</span></span>")
+    head = ("雰囲気 <span class='muted'>見本は標準の部屋です（家具はこのシーンと違います）。選ぶと床・壁・照明の色が"
+            "変わり、家具は次のターンで Claude が近い色の物を探します<span class='edit-hint'>。「これにする」で決まります"
+            "</span></span>")
     given = sorted({i.kind for i in scene.spec.inputs if i.kind in ("photo", "reference")})
     if given and not cur:  # the look already comes from the user's pictures: folded, still there to pick
         what = "・".join({"photo": "写真", "reference": "参考画像"}[k] for k in given)

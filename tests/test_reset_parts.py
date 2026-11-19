@@ -7,10 +7,10 @@ from pathlib import Path
 import pytest
 
 pytest.importorskip("pxr")
-from pxr import Gf, Usd, UsdGeom, UsdPhysics  # noqa: E402
+from pxr import Gf, Usd, UsdGeom, UsdPhysics
 
-from agentic_sim_world_gen import service  # noqa: E402
-from agentic_sim_world_gen.assets.providers.local_folder import build_index  # noqa: E402
+from agentic_sim_world_gen import service
+from agentic_sim_world_gen.assets.providers.local_folder import build_index
 
 
 def _cube(stage, path, size, at):

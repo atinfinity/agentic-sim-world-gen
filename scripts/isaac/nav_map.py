@@ -34,20 +34,20 @@ ap.add_argument("--frames", type=int, default=10, help="physics frames before ma
 args = ap.parse_args()
 job = json.loads(Path(args.job).read_text())
 
-from isaacsim import SimulationApp  # noqa: E402
+from isaacsim import SimulationApp
 
 app = SimulationApp({"headless": True})
 
-import omni.kit.app  # noqa: E402
+import omni.kit.app
 
 # before the stage: enabling an extension with a big stage open did not return
 omni.kit.app.get_app().get_extension_manager().set_extension_enabled_immediate("isaacsim.asset.gen.omap", True)
 app.update()
 log("omap enabled")
 
-import check_core  # noqa: E402  (scripts/isaac/check_core.py)
-import omni.timeline  # noqa: E402
-import omni.usd  # noqa: E402
+import check_core  # scripts/isaac/check_core.py
+import omni.timeline
+import omni.usd
 
 
 async def step() -> None:
@@ -104,8 +104,8 @@ def make_static(stage) -> dict[str, int]:
 
 log(f"made static: {make_static(stage)}")
 
-import omni.physx  # noqa: E402
-from isaacsim.asset.gen.omap.bindings import _omap  # noqa: E402
+import omni.physx
+from isaacsim.asset.gen.omap.bindings import _omap
 
 ctx = omni.usd.get_context()
 timeline = omni.timeline.get_timeline_interface()

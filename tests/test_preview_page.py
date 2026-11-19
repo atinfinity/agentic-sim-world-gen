@@ -263,7 +263,7 @@ def test_change_history(scene):
 
 def test_issues_in_japanese(scene):
     sc = service.load(scene)
-    line = lambda kind, objs, detail: page._issue_line(sc, {"kind": kind, "objects": objs, "detail": detail})  # noqa: E731
+    line = lambda kind, objs, detail: page._issue_line(sc, {"kind": kind, "objects": objs, "detail": detail})
     assert line("overlap", ["desk", "chair"], "penetration 0.12 m") == "<li><b>重なり</b>：机・chair 0.12 m めり込み</li>"
     assert "部屋からはみ出し" in line("out_of_room", ["desk.r0c1"], "footprint x[-0.10,1.30] y[0.00,0.70] vs room 4x3")
     assert "机 r0c1" in line("out_of_room", ["desk.r0c1"], "") and "x -0.10〜1.30" in line(

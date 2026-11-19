@@ -3,13 +3,12 @@
 import json
 
 import pytest
+from test_preview_edit import api, post  # noqa: F401  (fixture: the preview server for the study scene)
+from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
 
 from agentic_sim_world_gen import notes as nt
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.preview import page
-
-from test_preview_edit import api, post  # noqa: F401  (fixture: the preview server for the study scene)
-from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
 
 
 def _desk(d):
@@ -69,7 +68,7 @@ def test_note_in_3d(scene):  # noqa: F811
     assert n["object"] == "desk" and n["z"] == pytest.approx(0.74) and n["position"] == pytest.approx([dx, dy], abs=1e-3)
     assert n["view"] == "3d" and n["frame"] == 0
     # the slanted view's center hits the floor 4 m ahead (y = 2) unless something is in the way
-    o, d = nt.camera_ray(slant, 0.5, 0.5, 16 / 9)
+    _o, d = nt.camera_ray(slant, 0.5, 0.5, 16 / 9)
     assert d == pytest.approx((0, 0.7071, -0.7071), abs=1e-3)
     st = service.add_note(scene, "床", view="3d", frame=1, u=0.05, v=0.5, aspect=16 / 9)
     m = st["notes"][1]

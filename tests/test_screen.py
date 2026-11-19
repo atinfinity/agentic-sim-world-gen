@@ -9,12 +9,12 @@ import pytest
 
 pytest.importorskip("pxr")
 PIL = pytest.importorskip("PIL")
-from PIL import Image  # noqa: E402
-from pxr import Sdf, Usd, UsdGeom, UsdShade  # noqa: E402
+from PIL import Image
+from pxr import Sdf, Usd, UsdGeom, UsdShade
 
-from agentic_sim_world_gen import service  # noqa: E402
-from agentic_sim_world_gen.assets.providers.local_folder import build_index  # noqa: E402
-from agentic_sim_world_gen.scene.spec import record_from_dict, record_to_dict  # noqa: E402
+from agentic_sim_world_gen import service
+from agentic_sim_world_gen.assets.providers.local_folder import build_index
+from agentic_sim_world_gen.scene.spec import record_from_dict, record_to_dict
 
 GREY = (40, 40, 40)
 W, H = 0.8, 0.5  # screen size [m]

@@ -1,14 +1,13 @@
 """Room density: small things added for a lived-in look, kept only where they add no problem."""
 
 import pytest
+from test_fill import BOXES
 
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.assets.record import AssetRecord
 from agentic_sim_world_gen.assets.shelves import surfaces_from_boxes
 from agentic_sim_world_gen.layout.array import instances
 from agentic_sim_world_gen.scene import decor
-
-from test_fill import BOXES
 
 SHELVES = surfaces_from_boxes(BOXES)
 
@@ -281,9 +280,9 @@ def test_bakery_is_a_store_with_bread():
 def test_variety_store_goods_and_no_guess_in_a_plain_shop(tmp_path):
     """A variety store (雑貨店) stocks mugs, towels by the fixture's words; a shop of no kind stocks only what
     the fixture names (a generic product box was a case of soft drinks)."""
+    from agentic_sim_world_gen.scene.looks import ceiling_surface
     from agentic_sim_world_gen.scene.questions import guess_place
     from agentic_sim_world_gen.scene.spec import STORE_PLACES
-    from agentic_sim_world_gen.scene.looks import ceiling_surface
 
     assert "variety_store" in STORE_PLACES and guess_place("小さな雑貨店を作って") == "variety_store"
     assert guess_place("100円ショップの雑貨売り場") == "hundred_yen_shop"
@@ -339,9 +338,9 @@ def test_decor_removed_by_hand_is_not_added_back(tmp_path):
 def test_shop_pegboard_gets_blister_packs(tmp_path, monkeypatch):
     """A home center's pegboard has hooks and no boards: blister packs hang on its free hooks, one product per
     hook row, and its empty_shelves warning goes away."""
-    from agentic_sim_world_gen.assets.shelves import hooks_from_boxes
-
     from test_fill import PEG_BOXES
+
+    from agentic_sim_world_gen.assets.shelves import hooks_from_boxes
 
     peg = rec("peg", "pegboard", 0.9, 0.6, 1.8, shelves=[])
     peg.hooks = hooks_from_boxes(PEG_BOXES)
@@ -363,9 +362,9 @@ def test_shop_pegboard_gets_blister_packs(tmp_path, monkeypatch):
 
 def test_hooks_are_filled_when_the_boards_are_stocked(tmp_path, monkeypatch):
     """A pegboard gondola whose boards the agent stocked still gets packs on its empty hooks."""
-    from agentic_sim_world_gen.assets.shelves import hooks_from_boxes
-
     from test_fill import PEG_BOXES
+
+    from agentic_sim_world_gen.assets.shelves import hooks_from_boxes
 
     peg = rec("peg", "pegboard", 0.9, 0.6, 1.8, shelves=[b for b in SHELVES if b["z"] < 0.6])  # boards below the hooks
     peg.hooks = hooks_from_boxes(PEG_BOXES)

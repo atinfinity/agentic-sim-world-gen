@@ -58,4 +58,4 @@ for q in queries:
                   f"  moved back: {', '.join(offs)}")
 print(f"\n{n} home/office queries   P@1   wrong(top5)")
 for p in places:
-    print(f"place={str(p):7s} {p1[p] / n:5.2f}  {wrong[p][0] / max(wrong[p][1], 1):5.2f}")
+    print(f"place={p!s:7s} {p1[p] / n:5.2f}  {wrong[p][0] / max(wrong[p][1], 1):5.2f}")

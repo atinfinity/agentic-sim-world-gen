@@ -13,10 +13,13 @@ cd agentic-sim-world-gen
 uv sync --extra usd --extra mcp --extra dxf --extra ifc --extra photo --extra hf --extra dev
 uv run pytest -q              # オフラインのテスト（約 2 分）
 uv run pytest -q -m network   # 任意：SimReady Central・Poly Haven の実 API を呼ぶ
+uvx ruff@0.17.6 check .       # lint（CI と同じ版）
 ```
 
 CIはテストを2通りで流す：READMEの手順で入れるextra（`usd`・`hf`・`mcp`・`dev`）だけと、`taste`以外の全部。
 ほかのextraが要るテストは、それが無ければ飛ばす（`pytest.importorskip`）。
+CIは`ruff check`も流す。外したルール（好みの問題）とその理由は`pyproject.toml`の`[tool.ruff.lint]`にある。
+ruffの版を上げるときは、CI（`.github/workflows/ci.yml`）とここを一緒に直す。
 
 Isaac Simでのシーンのチェック（`check`）にはNVIDIA RTXのGPUとLinuxのIsaac Sim 6.1が要る。それ以外
 （検索・レイアウト・USD・プレビュー）はGPU無しで動く。Isaac Simで確かめられないプルリクエストでも構わない

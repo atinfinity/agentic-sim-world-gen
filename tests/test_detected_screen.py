@@ -10,14 +10,13 @@ import pytest
 
 pytest.importorskip("pxr")
 pytest.importorskip("PIL")
-from PIL import Image  # noqa: E402
-from pxr import Sdf, Usd, UsdShade  # noqa: E402
+from PIL import Image
+from pxr import Sdf, Usd, UsdShade
+from test_screen import make_signage, poster
 
-from agentic_sim_world_gen import service  # noqa: E402
-from agentic_sim_world_gen.assets.providers.local_folder import build_index  # noqa: E402
-from agentic_sim_world_gen.usd.screen import detect_screens  # noqa: E402
-
-from test_screen import make_signage, poster  # noqa: E402
+from agentic_sim_world_gen import service
+from agentic_sim_world_gen.assets.providers.local_folder import build_index
+from agentic_sim_world_gen.usd.screen import detect_screens
 
 
 def make_tv(folder: Path, how: str) -> None:

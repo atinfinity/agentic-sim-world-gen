@@ -3,13 +3,12 @@
 import json
 
 import pytest
+from test_preview_edit import api, post  # noqa: F401  (fixture: the preview server for the study scene)
+from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
 
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.preview import page, server
 from agentic_sim_world_gen.scene.questions import options_for
-
-from test_preview_edit import api, post  # noqa: F401  (fixture: the preview server for the study scene)
-from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
 
 ROWS = [
     {"item": "window", "value": "南の壁", "basis": "おまかせ（既定）"},
@@ -65,7 +64,7 @@ def test_withdraw_and_unknown_rows(rows, api):  # noqa: F811
     assert "assumption_feedback" not in service.status(rows)
 
 
-def test_options_on_the_page(rows):  # noqa: F811
+def test_options_on_the_page(rows):
     assert options_for("home", "window") == ["南の壁", "東の壁", "西の壁", "窓なし"]
     assert options_for("office", "window") == [] and options_for(None, "size")
     html = (rows / page.PAGE).read_text()

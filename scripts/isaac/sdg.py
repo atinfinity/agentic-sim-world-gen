@@ -35,15 +35,15 @@ args = ap.parse_args()
 plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))
 W, H = plan["resolution"]
 
-from isaacsim import SimulationApp  # noqa: E402
+from isaacsim import SimulationApp
 
 app = SimulationApp({"headless": True, "width": W, "height": H})
 
-import carb.settings  # noqa: E402
-import numpy as np  # noqa: E402
-import omni.replicator.core as rep  # noqa: E402
-import omni.usd  # noqa: E402
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdLux, UsdShade, Vt  # noqa: E402
+import carb.settings
+import numpy as np
+import omni.replicator.core as rep
+import omni.usd
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdLux, UsdShade, Vt
 
 SENSOR_W_MM = 36.0
 CAM = "/World/SDG/Camera"
@@ -289,7 +289,7 @@ for txt in sorted((out / "kitti").glob("**/object_detection/*.txt")):
     txt.write_text("\n".join(rows) + ("\n" if rows else ""))
 
 # --- checks and contact sheet -------------------------------------------------------------------
-from PIL import Image, ImageDraw, ImageFont  # noqa: E402  (bundled with Isaac Sim)
+from PIL import Image, ImageDraw, ImageFont  # bundled with Isaac Sim
 
 bdir = out / "basic"
 

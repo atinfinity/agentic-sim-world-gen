@@ -1,5 +1,11 @@
-import json, sys, random, hashlib, urllib.request
+import hashlib
+import json
+import random
+import sys
+import urllib.request
+
 from PIL import Image, ImageDraw, ImageFont
+
 E = sys.argv[1]
 r = json.load(open(f"{E}/runs_f.json")); qs = json.load(open(f"{E}/queries.json"))
 f = ImageFont.truetype("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", 15, index=0)

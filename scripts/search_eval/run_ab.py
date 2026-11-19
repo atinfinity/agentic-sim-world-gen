@@ -1,6 +1,8 @@
 """A = current pipeline (query + alt, SimReady + Isaac, metadata rerank). B = raw SimReady hybrid search.
 A_ja / B_ja = the Japanese query as is. Output: {system: {qid: [corpus keys]}}."""
-import json, sys
+import json
+import sys
+
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.assets.providers.simready_central import SimReadyCentralProvider
 from agentic_sim_world_gen.scene.spec import ObjectSpec

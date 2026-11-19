@@ -22,7 +22,16 @@ from pathlib import Path
 from typing import Any
 
 from agentic_sim_world_gen.assets.record import AssetRecord
-from agentic_sim_world_gen.assets.rerank import _AFTER_NOUN, _closed_form, _lead, _measure, noun_last, phrases, score, words
+from agentic_sim_world_gen.assets.rerank import (
+    _AFTER_NOUN,
+    _closed_form,
+    _lead,
+    _measure,
+    noun_last,
+    phrases,
+    score,
+    words,
+)
 
 VERSION = 1
 DATA = Path(__file__).resolve().parents[1] / "data"

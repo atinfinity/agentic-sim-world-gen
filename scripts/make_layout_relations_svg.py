@@ -42,7 +42,7 @@ def panels(lang):
              "ja": dict(shelf="本棚", desk="机", chair="椅子", side="サイド台", table="テーブル",
                          lamp="照明", sofa="ソファ", rack="ラック", aisle="通路", wall="壁", floor="床")}[lang]
     n = names
-    cx, cy = W / 2, 105
+    cx = W / 2
     out = []
     # against_wall
     out.append(f'<line class="wall" x1="40" y1="45" x2="{W-40}" y2="45"/><text class="dim" x="{W-40}" y="38" text-anchor="end">{n["wall"]}</text>'

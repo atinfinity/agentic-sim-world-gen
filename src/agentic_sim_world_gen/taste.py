@@ -22,9 +22,10 @@ import math
 import os
 import re
 from array import array
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Protocol, Sequence
+from typing import Any, Protocol
 
 from agentic_sim_world_gen import atomic
 

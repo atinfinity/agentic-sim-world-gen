@@ -28,10 +28,10 @@ from typing import Any
 from agentic_sim_world_gen.plan.json_plan import from_dict, project_opening
 
 INSUNITS = {1: 0.0254, 2: 0.3048, 4: 0.001, 5: 0.01, 6: 1.0}
-WALL_RE = re.compile(r"wall|壁|^a-wall|躯体", re.I)
-DOOR_RE = re.compile(r"door|^dr|ドア|扉|戸", re.I)
-WINDOW_RE = re.compile(r"window|^win|^wd|窓|サッシ", re.I)
-ROOM_RE = re.compile(r"room|space|area|部屋|室", re.I)
+WALL_RE = re.compile(r"wall|壁|^a-wall|躯体", re.IGNORECASE)
+DOOR_RE = re.compile(r"door|^dr|ドア|扉|戸", re.IGNORECASE)
+WINDOW_RE = re.compile(r"window|^win|^wd|窓|サッシ", re.IGNORECASE)
+ROOM_RE = re.compile(r"room|space|area|部屋|室", re.IGNORECASE)
 PAIR_MIN, PAIR_MAX = 0.05, 0.5  # wall thickness range when pairing double lines [m]
 
 
@@ -149,7 +149,7 @@ def _join_through(walls: list[dict[str, Any]], centers: list[tuple[float, float]
             for j, v in enumerate(walls):
                 if i >= j or abs(w["thickness"] - v["thickness"]) > 0.01:
                     continue
-                Lw, dw = _line_params(w["start"], w["end"])
+                _, dw = _line_params(w["start"], w["end"])
                 _, dv = _line_params(v["start"], v["end"])
                 if abs(dw[0] * dv[1] - dw[1] * dv[0]) > 0.01:
                     continue
@@ -157,7 +157,7 @@ def _join_through(walls: list[dict[str, Any]], centers: list[tuple[float, float]
                 nx, ny = -dw[1], dw[0]
                 if any(abs((p[0] - a[0]) * nx + (p[1] - a[1]) * ny) > 0.02 for p in (v["start"], v["end"])):
                     continue  # parallel but not on the same line
-                proj = lambda p: (p[0] - a[0]) * dw[0] + (p[1] - a[1]) * dw[1]  # noqa: E731
+                proj = lambda p, a=a, dw=dw: (p[0] - a[0]) * dw[0] + (p[1] - a[1]) * dw[1]
                 iw, iv = sorted(map(proj, (w["start"], w["end"]))), sorted(map(proj, (v["start"], v["end"])))
                 lo_seg, hi_seg = (iw, iv) if iw[0] <= iv[0] else (iv, iw)
                 g0, g1 = lo_seg[1], hi_seg[0]
@@ -182,9 +182,9 @@ def _merge_overlaps(walls: list[dict[str, Any]], tol: float = 0.01) -> list[dict
     while changed:
         changed = False
         for i, w in enumerate(walls):
-            Lw, dw = _line_params(w["start"], w["end"])
+            _, dw = _line_params(w["start"], w["end"])
             a, (nx, ny) = w["start"], (-dw[1], dw[0])
-            proj = lambda p: (p[0] - a[0]) * dw[0] + (p[1] - a[1]) * dw[1]  # noqa: E731
+            proj = lambda p, a=a, dw=dw: (p[0] - a[0]) * dw[0] + (p[1] - a[1]) * dw[1]
             iw = sorted(map(proj, (w["start"], w["end"])))
             for j in range(i + 1, len(walls)):
                 v = walls[j]

@@ -21,7 +21,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from agentic_sim_world_gen import photo_measure, photo_vanish
+from agentic_sim_world_gen import photo_measure
 from agentic_sim_world_gen.photo_measure import View
 from agentic_sim_world_gen.scene.spec import PhotoCamera
 
@@ -174,8 +174,8 @@ def main() -> int:
     (out / "rows.json").write_text(json.dumps(rows, indent=1), encoding="utf-8")
     used = [r for r in rows if "skip" not in r]
     ok = [r for r in used if r["lines_ok"]]
-    med = lambda xs: round(statistics.median(xs), 2) if xs else None  # noqa: E731
-    p90 = lambda xs: round(sorted(xs)[int(0.9 * (len(xs) - 1))], 2) if xs else None  # noqa: E731
+    med = lambda xs: round(statistics.median(xs), 2) if xs else None
+    p90 = lambda xs: round(sorted(xs)[int(0.9 * (len(xs) - 1))], 2) if xs else None
     dp = [abs(r["pitch"] - r["true"]["pitch"]) for r in ok]
     dr = [abs(r["roll"] - r["true"]["roll"]) for r in ok]
     fov = [r for r in ok if r["hfov"]]

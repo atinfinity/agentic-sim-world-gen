@@ -31,11 +31,11 @@ ap.add_argument("--orbit-dir", help="also shoot the settled room from all around
 ap.add_argument("--orbit-frames", type=int, default=24, help="number of directions for --orbit-dir")
 args = ap.parse_args()
 
-from isaacsim import SimulationApp  # noqa: E402
+from isaacsim import SimulationApp
 
 app = SimulationApp({"headless": True, "width": 1280, "height": 720})
 
-import check_core  # noqa: E402  (scripts/isaac/check_core.py)
+import check_core  # scripts/isaac/check_core.py
 
 
 async def step() -> None:

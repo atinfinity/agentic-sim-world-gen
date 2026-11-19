@@ -3,7 +3,16 @@
 import pytest
 
 from agentic_sim_world_gen import service
-from agentic_sim_world_gen.scene.fixtures import HEADROOM, beams, ceiling_at, ceiling_glow, ceiling_tint, density, kelvin_tint, plan
+from agentic_sim_world_gen.scene.fixtures import (
+    HEADROOM,
+    beams,
+    ceiling_at,
+    ceiling_glow,
+    ceiling_tint,
+    density,
+    kelvin_tint,
+    plan,
+)
 from agentic_sim_world_gen.scene.spec import Room
 from tests.test_layout import rec
 
@@ -31,7 +40,7 @@ def test_kinds_keep_the_light_per_floor_area():
         fx = plan(r)
         assert fx and all(f["kind"] == kind for f in fx)
         # like the preset's lights: each fixture gives `density` per spacing^2 of floor whatever its size
-        from agentic_sim_world_gen.scene.fixtures import _area, KINDS
+        from agentic_sim_world_gen.scene.fixtures import KINDS, _area
 
         k = KINDS[kind]
         area = _area(kind, k["size"] if kind != "line" else (min(k["size"][0], k["spacing"] - 0.2), k["size"][1]))

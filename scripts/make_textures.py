@@ -18,7 +18,7 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from agentic_sim_world_gen.scene.looks import SURFACES, TEXTURES, TEXTURE_DIR  # noqa: E402
+from agentic_sim_world_gen.scene.looks import SURFACES, TEXTURE_DIR, TEXTURES
 
 # ---------------------------------------------------------------- helpers (all periodic on the image)
 

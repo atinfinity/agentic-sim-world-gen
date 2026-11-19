@@ -1,12 +1,11 @@
 """Three drafts far apart in one thing nobody decided: plans only, the pick is recorded as the user's."""
 
 import pytest
+from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
 
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.preview import page
 from agentic_sim_world_gen.scene.questions import plan_questions
-
-from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
 
 
 def test_size_drafts_are_made_drawn_and_chosen(scene):  # noqa: F811

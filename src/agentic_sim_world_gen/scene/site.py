@@ -71,7 +71,7 @@ class Area(BaseModel):
     keep_clear: bool | None = Field(default=None, description="objects outside this zone must not stand here (default: road, crosswalk, water)")
 
     @model_validator(mode="after")
-    def _check(self) -> "Area":
+    def _check(self) -> Area:
         _outline(self.polygon, self.rect, f"area {self.id}")
         return self
 
@@ -103,7 +103,7 @@ class Building(BaseModel):
     surface: str | Surface = Field(default="concrete", description="facade (and roof) surface")
 
     @model_validator(mode="after")
-    def _check(self) -> "Building":
+    def _check(self) -> Building:
         _outline(self.polygon, self.rect, f"building {self.id}")
         return self
 

@@ -2,11 +2,10 @@
 is closer; the answer is recorded and the step is not offered again."""
 
 import pytest
+from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
 
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.preview import page
-
-from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
 
 
 def test_size_pair_is_drawn_and_the_other_is_applied(scene):  # noqa: F811

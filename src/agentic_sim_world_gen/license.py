@@ -64,7 +64,7 @@ _DETECT = [  # (pattern in a LICENSE file, SPDX id); first match wins, so specif
 def detect(text: str) -> str | None:
     """SPDX id from the text of a LICENSE file, or None if not recognized."""
     for pat, spdx in _DETECT:
-        m = re.search(pat, text, re.I)
+        m = re.search(pat, text, re.IGNORECASE)
         if m:
             return normalize(m.group(1)) if spdx is None else spdx
     return None

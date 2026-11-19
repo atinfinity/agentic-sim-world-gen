@@ -64,7 +64,7 @@ def patched(pool, query, alt):
 
 
 service.rerank = patched
-from agentic_sim_world_gen.scene.spec import ObjectSpec  # noqa: E402
+from agentic_sim_world_gen.scene.spec import ObjectSpec
 
 objs = {q["id"]: ObjectSpec(id="x", query=q["q"], alt_queries=q["alt"]) for q in queries}
 base = {}

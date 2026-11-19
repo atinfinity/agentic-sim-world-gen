@@ -3,11 +3,10 @@
 import json
 
 import pytest
+from test_layout import CATALOG, fake, objs, rec  # noqa: F401  (fixture: fake asset search)
 
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.scene.spec import ObjectSpec
-
-from test_layout import CATALOG, fake, objs, rec  # noqa: F401  (fixture: fake asset search)
 
 # windows and curtains: front -Y, width along x, origin at the bottom center (as local window assets)
 CATALOG.update({

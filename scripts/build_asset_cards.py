@@ -114,7 +114,7 @@ def drop(a) -> None:
             proc, err = service._run_isaac(service.CHECK_SCRIPT, [str(usd), "--steps", str(STEPS), "--report",
                                                                         str(report), "--screenshot",
                                                                         str(folder / "shot.png")], 1800)
-        except Exception as e:  # noqa: BLE001  (an asset that cannot be fetched: say so, go on with the next batch)
+        except Exception as e:  # an asset that cannot be fetched: say so, go on with the next batch
             print(f"batch {folder.name}: {e}", file=sys.stderr)
             continue
         if proc is None or not report.exists():
@@ -153,7 +153,7 @@ def sheet(a) -> None:
                 t = Image.open(io.BytesIO(requests.get(rec["thumbnail_url"], timeout=30).content)).convert("RGB")
                 t.thumbnail((tile, tile))
                 img.paste(t, ((i % cols) * tile, (i // cols) * tile))
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 print(f"{r['key']}: no thumbnail ({e})", file=sys.stderr)
             ImageDraw.Draw(img).text(((i % cols) * tile + 6, (i // cols) * tile + 4), str(s + i), fill="red")
             size = "×".join(f"{v:.2f}" for v in _size(rec))

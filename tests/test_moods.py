@@ -1,13 +1,12 @@
 """Looks picked from sample pictures: offline."""
 
 import pytest
+from test_preview_edit import api, post  # noqa: F401  (fixture: the preview server for the study scene)
+from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
 
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.preview import page
 from agentic_sim_world_gen.scene import moods as md
-
-from test_preview_edit import api, post  # noqa: F401  (fixture: the preview server for the study scene)
-from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
 
 
 def test_groups():

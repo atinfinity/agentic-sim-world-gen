@@ -1,6 +1,10 @@
 """Embed corpus thumbnails (SigLIP2) and corpus text (multilingual-e5), plus all queries (en + ja)."""
-import json, re, sys
-import numpy as np, torch
+import json
+import re
+import sys
+
+import numpy as np
+import torch
 from PIL import Image
 from transformers import AutoModel, AutoProcessor, AutoTokenizer
 
@@ -31,7 +35,7 @@ with torch.no_grad():
         feats.append(f.float().cpu().numpy())
         print("img", i, flush=True)
 np.save(f"{E}/emb/siglip_img.npy", norm(np.concatenate(feats)))
-def stext(texts):
+def stext(texts, model=model):  # bound now: `del model` below frees it after the last call
     with torch.no_grad():
         x = proc(text=texts, padding="max_length", max_length=64, truncation=True, return_tensors="pt").to(dev)
         f = model.get_text_features(input_ids=x["input_ids"])

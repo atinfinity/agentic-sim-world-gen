@@ -332,7 +332,7 @@ def manifest_of(texture: str | None) -> dict[str, Any] | None:
 
 def surface(r: dict[str, Any], timeout: float = 120) -> dict[str, Any]:
     """A Room.floor / walls surface for a record: fetches its maps (once) and points the surface at them."""
-    from agentic_sim_world_gen.materials import CATEGORY, _DEFAULT, linear
+    from agentic_sim_world_gen.materials import _DEFAULT, CATEGORY, linear
 
     man = fetch(r, timeout)
     c = CATEGORY.get(r["category"], _DEFAULT)

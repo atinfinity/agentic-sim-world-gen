@@ -53,7 +53,7 @@ def _forgecad(a: AssetRecord) -> bool:
 
 def _stem(uri: str) -> str:
     name = PurePosixPath(uri.split("?", 1)[0]).name
-    return re.sub(r"\.usd[acz]?$", "", name, flags=re.I)
+    return re.sub(r"\.usd[acz]?$", "", name, flags=re.IGNORECASE)
 
 
 def asset_front_deg(a: AssetRecord) -> float:

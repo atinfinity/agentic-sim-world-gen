@@ -39,15 +39,15 @@ ap.add_argument("--around", action="store_true",
 ap.add_argument("--targets", help="JSON list of object ids (paths under /World/Objects) to shoot; default: all")
 args = ap.parse_args()
 
-from isaacsim import SimulationApp  # noqa: E402
+from isaacsim import SimulationApp
 
 app = SimulationApp({"headless": True, "width": 960, "height": 720})
 lap("start")
 
-import omni.usd  # noqa: E402
-from PIL import Image, ImageDraw  # noqa: E402  (bundled with Isaac Sim)
-from pxr import Gf, Usd, UsdGeom  # noqa: E402
-from view import capture_settled, hide_guides, wait_frames  # noqa: E402
+import omni.usd
+from PIL import Image, ImageDraw  # bundled with Isaac Sim
+from pxr import Gf, Usd, UsdGeom
+from view import capture_settled, hide_guides, wait_frames
 
 ctx = omni.usd.get_context()
 assert ctx.open_stage(args.usd), f"failed to open {args.usd}"
@@ -74,7 +74,7 @@ for p in room.GetChildren() if room else []:
     if p.GetName() != "Floor":
         UsdGeom.Imageable(p).MakeInvisible()
 
-from omni.kit.viewport.utility import get_active_viewport  # noqa: E402
+from omni.kit.viewport.utility import get_active_viewport
 
 cam = UsdGeom.Camera.Define(stage, "/World/FrontCamera")
 cam.CreateFocalLengthAttr(24.0)

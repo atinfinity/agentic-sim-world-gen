@@ -1,7 +1,10 @@
 """C = SigLIP2 text->thumbnail, D = e5 text->(class+caption+tags+name), *_ja = Japanese query,
 E1 = RRF(A, C, D), E2 = metadata rerank (rerank.py) over the C+D pool, ties by RRF(C, D)."""
-import json, sys
+import json
+import sys
+
 import numpy as np
+
 from agentic_sim_world_gen.assets.record import AssetRecord
 from agentic_sim_world_gen.assets.rerank import rerank
 

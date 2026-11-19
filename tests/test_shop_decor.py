@@ -1,10 +1,10 @@
 """A shop of no kind: its kind from the scene's name, a reason when nothing says what fixtures hold,
 hooks hold only the shop's own goods, and a next step for empty shelves / floor."""
 
+from test_density import decor_ids, make, provider  # noqa: F401  (provider: the fake catalog, autouse there)
+
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.scene import decor
-
-from test_density import decor_ids, make, provider  # noqa: F401  (provider: the fake catalog, autouse there)
 
 GONDOLAS = [{"id": "g1", "query": "gondola", "layout": {"against_wall": "north"}},
             {"id": "g2", "query": "gondola", "layout": {"against_wall": "south"}}]
@@ -39,11 +39,11 @@ def test_hooks_hold_only_the_shops_own_goods():
 
 def test_hooks_in_a_shop_that_hangs_nothing():
     """A pegboard in a bakery: no packs for its hooks, and no division by zero."""
+    from test_fill import PEG_BOXES
+
     from agentic_sim_world_gen.assets.record import AssetRecord
     from agentic_sim_world_gen.assets.shelves import hooks_from_boxes
     from agentic_sim_world_gen.scene.spec import ObjectSpec
-
-    from test_fill import PEG_BOXES
 
     peg = AssetRecord(id="peg", source="fake", uri="https://example.com/peg.usd", name="peg",
                       bbox_min=(-0.45, -0.3, 0.0), bbox_max=(0.45, 0.3, 1.8), up_axis="Z", meters_per_unit=1.0,

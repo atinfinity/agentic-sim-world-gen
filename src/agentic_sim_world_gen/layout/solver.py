@@ -10,15 +10,15 @@ from __future__ import annotations
 
 import math
 import re
-from typing import Callable
+from collections.abc import Callable
 
 from agentic_sim_world_gen.assets.record import AssetRecord
 from agentic_sim_world_gen.layout.array import block_record, instances
-from agentic_sim_world_gen.layout.room import Face, RoomGeometry
 from agentic_sim_world_gen.layout.frame import facing_of, front_local_deg, half_extent, unit, yaw_for_facing  # noqa: F401
+from agentic_sim_world_gen.layout.room import Face, RoomGeometry
 from agentic_sim_world_gen.layout.validate import FLAT_PASS, Issue, flat, footprint, overlap_depth
-from agentic_sim_world_gen.scene.spec import FACING_DIRS, ObjectSpec, ResolvedScene
 from agentic_sim_world_gen.scene.fixtures import ceiling_at
+from agentic_sim_world_gen.scene.spec import FACING_DIRS, ObjectSpec, ResolvedScene
 from agentic_sim_world_gen.scene.walls import trim_depth
 
 WALL_GAP = 0.02  # between a wall and an object's back
@@ -404,7 +404,7 @@ def solve(scene: ResolvedScene) -> list[Issue]:
                 # Under a desk only as far as its measured knee space allows: the bbox can't tell whether
                 # it is open, and an overlapping chair explodes in PhysX (Isaac Sim check, 2026-10-25).
                 gap = NEAR_GAP if lay.gap is None else lay.gap
-                if lay.gap is None and (deep := _tuck(o, a, t, ta, tf, lambda p: _floor_at(scene, geom, o, p))) > 0:
+                if lay.gap is None and (deep := _tuck(o, a, t, ta, tf, lambda p, o=o: _floor_at(scene, geom, o, p))) > 0:
                     gap = -deep
                 dist = half_extent(ext[tid], t.yaw_deg, tf) + half_extent(ext[oid], o.yaw_deg, tf) + gap
                 ux, uy = unit(tf)

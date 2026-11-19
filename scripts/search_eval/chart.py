@@ -1,8 +1,11 @@
 """Horizontal grouped bars: P@1 strict / lenient per system (PIL, static PNG for the PR)."""
-import json, sys
+import sys
+
 from PIL import Image, ImageDraw, ImageFont
+
 sys.path.insert(0, __import__("os").path.dirname(__file__))
 from score import ORDER, metrics
+
 sc = {s: {"p1s": (m := metrics(s))["P@1"], "p1l": m["P@1~"]} for s in ORDER}
 LABELS = [("A", "A 現行（英訳＋類義語＋再ランク）"), ("B", "B SimReady Central そのまま"),
           ("C_alt", "C SigLIP2 画像埋め込み"), ("D_alt", "D キャプション埋め込み (e5)"),

@@ -24,14 +24,14 @@ ap.add_argument("--out", required=True, help="output prefix")
 ap.add_argument("--frames", type=int, default=120, help="frames to wait before each capture")
 args = ap.parse_args()
 
-from isaacsim import SimulationApp  # noqa: E402
+from isaacsim import SimulationApp
 
 app = SimulationApp({"headless": True, "width": 1280, "height": 720})
 
-import carb.settings  # noqa: E402
-import omni.usd  # noqa: E402
-from pxr import Gf, Usd, UsdGeom  # noqa: E402
-from view import capture, dollhouse_camera, show, wait_frames  # noqa: E402
+import carb.settings
+import omni.usd
+from pxr import Gf, Usd, UsdGeom
+from view import capture, dollhouse_camera, show, wait_frames
 
 ctx = omni.usd.get_context()
 assert ctx.open_stage(args.usd), f"failed to open {args.usd}"
@@ -94,7 +94,7 @@ xf.ClearXformOpOrder()
 xf.AddTransformOp().Set(Gf.Matrix4d().SetLookAt(eye, target, Gf.Vec3d(0, 0, 1)).GetInverse())
 cam.CreateFocalLengthAttr(12.0)
 cam.CreateClippingRangeAttr(Gf.Vec2f(0.05, 1000.0))
-from omni.kit.viewport.utility import get_active_viewport  # noqa: E402
+from omni.kit.viewport.utility import get_active_viewport
 
 get_active_viewport().camera_path = "/World/InteriorCamera"
 report["interior"] = shoot("interior")

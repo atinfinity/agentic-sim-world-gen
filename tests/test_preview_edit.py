@@ -5,12 +5,11 @@ import urllib.error
 import urllib.request
 
 import pytest
+from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
 
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.preview import page, server
 from agentic_sim_world_gen.scene.spec import ResolvedScene
-
-from test_preview_page import scene  # noqa: F401  (fixture: a 4x3 m study with a desk and a chair)
 
 
 def post(url, body, token=server.TOKEN, headers=None):

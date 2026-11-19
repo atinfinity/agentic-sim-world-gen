@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Draw the top views of examples/*.json for the gallery: src/agentic_sim_world_gen/data/gallery/<name>.svg.
 
     PYTHONPATH=src python scripts/make_gallery.py [name ...]
@@ -30,7 +29,7 @@ def main(names: list[str]) -> int:
                 svg = Path(st["scene_dir"]) / "layout.svg"
                 (gallery.THUMBS / f"{f.stem}.svg").write_text(svg.read_text(encoding="utf-8"), encoding="utf-8")
                 print(f"{f.stem}: {svg.stat().st_size / 1024:.0f} KB, {time.time() - t:.0f} s", flush=True)
-            except Exception as e:  # noqa: BLE001 — the others are still drawn
+            except Exception as e:  # the others are still drawn
                 failed += 1
                 print(f"{f.stem}: FAILED {type(e).__name__}: {e}", flush=True)
     return 1 if failed else 0

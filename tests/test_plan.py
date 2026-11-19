@@ -7,13 +7,12 @@ import math
 from pathlib import Path
 
 import pytest
+from test_layout import CATALOG, fake, objs  # noqa: F401  (fixture: fake asset provider)
 
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.layout.room import RoomGeometry
 from agentic_sim_world_gen.plan.json_plan import from_dict
 from agentic_sim_world_gen.scene.spec import Room
-
-from test_layout import CATALOG, fake, objs  # noqa: F401  (fixture: fake asset provider)
 
 T = 0.12
 # L-shaped flat: LDK 8 x 4 m (south), bedroom 4 x 3 m (north-west), partition with a door between
@@ -264,7 +263,7 @@ def _ifc_flat(path, furniture=False):
     furniture: also 5 rotated pieces (see test_ifc_furniture)."""
     np = pytest.importorskip("numpy")
     ifcopenshell = pytest.importorskip("ifcopenshell")
-    import ifcopenshell.api as api
+    from ifcopenshell import api
 
     m = ifcopenshell.file(schema="IFC4")
     proj = api.run("root.create_entity", m, ifc_class="IfcProject", name="P")
@@ -391,7 +390,7 @@ def test_ifc_units_with_project_library(tmp_path):
     """A second IfcContext (IfcProjectLibrary) made the geometry kernel skip the mm -> m conversion."""
     _ifc_flat(tmp_path / "a.ifc")
     import ifcopenshell
-    import ifcopenshell.api as api
+    from ifcopenshell import api
 
     m = ifcopenshell.open(str(tmp_path / "a.ifc"))
     api.run("root.create_entity", m, ifc_class="IfcProjectLibrary", name="L")

@@ -205,7 +205,7 @@ def color_words(hex_: str | None) -> dict[str, float]:
         return {}
     r, g, b = srgb(hex_)
     h, l, s = colorsys.rgb_to_hls(r, g, b)
-    clamp = lambda x: max(0.0, min(1.0, x))  # noqa: E731
+    clamp = lambda x: max(0.0, min(1.0, x))
     out = {"light": clamp((l - 0.35) / 0.35), "dark": clamp((0.55 - l) / 0.35)}
     out["pale"] = out["bright"] = out["light"]
     if max(r, g, b) - min(r, g, b) < 0.08 or s < 0.12:

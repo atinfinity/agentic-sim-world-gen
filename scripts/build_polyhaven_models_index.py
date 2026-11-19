@@ -18,7 +18,8 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from agentic_sim_world_gen import USER_AGENT, polyhaven_models as ph  # noqa: E402
+from agentic_sim_world_gen import USER_AGENT
+from agentic_sim_world_gen import polyhaven_models as ph
 
 UA = {"User-Agent": f"{USER_AGENT} build_polyhaven_models_index.py"}
 API = "https://api.polyhaven.com/assets?t=models"

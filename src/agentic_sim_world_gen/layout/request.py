@@ -89,7 +89,7 @@ class _Obj:
         ys = [p[1] for poly in self.polys for p in poly]
         return ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2)
 
-    def gap(self, other: "_Obj") -> float:
+    def gap(self, other: _Obj) -> float:
         return min(poly_gap(p, q) for p in self.polys for q in other.polys)
 
 

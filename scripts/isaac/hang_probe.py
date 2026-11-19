@@ -36,12 +36,12 @@ def names(v: str | None) -> set[str] | None:
     return {x for x in v.split(",") if x}
 
 
-from isaacsim import SimulationApp  # noqa: E402
+from isaacsim import SimulationApp
 
 app = SimulationApp({"headless": True, "width": 640, "height": 360})
 
-import check_core  # noqa: E402
-import omni.timeline  # noqa: E402
+import check_core
+import omni.timeline
 
 faulthandler.dump_traceback_later(120, repeat=True, file=sys.stderr)  # Python stacks while stuck
 
@@ -68,7 +68,7 @@ for n in names(args.drop_room) or set():
         p.SetActive(False)
 if args.no_lights and stage.GetPrimAtPath("/World/Lights"):
     stage.GetPrimAtPath("/World/Lights").SetActive(False)
-from pxr import Usd, UsdPhysics  # noqa: E402
+from pxr import Usd, UsdPhysics
 
 scenes = [p for p in Usd.PrimRange(stage.GetPseudoRoot()) if p.IsA(UsdPhysics.Scene)]
 inner = [p for p in scenes if str(p.GetPath()).startswith("/World/Objects/")]

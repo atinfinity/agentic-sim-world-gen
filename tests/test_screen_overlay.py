@@ -11,14 +11,13 @@ import pytest
 
 pytest.importorskip("pxr")
 pytest.importorskip("PIL")
-from PIL import Image  # noqa: E402
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade  # noqa: E402
+from PIL import Image
+from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
+from test_screen import poster
 
-from agentic_sim_world_gen import service  # noqa: E402
-from agentic_sim_world_gen.assets.providers.local_folder import build_index  # noqa: E402
-from agentic_sim_world_gen.usd.screen import detect_screens, panel_screens  # noqa: E402
-
-from test_screen import poster  # noqa: E402
+from agentic_sim_world_gen import service
+from agentic_sim_world_gen.assets.providers.local_folder import build_index
+from agentic_sim_world_gen.usd.screen import detect_screens, panel_screens
 
 W, H, Z0 = 0.6, 0.34, 0.2  # the panel's front: facing -Y at y = 0
 

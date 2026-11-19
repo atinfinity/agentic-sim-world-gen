@@ -59,7 +59,7 @@ def test_depth_map_is_an_estimate_without_the_tilt(tmp_path):
     h, w = SIZE[1] // 4, SIZE[0] // 4
     dm = np.full((h, w), 20.0, np.float32)
     for j in range(h):
-        for i in range(0, w):
+        for i in range(w):
             q = true.floor_point(i * 4 + 2, j * 4 + 2)
             if q is not None:
                 dm[j, i] = sum((c - o) * f for c, o, f in zip((*q, 0.0), true.pos, true.fw))

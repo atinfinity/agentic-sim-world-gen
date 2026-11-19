@@ -32,12 +32,12 @@ import requests
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from agentic_sim_world_gen.assets.record import AssetRecord  # noqa: E402
-from agentic_sim_world_gen.scene.spec import record_from_dict, record_to_dict  # noqa: E402
+from agentic_sim_world_gen.assets.record import AssetRecord
+from agentic_sim_world_gen.scene.spec import record_from_dict, record_to_dict
 
 BUCKET = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/"
 SECTIONS = ["SimReady", "Props", "Environments"]
-SKIP = re.compile(r"/(parts|payloads|Materials|Textures|source_assets|configuration)/|instanceable_meshes", re.I)
+SKIP = re.compile(r"/(parts|payloads|Materials|Textures|source_assets|configuration)/|instanceable_meshes", re.IGNORECASE)
 ISAAC_LICENSE = "NVIDIA-Isaac-Sim"  # see agentic_sim_world_gen.license.KNOWN
 
 
@@ -58,7 +58,7 @@ def list_keys(prefix: str, session: requests.Session) -> list[tuple[str, int]]:
         if tok:
             params["continuation-token"] = tok
         t = session.get(BUCKET, params=params, timeout=120).text
-        out += [(k, int(s)) for k, s in re.findall(r"<Key>([^<]*)</Key>.*?<Size>(\d+)</Size>", t, re.S)]
+        out += [(k, int(s)) for k, s in re.findall(r"<Key>([^<]*)</Key>.*?<Size>(\d+)</Size>", t, re.DOTALL)]
         m = re.search(r"<NextContinuationToken>([^<]*)<", t)
         if not m:
             return out

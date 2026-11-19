@@ -4,10 +4,10 @@ import math
 
 import pytest
 
-from tests.test_layout import rec
-from tests.test_photo_fit import _proj, _request
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.photo_fit import located_objects
+from tests.test_layout import rec
+from tests.test_photo_fit import _proj, _request
 
 CATALOG = {"desk": [rec("desk", "desk", 1.2, 0.6, 0.74)], "wardrobe": [rec("wardrobe", "wardrobe", 1.0, 0.6, 1.8)]}
 DESK = (3.3, 0.5)  # where the photos show the desk: its feet are at ±0.55, ±0.25 around it

@@ -24,7 +24,7 @@ from __future__ import annotations
 import json
 import os
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -50,7 +50,7 @@ def path() -> Path:
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+    return datetime.now(UTC).isoformat(timespec="seconds")
 
 
 def _load() -> dict[str, Any]:

@@ -43,7 +43,7 @@ def test_pgm_rows_top_is_north(tmp_path):
     service.nav_map(d)
     g, _ = nav.build(service.load(d), nav.Robot(), 0.05)
     data = (d / "nav" / "map.pgm").read_bytes()
-    hdr, body = data.split(b"255\n", 1)
+    _hdr, body = data.split(b"255\n", 1)
     assert len(body) == g.nx * g.ny
     top = body[: g.nx * (g.ny // 2)]
     bottom = body[g.nx * (g.ny // 2):]
@@ -100,7 +100,7 @@ def test_with_occupancy_maps_onto_grid(tmp_path):
     d = make(tmp_path, [], openings=DOOR)
     s = service.load(d)
     g, _ = nav.build(s, nav.Robot(), 0.1)
-    x0, y0, x1, y1 = g.bounds()
+    x0, y0, _x1, _y1 = g.bounds()
     w, h = g.nx, g.ny
     # Isaac sees the walls and a post in the middle of the room that the bbox map does not have
     occ = [j * w + i for j in range(h) for i in range(w)

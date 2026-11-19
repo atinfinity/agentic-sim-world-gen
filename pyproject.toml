@@ -60,3 +60,24 @@ pythonpath = ["."]
 markers = ["network: hits the live SimReady Central API",
            "no_auto_fix: the issues stay as reported (AGENTIC_SIM_WORLD_GEN_AUTO_FIX=0)"]
 addopts = "-m 'not network'"
+
+# `uvx ruff@0.17.6 check .` (CI runs the same version). The rules are ruff's default selection minus the ones
+# below: they are a matter of style here, not bugs.
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+ignore = [
+    "C408",     # dict(key=...) reads as a table of keywords
+    "BLE001",   # catching Exception on purpose: tools and Isaac Sim scripts report a failure and go on
+    "S110",     # try / except / pass for best-effort cleanups and optional extras
+    "SIM115",   # open() without `with` in short scripts (json.load(open(...)))
+    "PLW1510",  # subprocess.run without check=: the callers read returncode
+    "ISC004",   # implicit concatenation of long messages inside a list (each checked: no missing comma)
+    "RUF046",   # int(round(x))
+    "RUF015",   # list(x)[0]
+    "PLC0206",  # for k in d: ... d[k]
+    "RUF012",   # mutable class attributes of the tests' fake classes
+    "SIM102",   # nested if with a walrus
+    "SIM103",   # parallel checks that each return False
+]

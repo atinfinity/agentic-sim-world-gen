@@ -1,10 +1,10 @@
 """Restaurants : the questions and the tabletop set added by density."""
 
-from agentic_sim_world_gen import service
-from agentic_sim_world_gen.scene.questions import plan_questions
-
 import test_density
 from test_density import SHELVES, decor_ids, make, rec
+
+from agentic_sim_world_gen import service
+from agentic_sim_world_gen.scene.questions import plan_questions
 
 test_density.CATALOG.update({
     "family table": [rec("ftable", "table", 1.2, 0.75, 0.7)],
@@ -17,7 +17,7 @@ test_density.CATALOG.update({
     "water glass": [rec("glass", "glass", 0.075, 0.075, 0.11)],
     "dinner plate": [rec("plate", "plate", 0.26, 0.26, 0.03)],
 })
-from test_density import provider  # noqa: E402,F401  (fixture: fake asset search)
+from test_density import provider  # noqa: F401  (fixture: fake asset search)
 
 DINING = [{"id": "t1", "label": "テーブル", "query": "family table", "layout": {"against_wall": "north"}},
           {"id": "wt", "label": "作業台", "query": "steel work table", "layout": {"against_wall": "south"}},

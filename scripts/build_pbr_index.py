@@ -19,7 +19,7 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from agentic_sim_world_gen import USER_AGENT, pbr  # noqa: E402
+from agentic_sim_world_gen import USER_AGENT, pbr
 
 UA = {"User-Agent": f"{USER_AGENT} build_pbr_index.py"}
 ACG = "https://ambientcg.com/api/v2/full_json"

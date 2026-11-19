@@ -20,8 +20,9 @@ one string of millimeters ("" where no part is over the cell), so a desk's grids
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 VERSION = 2  # 2: rows as strings of millimeters
 CELL = 0.03  # grid cell [m]

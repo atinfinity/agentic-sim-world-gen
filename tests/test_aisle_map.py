@@ -8,7 +8,6 @@ import pytest
 
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.layout import usability
-from agentic_sim_world_gen.layout.room import RoomGeometry
 from agentic_sim_world_gen.layout.widths import edt, narrowest, ridge, widest
 from agentic_sim_world_gen.preview.layout2d import render_svg
 from tests.test_plan import l_room
