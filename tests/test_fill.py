@@ -575,3 +575,48 @@ def test_daylight_with_nothing_outside_the_windows_is_an_issue(tmp_path):
     service.set_assumptions(tmp_path / "s", [], remove=["窓の外"])
     service.set_room(tmp_path / "s", site=True)
     assert not [i for i in service.status(tmp_path / "s")["issues"] if i["kind"] == "window_void"]
+
+
+def test_generic_window(tmp_path):
+    """A window opening no asset fills gets a plain frame and glass instead of a gray hole; the glass casts no
+    shadow."""
+    pytest.importorskip("pxr")
+    from pxr import Usd, UsdGeom, UsdPhysics
+
+    st = make(tmp_path, [], openings=[{"kind": "window", "wall": "south", "offset": 2.0, "width": 1.2}])
+    assert st["window_view"]["generic"] == ["window_0"] and st["issues"] == []
+    out = service.compose_scene(tmp_path / "s")
+    stage = Usd.Stage.Open(out["usd"])
+    base = "/World/Room/Windows/window_0"
+    assert stage.GetPrimAtPath(base).GetCustomDataByKey("agentic_sim_world_gen:window")["generic"] is True
+    glass = stage.GetPrimAtPath(f"{base}/Glass")
+    assert glass.HasAPI(UsdPhysics.CollisionAPI) and glass.GetAttribute("primvars:doNotCastShadows").Get() is True
+    box = UsdGeom.BBoxCache(Usd.TimeCode.Default(), ["default"]).ComputeWorldBound(stage.GetPrimAtPath(base)).ComputeAlignedRange()
+    lo, hi = box.GetMin(), box.GetMax()
+    assert hi[0] - lo[0] == pytest.approx(1.2, abs=1e-3) and lo[2] == pytest.approx(0.9) and hi[2] == pytest.approx(2.0)
+    assert hi[1] - lo[1] < 0.1  # in the wall, not sticking out of it
+
+
+def test_generic_window_free_text_ids_and_tiny(tmp_path):
+    """Opening ids are free text ("win-1"), prim names are identifiers; a window too small for the frame gets the
+    glass alone (no negative scales)."""
+    pytest.importorskip("pxr")
+    from pxr import Usd, UsdGeom
+
+    make(tmp_path, [], openings=[
+        {"id": "win-1", "kind": "window", "wall": "south", "offset": 1.0, "width": 1.0},
+        {"id": "win_1", "kind": "window", "wall": "south", "offset": 3.0, "width": 1.0},
+        {"id": "slit", "kind": "window", "wall": "north", "offset": 2.0, "width": 0.1, "height": 0.6},
+        {"id": "door-1", "kind": "door", "wall": "east", "offset": 2.0, "width": 1.2, "style": "auto_sliding"}])
+    stage = Usd.Stage.Open(service.compose_scene(tmp_path / "s")["usd"])
+    wins = {p.GetName(): p.GetCustomDataByKey("agentic_sim_world_gen:window")["opening"]
+            for p in stage.GetPrimAtPath("/World/Room/Windows").GetChildren()}
+    assert wins == {"win_1": "win-1", "win_1_1": "win_1", "slit": "slit"}
+    assert stage.GetPrimAtPath("/World/Room/Windows/win_1").GetCustomDataByKey("agentic_sim_world_gen:opening") == "win-1"
+    door = stage.GetPrimAtPath("/World/Room/Doors/door_1")
+    assert door.GetCustomDataByKey("agentic_sim_world_gen:door")["opening"] == "door-1"
+    assert door.GetCustomDataByKey("agentic_sim_world_gen:opening") == "door-1"
+    slit = stage.GetPrimAtPath("/World/Room/Windows/slit")
+    assert [c.GetName() for c in slit.GetChildren()] == ["Glass"]
+    scale = UsdGeom.Xformable(slit.GetChild("Glass")).GetOrderedXformOps()[-1].Get()
+    assert min(scale) > 0 and scale[0] == pytest.approx(0.1) and scale[2] == pytest.approx(0.6)

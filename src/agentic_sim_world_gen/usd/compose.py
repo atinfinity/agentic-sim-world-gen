@@ -33,6 +33,7 @@ from agentic_sim_world_gen.sdg import semantic_class
 from agentic_sim_world_gen.scene.spec import ResolvedScene
 from agentic_sim_world_gen.scene.zone_floors import zone_floors
 from agentic_sim_world_gen.usd.door import build_doors
+from agentic_sim_world_gen.usd.window import build_windows
 from agentic_sim_world_gen.usd.look import bind, box_mesh, build_lights, make_material, prism_mesh
 
 
@@ -78,7 +79,8 @@ RECT_NAMES = {"south": "Wall_S", "north": "Wall_N", "west": "Wall_W", "east": "W
 def build_room(stage: Usd.Stage, scene: ResolvedScene, root: str = "/World/Room", base_dir: Path | None = None) -> None:
     """Floor slab, walls (cut around doors/windows) and an optional ceiling, as meshes with the room's
     surface materials. A wall with openings becomes an Xform holding its solid parts (Part_00, ...).
-    Openings are empty, except auto_sliding doors (agentic_sim_world_gen.usd.door)."""
+    Openings are empty, except auto_sliding doors (agentic_sim_world_gen.usd.door) and windows no asset fills (a
+    plain frame and glass, agentic_sim_world_gen.usd.window)."""
     r = scene.spec.room
     geom = RoomGeometry(r)
     t = r.wall_thickness
@@ -170,6 +172,9 @@ def build_room(stage: Usd.Stage, scene: ResolvedScene, root: str = "/World/Room"
             prim = stage.GetPrimAtPath(f"{root}/{name}")
             prim.SetCustomDataByKey("agentic_sim_world_gen:openings", Vt.StringArray([o.id for o in w.openings]))
     build_doors(stage, geom, root, label)
+    # a window opening no asset fills gets a plain frame and glass, not a gray hole
+    have = {p.object_id for p in scene.placements if p.asset is not None}
+    build_windows(stage, geom, root, label, {o.opening for o in scene.spec.objects if o.opening and o.id in have})
 
 
 def _own_surface(surface, color, default):

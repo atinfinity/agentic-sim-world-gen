@@ -71,7 +71,7 @@ report["rtx"] = {k: settings.get(k) for k in (
 hidden = dollhouse_camera(stage)
 report["dollhouse"] = shoot("dollhouse")
 for name in hidden:
-    path = f"/World/{name}" if name.startswith("Objects/") else f"/World/Room/{name}"  # doors of hidden walls
+    path = f"/World/{name}" if name.startswith("Objects/") else f"/World/Room/{name}"  # walls, their windows and doors
     show(stage.GetPrimAtPath(path))
 
 # interior: camera in the south-west corner at eye height, looking at the far corner

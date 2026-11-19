@@ -12,6 +12,7 @@ Isaac Sim runs it while the timeline plays; omni.physx.graph must be enabled (it
 app; check_scene enables it when the stage has doors).
 
     /World/Room/Doors/<id>            Xform, customData agentic_sim_world_gen:door {opening, wall, travel, sensor}
+                                      (<id>: the opening id made a valid prim name, prim_name)
         Header, Panel_L, Panel_R      panels: Xform rigid body (Collider + Glass + Frame_*)
         Joint_L, Joint_R              PhysicsPrismaticJoint + PhysicsDriveAPI:linear
         Sensor                        OmniGraph
@@ -21,7 +22,7 @@ from __future__ import annotations
 
 import math
 
-from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
+from pxr import Gf, Sdf, Tf, Usd, UsdGeom, UsdPhysics, UsdShade
 
 from agentic_sim_world_gen.layout.room import RoomGeometry, Wall
 from agentic_sim_world_gen.scene.plan import Opening
@@ -40,6 +41,18 @@ STIFFNESS = 1000.0  # N/m
 DAMPING = 300.0  # N s/m (about critical for 20 kg)
 SENSE_Z = (0.03, 1.4)  # sensor boxes above the sill [m]: robots and people, not the floor
 TARGET = "drive:linear:physics:targetPosition"
+
+
+def prim_name(oid: str, used: set[str] | None = None) -> str:
+    """An opening id as a prim name: ids are free text ("win-1"), prim names must be identifiers. `used`
+    collects the names given so far ("win-1" and "win_1" become win_1 and win_1_1)."""
+    name = n = Tf.MakeValidIdentifier(oid)
+    k = 1
+    while used is not None and n in used:
+        n, k = f"{name}_{k}", k + 1
+    if used is not None:
+        used.add(n)
+    return n
 
 
 def _quat_z(deg: float) -> Gf.Quatf:
@@ -100,11 +113,12 @@ def build_doors(stage: Usd.Stage, geom: RoomGeometry, root: str, label) -> list[
     UsdGeom.Xform.Define(stage, f"{root}/Doors")
     glass = _material(stage, f"{root}/Looks/DoorGlass", (0.78, 0.86, 0.9), 0.25, 0.05, 0.0)
     alu = _material(stage, f"{root}/Looks/DoorFrame", (0.72, 0.73, 0.75), 1.0, 0.35, 0.8)
-    paths = []
+    paths, used = [], set()
     for w, o in doors:
         f = door_frame(geom, w, o)
-        base = f"{root}/Doors/{o.id}"
+        base = f"{root}/Doors/{prim_name(o.id, used)}"
         dp = UsdGeom.Xform.Define(stage, base).GetPrim()
+        dp.SetCustomDataByKey("agentic_sim_world_gen:opening", o.id)  # hidden with its wall in the dollhouse view
         dp.SetCustomDataByKey("agentic_sim_world_gen:door", {"opening": o.id, "wall": w.id, "travel": f["travel"],
                                                  "sensor": o.sensor, "style": o.style})
         label(dp, "door")

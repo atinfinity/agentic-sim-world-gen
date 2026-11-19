@@ -709,6 +709,16 @@ def _draw_view(s: ResolvedScene) -> dict[str, Any]:
                           "(select_asset; faces_each over 100 k is a scan) or stock fewer rows (set_fill rows=1)")}
 
 
+def _generic_windows(s: ResolvedScene) -> dict[str, Any]:
+    """Window openings no asset fills: compose puts a plain frame and glass in them."""
+    have = {p.object_id for p in s.placements if p.asset is not None}
+    filled = {o.opening for o in s.spec.objects if o.opening and o.id in have}
+    from agentic_sim_world_gen.layout.room import RoomGeometry
+
+    ids = [o.id for w in RoomGeometry(s.spec.room).walls for o in w.openings if o.kind == "window" and o.id not in filled]
+    return {"generic": ids} if ids else {}
+
+
 def _window_view(s: ResolvedScene) -> dict[str, Any]:
     """Windows (or a glass door) in a room with nothing outside: they show a gray void in the renders."""
     room = s.spec.room
@@ -720,7 +730,7 @@ def _window_view(s: ResolvedScene) -> dict[str, Any]:
     if _assumed(s, WINDOW_VIEW_ITEMS):
         return {}  # the agent recorded that the windows are not seen / covered
     home = room.place in (None, "home") or (room.place or "").endswith(("cafe", "restaurant", "bakery"))
-    return {"window_view": {"openings": seen, "stops_finish": True},
+    return {"window_view": {"openings": seen, **_generic_windows(s), "stops_finish": True},
             "window_view_hint": ("window_view: nothing is outside the room, so its windows show a gray void, and "
                                  "finish() stops here" + (" (with lighting daylight it is the issue window_void too)"
                                                           if room.lighting == "daylight" else "")
@@ -4811,14 +4821,15 @@ def fill_windows(scene: str | Path, covers: str | None = "auto", candidates: int
                 added.append(o.id)
     event = f"窓 {len(added)} 点を追加" if added else "窓はすべて埋まっている"
     if not_found:
-        event = (f"窓 {len(added)} 点を追加、" if added else "") + f"{len(not_found)} 点は合うアセットが無く空けたまま"
+        event = (f"窓 {len(added)} 点を追加、" if added else "") + f"{len(not_found)} 点は合うアセットが無い（窓は汎用の枠とガラス）"
     st = _save(s, _resolved_path(scene).parent, event, added[0] if added else None, windows_missing=not_found)
     st["added"] = added
     if not_found:
         st["not_found"] = [{k: v for k, v in w.items() if k != "opening"} for w in not_found]
         st["not_found_hint"] = ("no window / curtain asset fits these openings in the asset sources (the nearest is "
-                                "another kind of thing), so they stay empty: tell the user. A local:<dir> source "
-                                "with window assets can fill them (fill_windows again)")
+                                "another kind of thing): a window gets a plain aluminium frame and glass, a curtain "
+                                "is left out: tell the user. A local:<dir> source with window assets can fill them "
+                                "(fill_windows again)")
     return st
 
 

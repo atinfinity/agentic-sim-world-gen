@@ -171,8 +171,9 @@ When `status` / `get_scene` carries one of these (the user acted on the preview 
      asset had to stretch past 0.75–1.33x, or a curtain is taller than the room (a long one raises its rail up
      to the ceiling): pick another candidate. Windows and curtains come from an asset folder
      (`local:`) if there is one. Without them, an opening whose best asset is no window / curtain (only weak matches, or one
-     made for another line of work, such as a car door tagged window) is left empty and listed in `not_found`
-    : tell the user the windows stay open holes (or use `set_room(site=true)` so they show the outside).
+     made for another line of work, such as a car door tagged window) is listed in `not_found`; compose puts a
+     plain aluminium frame and glass in such a window (`window_view.generic`) and the curtain is left out: tell
+     the user (and use `set_room(site=true)` so the glass shows the outside).
 2. **Write the SceneSpec** and call `create_scene`.
    - **Preferences first**: call `get_preferences(place=<the place>)`. Its `defaults` are the user's own
      corrections from 2+ earlier scenes: leave them out of the spec unless the user asked otherwise this time.

@@ -237,7 +237,8 @@ offices / schools / labs / hospitals (cut to the window, down to the sill), none
 never get one. When photos show the windows, pass what they show (covers="blind" for slats or a roller,
 "curtain", or None for bare glass). Swap them like any object (view_candidates, select_asset).
 An opening whose best asset is no window / curtain (only weak matches, or made for another line of work: a
-car door tagged window) is left empty and listed in not_found: tell the user.
+car door tagged window) is listed in not_found: tell the user. compose puts a plain aluminium frame and glass
+in a window opening no asset fills (status window_view.generic), not a gray hole.
 
 - `scene_dir`: str
 - `covers`?: auto|curtain|blind
