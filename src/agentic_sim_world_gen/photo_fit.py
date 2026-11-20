@@ -440,7 +440,10 @@ class _Model:
             self._add(f"{oid}.width", 0.9 if o.kind == "door" else 1.2, 1)  # see _width: never below 0
             if o.kind == "window":
                 self._add(f"{oid}.sill", 0.9, 1)
-            self._add(f"{oid}.top", 2.0, 1)  # doors and windows alike
+            # a window's top starts at a door's 2.0 m on purpose: in Japanese rooms the window head lines up with
+            # the door head. Tried 1.6-2.4 m for windows: 1.8-2.4 gave the same fits; 1.6 sent one into a
+            # wrong minimum (test_a_thin_camera_beyond_a_wall_is_loose). The photos set the top; this is only the start
+            self._add(f"{oid}.top", 2.0, 1)
         for pid, p in req.points.items():
             for ax, g in (("x", w / 2), ("y", d / 2), ("z", p.z if p.z is not None else 1.0)):
                 if (getattr(p, ax) is None or (ax == "z" and p.z_sigma)) and not (p.wall and ax == ("y" if p.wall in ("south", "north") else "x")):
