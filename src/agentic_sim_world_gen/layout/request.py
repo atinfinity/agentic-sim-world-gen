@@ -206,7 +206,7 @@ def _check(ctx: _Ctx, c: RequestCheck) -> dict:
     if c.kind == "in_zone":
         g = ctx.geom
         areas = g.areas if g.site is not None else {}  # the site around a room: its areas and "outside"
-        if t not in g.zones and t not in areas and not (t == "outside" and g.site is not None):
+        if t not in g.room.zone_ids():  # refused on save; an old scene may still name one
             return _result(None, f"ゾーンが見つからない：{t}")
         out = []
         for poly in obj.polys:

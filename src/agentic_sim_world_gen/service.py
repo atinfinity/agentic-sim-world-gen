@@ -49,6 +49,8 @@ from agentic_sim_world_gen.scene.spec import (
     SceneSpec,
     Screen,
     SdgSpec,
+    check_zones,
+    drop_unknown_zones,
     record_from_dict,
     record_to_dict,
 )
@@ -486,6 +488,7 @@ def _save(scene: ResolvedScene, scene_dir: Path, event: str | None = None, focus
     from agentic_sim_world_gen.preview.candidates import write_html
     from agentic_sim_world_gen.preview.layout2d import write_svg
 
+    check_zones(scene.spec)  # before the solve: an unknown zone fails at once
     if fix and event is not None:
         event += _default_fixtures(scene)  # the place's ceiling fixtures
     if (made := _ensure_corners(scene)) and event is not None:  # (_ensure_shelves measures them too, for check)
@@ -2569,6 +2572,7 @@ def create_scene(spec: SceneSpec | dict[str, Any], out_dir: str | Path, candidat
     from agentic_sim_world_gen.inputs import resolve
 
     spec = spec if isinstance(spec, SceneSpec) else SceneSpec.model_validate(spec)
+    check_zones(spec)  # before the asset search
     spec.inputs = [resolve(i, Path.cwd()) for i in spec.inputs]
     found = _room_words(spec, Path(out_dir).expanduser())
     with _searching(spec.objects, candidates):
@@ -4541,6 +4545,7 @@ def set_room(scene: str | Path, floor_alt_queries: list[str] | None = None, wall
         data["zone_floors"] = {k: v for k, v in data["zone_floors"].items() if k in zones}
     before = s.spec.room.model_dump(mode="json")
     s.spec.room = Room.model_validate(data)
+    zones_gone = drop_unknown_zones(s.spec)  # another plan / no site: the zones it lacks are cleared
     from agentic_sim_world_gen.preferences import ROOM_ITEMS as PREF_ITEMS
     from agentic_sim_world_gen.preferences import room_target
     from agentic_sim_world_gen.preview.changes import ROOM_FIELDS_JA
@@ -4563,6 +4568,8 @@ def set_room(scene: str | Path, floor_alt_queries: list[str] | None = None, wall
     if changes.get("density") is not None or (s.spec.room.density and any(
             before[k] != after[k] for k in ("place", "goods", "goods_words"))):
         msg += "。" + _apply_density(s)
+    if zones_gone:
+        msg += f"。無くなったゾーンの指定を外した（{'、'.join(zones_gone)}）"
     out = _save(s, d, msg)
     if found:
         out["surface_candidates"] = found

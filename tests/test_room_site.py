@@ -125,6 +125,15 @@ def test_set_room_site(tmp_path):
     assert service.load(d).spec.room.site is None
 
 
+def test_set_room_without_site_clears_outside_zones(tmp_path):  # the zone it lacks would refuse the save
+    scene(tmp_path, [{"id": "vending", "query": "vending machine", "zone": "outside",
+                      "layout": {"against_wall": "outside:south"}}])
+    d = tmp_path / "t"
+    service.set_room(d, site=False)
+    assert service.load(d).spec.objects[0].zone is None
+    assert "無くなったゾーンの指定を外した（vending: outside）" in (d / "preview.json").read_text()
+
+
 def test_preview_and_license(tmp_path):
     from agentic_sim_world_gen import license
     from agentic_sim_world_gen.preview.layout2d import render_svg
