@@ -176,6 +176,28 @@ class Room(BaseModel):
             return {}  # set_room(site=true): the default site (asphalt, sun)
         return None if v is False else v  # set_room(site=false) removes it
 
+    def zone_ids(self) -> set[str]:
+        """The values ObjectSpec.zone / in_zone may take: the plan's zones, an outdoor site's areas, and with
+        a site around the room its areas and "outside". A rectangle without a plan has none."""
+        ids = {z.id for z in self.plan.zones} if self.plan is not None else set()
+        ids |= {a.id for a in self.areas}
+        if self.site is not None:
+            ids |= {a.id for a in self.site.areas} | {"outside"}
+        return ids
+
+    def camera_zone_ids(self) -> set[str]:
+        """The zones SdgCamera.zone may take: polygons of the room's own geometry (plan zones, an outdoor site's
+        areas). The site around a room is not one of them (RoomGeometry.zones)."""
+        return ({z.id for z in self.plan.zones} if self.plan is not None else set()) | {a.id for a in self.areas}
+
+    def zones_desc(self) -> str:
+        """The zones there are, for an error about an unknown one."""
+        if ids := self.zone_ids():
+            return f"the room's zones are {sorted(ids)}"
+        if self.outdoor:
+            return "the site has no areas (Room.areas)"
+        return "the plan has no zones" if self.plan is not None else "the room has no zones (a rectangle without a plan)"
+
     def footprint(self) -> tuple[float, float, float, float]:
         """The room with its outer walls from above: x0, y0, x1, y1."""
         if self.plan is not None:
@@ -1068,6 +1090,55 @@ class SceneSpec(BaseModel):
     @classmethod
     def load(cls, path: str | Path) -> SceneSpec:
         return cls.model_validate_json(Path(path).read_text(encoding="utf-8"))
+
+
+def _zone_uses(spec: SceneSpec) -> list[tuple[str, str | None, set[str]]]:
+    """(where, zone, the zones it may be) for every zone the spec names. The SDG camera stays in a polygon
+    of the room's geometry (plan zones, outdoor areas), not on the site around a room."""
+    known = spec.room.zone_ids()
+    uses = [(f"objects[{o.id}].zone", o.zone, known) for o in spec.objects]
+    uses += [(f"layout_options[{opt.name}].objects[{oid}].zone", p.zone, known)
+             for opt in spec.layout_options for oid, p in opt.objects.items()]
+    uses += [(f"requirements[{r.text}] in_zone", c.target or "", known) for r in spec.requirements
+             for c in r.checks if c.kind == "in_zone"]  # no target: refused too (it could only come out unknown)
+    if spec.sdg is not None:
+        uses.append(("sdg.camera.zone", spec.sdg.camera.zone, spec.room.camera_zone_ids()))
+    return uses
+
+
+def check_zones(spec: SceneSpec) -> None:
+    """Refuse a zone the room does not have. Before, it was ignored: the object fell back to the whole
+    room and an in_zone item came out unknown. Checked when a scene is made or saved, not on load, so an old
+    scene with a stale zone still opens and can be fixed. "" (and None) is no zone, except as an in_zone target."""
+    bad = [f"{where} = '{z}'" if z else f"{where} has no target" for where, z, ok in _zone_uses(spec)
+           if (z or where.endswith("in_zone")) and z not in ok]
+    if bad:
+        raise ValueError(f"unknown zone: {'; '.join(bad)}; {spec.room.zones_desc()}")
+
+
+def drop_unknown_zones(spec: SceneSpec) -> list[str]:
+    """Clear the zones the room no longer has (set_room with another plan or without the site); returns what was
+    cleared. An in_zone request item for a gone zone is dropped with its check."""
+    known = spec.room.zone_ids()
+    gone = []
+    for o in spec.objects:
+        if o.zone and o.zone not in known:
+            gone.append(f"{o.id}: {o.zone}")
+            o.zone = None
+    for opt in spec.layout_options:
+        for oid, p in opt.objects.items():
+            if p.zone and p.zone not in known:
+                gone.append(f"{opt.name}/{oid}: {p.zone}")
+                p.zone = None
+    for r in spec.requirements:
+        keep = [c for c in r.checks if c.kind != "in_zone" or c.target in known]
+        gone += [f"{r.text}: {c.target}" for c in r.checks if c not in keep]
+        r.checks = keep
+    if spec.sdg is not None and spec.sdg.camera.zone:
+        if spec.sdg.camera.zone not in spec.room.camera_zone_ids():
+            gone.append(f"sdg.camera: {spec.sdg.camera.zone}")
+            spec.sdg.camera.zone = None
+    return gone
 
 
 # --- resolved scene (spec + chosen assets) ---------------------------------
