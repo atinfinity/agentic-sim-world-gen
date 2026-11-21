@@ -127,6 +127,13 @@ def scan(uri: str, cache_dir: str | Path) -> dict[str, Any] | None:
     """Height grids of the asset at `uri`, cached by uri; None when it cannot be read (no tuck)."""
     from agentic_sim_world_gen.usd.reset_parts import _scan_cached
 
+    if uri.startswith("polyhaven:"):  # the fetched model (the classroom's tables); offline and not fetched: None
+        from agentic_sim_world_gen import polyhaven_models
+
+        try:
+            uri = str(polyhaven_models.local_usd(uri))
+        except Exception:
+            return None
     out = _scan_cached(f"knee{VERSION}", heights_of_stage, uri, cache_dir)
     return out or None
 
@@ -141,16 +148,17 @@ def _local(p: tuple[float, float], pos, yaw_deg: float) -> tuple[float, float]:
 def tuck_depth(desk: dict[str, Any], desk_pos, desk_yaw: float, desk_half: float, desk_side: float,
                chair: dict[str, Any], chair_yaw: float, chair_half: float, chair_side: float,
                toward_deg: float, z_step: float | Callable[[tuple[float, float]], float] = 0.0,
-               cap: float | None = None) -> float:
+               cap: float | None = None, offset: float = 0.0) -> float:
     """How deep [m] the chair can go under the desk (0 = not at all).
 
     desk / chair: their height grids. The chair stands on the desk's side `toward_deg` (world direction from the desk),
     centered on it, facing it. desk_half / chair_half: their half extents along toward_deg; desk_side / chair_side:
     their half extents across it. z_step: the chair's floor minus the desk's (0 on one floor), or a function of the
-    chair's center giving it. cap: at most this deep (validate's MAX_TUCK)."""
+    chair's center giving it. cap: at most this deep (validate's MAX_TUCK). offset: the chair's center this far
+    from the desk's across toward_deg (+ = toward_deg + 90; two chairs at one desk)."""
     from agentic_sim_world_gen.layout.validate import LEG_MARGIN
 
-    if chair_side + LEG_MARGIN > desk_side + 1e-9:
+    if abs(offset) + chair_side + LEG_MARGIN > desk_side + 1e-9:
         return 0.0  # it would run into the legs at the desk's corners
     (ux, uy), (vx, vy) = _unit(toward_deg), _unit(toward_deg + 90.0)
     desk, chair = decoded(desk), decoded(chair)
@@ -159,22 +167,22 @@ def tuck_depth(desk: dict[str, Any], desk_pos, desk_yaw: float, desk_half: float
     for k in range(n, round(MIN_TUCK / STEP) - 1, -1):
         t = k * STEP
         cu = desk_half + chair_half - t  # the chair's center along toward_deg, from the desk's
-        cpos = (desk_pos[0] + ux * cu, desk_pos[1] + uy * cu)
+        cpos = (desk_pos[0] + ux * cu + vx * offset, desk_pos[1] + uy * cu + vy * offset)
         dz = z_step(cpos) if callable(z_step) else z_step
         if _clear(desk, desk_pos, desk_yaw, chair, cpos, chair_yaw, desk_half - t, desk_half, chair_side,
-                  (ux, uy), (vx, vy), dz):
+                  (ux, uy), (vx, vy), dz, offset):
             best = t
             break
     return round(best, 3)
 
 
-def _clear(desk, desk_pos, desk_yaw, chair, cpos, chair_yaw, u0, u1, side, u, v, z_step) -> bool:
+def _clear(desk, desk_pos, desk_yaw, chair, cpos, chair_yaw, u0, u1, side, u, v, z_step, v0: float = 0.0) -> bool:
     nu = max(1, math.ceil((u1 - u0) / SAMPLE))
     nv = max(1, math.ceil(2 * side / SAMPLE))
     for a in range(nu + 1):
         uu = u0 + (u1 - u0) * a / nu
         for b in range(nv + 1):
-            vv = -side + 2 * side * b / nv
+            vv = v0 - side + 2 * side * b / nv
             w = (desk_pos[0] + u[0] * uu + v[0] * vv, desk_pos[1] + u[1] * uu + v[1] * vv)
             top = at(chair, "hi", *_local(w, cpos, chair_yaw))
             if top is None:

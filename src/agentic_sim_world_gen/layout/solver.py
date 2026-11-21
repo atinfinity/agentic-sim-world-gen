@@ -13,8 +13,15 @@ import re
 from collections.abc import Callable
 
 from agentic_sim_world_gen.assets.record import AssetRecord
-from agentic_sim_world_gen.layout.array import block_record, instances
-from agentic_sim_world_gen.layout.frame import facing_of, front_local_deg, half_extent, unit, yaw_for_facing  # noqa: F401
+from agentic_sim_world_gen.layout.array import block_record, fitted, instances, placed_size, unit_size
+from agentic_sim_world_gen.layout.frame import (  # noqa: F401
+    facing_of,
+    front_local_deg,
+    half_extent,
+    norm_deg,
+    unit,
+    yaw_for_facing,
+)
 from agentic_sim_world_gen.layout.room import Face, RoomGeometry
 from agentic_sim_world_gen.layout.validate import FLAT_PASS, Issue, flat, footprint, overlap_depth
 from agentic_sim_world_gen.scene.fixtures import ceiling_at
@@ -24,6 +31,9 @@ from agentic_sim_world_gen.scene.walls import trim_depth
 WALL_GAP = 0.02  # between a wall and an object's back
 HANG_GAP = 0.005  # a thing hung on the wall (layout.wall_height): almost touching
 NEAR_GAP = 0.10  # default gap for in_front_of
+SEAT_GAP = 0.03  # a chair measured not to go under its desk: the seat's front at the desk's edge
+SEAT_SPACING = 0.01  # chairs at one desk, moved toward its middle to pass its legs, stay this far apart
+INWARD_STEP = 0.005  # ... tried in steps of this [m] (0.01 overshot one chair and left the other 2 mm short)
 SIDE_GAP = 0.05  # default gap for next_to
 STEP = 0.05  # sampling step along a wall
 
@@ -145,7 +155,7 @@ def _order(scene: ResolvedScene) -> tuple[list[str], list[Issue]]:
 def _polys(o: ObjectSpec, a: AssetRecord, pos, yaw) -> list:
     """Footprints of an object (one per array unit) if it stood at pos/yaw."""
     q = o.model_copy(update={"position": tuple(pos), "yaw_deg": yaw})
-    return [footprint(u.position, a.size_m[:2], u.yaw_deg) for u in instances(q, a)]
+    return [footprint(u.position, placed_size(q, a)[:2], u.yaw_deg) for u in instances(q, a)]  # stretched by fit_scale
 
 
 def _penetration(scene: ResolvedScene, asset: dict[str, AssetRecord], o: ObjectSpec, pos, yaw, placed: list[str],
@@ -164,13 +174,13 @@ def _penetration(scene: ResolvedScene, asset: dict[str, AssetRecord], o: ObjectS
             continue
         if q.layout is not None and q.layout.on:
             continue  # sits on another placed object, which counts already
-        if q.z >= o.z + a.size_m[2] - 0.01 or o.z >= q.z + qa.size_m[2] - 0.01:
+        if q.z >= o.z + placed_size(o, a)[2] - 0.01 or o.z >= q.z + placed_size(q, qa)[2] - 0.01:
             continue  # one is above the other (ceiling signage over a shelf)
         for pa in mine:
             for pb in _polys(q, qa, q.position, q.yaw_deg):
                 total += overlap_depth(pa, pb)
     if geom is not None:
-        top = o.z + a.size_m[2]
+        top = o.z + placed_size(o, a)[2]  # stretched by fit_scale
         for ob in geom.obstacles:
             if ob.zone is not None and ob.zone == o.zone:
                 continue
@@ -297,21 +307,148 @@ def _fill(scene: ResolvedScene, asset: dict[str, AssetRecord], o: ObjectSpec, a:
     return [Issue("shelf_fit", (o.id, t.id), problem)] if problem else []
 
 
+def _measured(o: ObjectSpec, a: AssetRecord, t: ObjectSpec, ta: AssetRecord) -> bool:
+    """Both parts' knee grids are measured and the pair is one that tucks (a chair at a desk). Not a part
+    stretched by fit_scale: its grid is at the asset's own size."""
+    from agentic_sim_world_gen.layout.validate import tuck_pair
+
+    return bool(o.fit_scale is None and t.fit_scale is None
+                and a.knee and ta.knee and "lo" in a.knee and "lo" in ta.knee and tuck_pair(o, a, t, ta))
+
+
+def front_gap(scene: ResolvedScene, oid: str) -> float | None:
+    """The gap the placed object `oid` stands at in front of its in_front_of target [m] (negative = under it), as
+    placed - a measured tuck, the desk's edge or NEAR_GAP when its layout leaves gap out. Chairs at the desks of an
+    array: the median over the seats. None when it is not placed in front of a placed target."""
+    o = scene.obj(oid)
+    lay = o.layout
+    if lay is None or not lay.in_front_of or o.position is None:
+        return None
+    t = scene.obj(lay.in_front_of)
+    asset = {p.object_id: p.asset for p in scene.placements}
+    a, ta = asset.get(oid), asset.get(t.id)
+    if a is None or ta is None or t.position is None:
+        return None
+    tf = facing_of(ta, t)
+    if o.array is not None and t.array is not None:  # as _seat places them
+        if not o.array.seats:
+            return None
+        units, k, gaps = {u.id: u for u in instances(t, ta)}, o.array.count, []
+        for sid, x, y, yaw in o.array.seats:
+            m = re.fullmatch(r"r(\d+)c(\d+)", sid)
+            if m is None or (u := units.get(f"{t.id}.r{m[1]}c{int(m[2]) // k}")) is None:
+                continue
+            tu = tf + (u.yaw_deg - t.yaw_deg)
+            fx, fy = unit(tu)
+            gaps.append((x - u.position[0]) * fx + (y - u.position[1]) * fy
+                        - half_extent(fitted(t, ta), u.yaw_deg, tu) - half_extent(fitted(o, a), yaw, tu))
+        return round(sorted(gaps)[len(gaps) // 2], 4) if gaps else None
+    if ta.corner:
+        tf -= 45.0
+    fx, fy = unit(tf)
+    return round((o.position[0] - t.position[0]) * fx + (o.position[1] - t.position[1]) * fy
+                 - half_extent(block_record(t, ta), t.yaw_deg, tf) - half_extent(block_record(o, a), o.yaw_deg, tf), 4)
+
+
+def _default_gap(lay) -> float:
+    """in_front_of with no gap and no measured knee space: the user's remembered gap, else NEAR_GAP."""
+    return NEAR_GAP if lay.remembered_gap is None else lay.remembered_gap
+
+
 def _tuck(o: ObjectSpec, a: AssetRecord, t: ObjectSpec, ta: AssetRecord, tf: float,
           floor: Callable[[tuple[float, float]], float]) -> float:
     """How deep the chair `o` goes under the desk `t` it is in front of: 0 unless both were measured
     (AssetRecord.knee) and the parts leave room (agentic_sim_world_gen.layout.knee). floor: the chair's floor height at a point
     (a level under it lifts it only after it is placed)."""
     from agentic_sim_world_gen.layout.knee import tuck_depth
-    from agentic_sim_world_gen.layout.validate import MAX_TUCK, tuck_pair
+    from agentic_sim_world_gen.layout.validate import MAX_TUCK
 
-    if (not (a.knee and ta.knee and "lo" in a.knee and "lo" in ta.knee) or o.array is not None
-            or t.array is not None or not tuck_pair(o, a, t, ta)):
+    if o.array is not None or t.array is not None or not _measured(o, a, t, ta):
         return 0.0
     return tuck_depth(ta.knee, t.position, t.yaw_deg, half_extent(ta, t.yaw_deg, tf),
                       half_extent(ta, t.yaw_deg, tf + 90.0), a.knee, o.yaw_deg, half_extent(a, o.yaw_deg, tf),
                       half_extent(a, o.yaw_deg, tf + 90.0), tf, lambda p: floor(p) - (t.z or 0.0),
                       cap=MAX_TUCK * min(a.size_m[:2]))
+
+
+def _seat(scene: ResolvedScene, geom: RoomGeometry, o: ObjectSpec, a: AssetRecord, t: ObjectSpec,
+          ta: AssetRecord) -> list[Issue]:
+    """Chairs `o` (an array) at the desks of the array `t`: o.array.count chairs at each desk, spread evenly
+    across its front and facing it, each tucked under as far as both measured parts allow - moved toward the
+    desk's middle when its legs keep the evenly spread chair out. Writes
+    o.array.seats; o's own position / yaw are the desks' block turned around."""
+    from agentic_sim_world_gen.layout.knee import tuck_depth
+    from agentic_sim_world_gen.layout.validate import MAX_TUCK
+
+    lay, k = o.layout, o.array.count
+    fa, fta = fitted(o, a), fitted(t, ta)  # extents as placed, like unit_size
+    knees = lay.gap is None and _measured(o, a, t, ta)
+    # measured and not going under (legs, an apron, its arms, the desk's corners): at the desk's edge
+    gap = lay.gap if lay.gap is not None else SEAT_GAP if knees else _default_gap(lay)
+    tf0 = facing_of(ta, t)
+    cyaw0 = yaw_for_facing(a, o, tf0 + 180.0)
+    desk_w, chair_w = unit_size(t, ta)[0], unit_size(o, a)[0]
+    seats = []
+    for u in instances(t, ta):
+        r, c = (int(x) for x in re.fullmatch(r".*\.r(\d+)c(\d+)", u.id).groups())
+        tf = tf0 + (u.yaw_deg - t.yaw_deg)  # a row turned around (alternate / back_to_back) faces the other way
+        cyaw = yaw_for_facing(a, o, tf + 180.0)
+        (fx, fy), (lx, ly) = unit(tf), unit(tf + 90.0)
+
+        def tuck(off: float, u=u, tf=tf, cyaw=cyaw) -> float:
+            return tuck_depth(
+                ta.knee, u.position, u.yaw_deg, half_extent(fta, u.yaw_deg, tf), half_extent(fta, u.yaw_deg, tf + 90.0),
+                a.knee, cyaw, half_extent(fa, cyaw, tf), half_extent(fa, cyaw, tf + 90.0), tf,
+                lambda p: _floor_at(scene, geom, o, p) - (t.z or 0.0), cap=MAX_TUCK * min(a.size_m[:2]),
+                offset=off) if knees else 0.0
+
+        offs = [(i + 0.5 - k / 2) * desk_w / k for i in range(k)]
+        deeps = [tuck(off) for off in offs]
+        if knees:
+            offs, deeps = _inward(offs, deeps, tuck, 2 * half_extent(fa, cyaw, tf + 90.0), desk_w / k)
+        for i, (off, deep) in enumerate(zip(offs, deeps, strict=True)):
+            dist = half_extent(fta, u.yaw_deg, tf) + half_extent(fa, cyaw, tf) + (-deep if deep > 0 else gap)
+            x, y = u.position[0] + fx * dist + lx * off, u.position[1] + fy * dist + ly * off
+            seats.append((f"r{r}c{c * k + i}", round(x, 4), round(y, 4), round(norm_deg(cyaw), 3)))
+    o.array.seats = seats
+    o.position, o.yaw_deg, o.z = tuple(t.position), round(cyaw0, 3), t.z
+    if k * chair_w > desk_w + 1e-6:
+        return [Issue("bad_layout", (o.id, t.id), f"{k} chairs {chair_w:.2f} m wide do not fit side by side at a desk "
+                      f"{desk_w:.2f} m wide: lower array.count (chairs per desk)")]
+    return []
+
+
+def _inward(offs: list[float], deeps: list[float], tuck: Callable[[float], float], width: float,
+            slot: float) -> tuple[list[float], list[float]]:
+    """Chairs at one desk (offsets across its front, how deep each goes under) that its legs keep out where spread
+    evenly: each moved toward the middle by the least that takes it under, at most the room its slot leaves
+    (slot - width - SEAT_SPACING) and never past the middle. Two that then come closer than SEAT_SPACING: the one
+    moved further goes back (at the desk's edge). width: a chair's extent across the desk."""
+    room = slot - width - SEAT_SPACING
+    steps = int(max(0.0, room) / INWARD_STEP + 1e-9)
+    offs, deeps, moved = list(offs), list(deeps), [0.0] * len(offs)
+    for i, off in enumerate(offs):
+        if deeps[i] > 0 or not off or not steps:
+            continue
+        far = off - math.copysign(min(steps * INWARD_STEP, abs(off)), off)
+        if not tuck(far):
+            continue  # not even moved all the way: something else keeps it out (its arms, the apron)
+        for j in range(1, steps + 1):
+            at = off - math.copysign(j * INWARD_STEP, off)
+            if at * off < 0:
+                break
+            if (d := tuck(at)) > 0:
+                offs[i], deeps[i], moved[i] = at, d, j * INWARD_STEP
+                break
+    even = [(i + 0.5 - len(offs) / 2) * slot for i in range(len(offs))]
+    while True:
+        close = [(i, j) for i in range(len(offs)) for j in range(i + 1, len(offs))
+                 if abs(offs[i] - offs[j]) < width + SEAT_SPACING - 1e-9 and (moved[i] or moved[j])]
+        if not close:
+            return offs, deeps
+        i, j = close[0]
+        b = i if moved[i] >= moved[j] else j
+        offs[b], deeps[b], moved[b] = even[b], 0.0, 0.0
 
 
 def _floor_at(scene: ResolvedScene, geom: RoomGeometry, o: ObjectSpec, p: tuple[float, float]) -> float:
@@ -335,6 +472,8 @@ def solve(scene: ResolvedScene) -> list[Issue]:
     for oid in order:
         o = scene.obj(oid)
         lay, a = o.layout, asset.get(oid)
+        if o.array is not None:
+            o.array.seats = []  # written again by _seat while the chairs are still in front of an array of desks
         if o.fill is not None:
             issues += _fill(scene, asset, o, a)
             continue
@@ -351,11 +490,14 @@ def solve(scene: ResolvedScene) -> list[Issue]:
                     o.fit_scale = _fit(o, a, op.width, top - sill)
                     issues += _fit_issue(o, op.id)
                 placed.append(oid)
+            if a is not None:
+                ext[oid] = block_record(o, a)  # with this solve's stretch, not the last save's
             continue
         if o.covers is not None:
             o.fit_scale = None
             if a is not None:
                 issues += _cover(o, a, geom, scene.spec.room.height)
+                ext[oid] = block_record(o, a)
             continue
         if lay is None:
             if o.facing_deg is not None and a is not None:  # fixed spot, front toward facing_deg (IFC furniture)
@@ -396,6 +538,10 @@ def solve(scene: ResolvedScene) -> list[Issue]:
             if ta is None or t.position is None:
                 issues.append(Issue("bad_layout", (oid,), f"target '{tid}' is not placed"))
                 continue
+            if lay.in_front_of and o.array is not None and t.array is not None:  # chairs at each desk
+                issues += _seat(scene, geom, o, a, t, ta)
+                placed.append(oid)
+                continue
             tf = facing_of(ta, t)
             if ta.corner:  # not the diagonal (outside the bbox's open corner) but the side 45 deg clockwise of it
                 tf -= 45.0
@@ -403,9 +549,10 @@ def solve(scene: ResolvedScene) -> list[Issue]:
                 o.yaw_deg = yaw_for_facing(a, o, tf + 180.0)  # face the target
                 # Under a desk only as far as its measured knee space allows: the bbox can't tell whether
                 # it is open, and an overlapping chair explodes in PhysX (Isaac Sim check, 2026-10-25).
-                gap = NEAR_GAP if lay.gap is None else lay.gap
-                if lay.gap is None and (deep := _tuck(o, a, t, ta, tf, lambda p, o=o: _floor_at(scene, geom, o, p))) > 0:
-                    gap = -deep
+                gap = lay.gap
+                if gap is None:  # measured and not going under: at the desk's edge, as at an array
+                    deep = _tuck(o, a, t, ta, tf, lambda p, o=o: _floor_at(scene, geom, o, p))
+                    gap = -deep if deep > 0 else SEAT_GAP if _measured(o, a, t, ta) else _default_gap(lay)
                 dist = half_extent(ext[tid], t.yaw_deg, tf) + half_extent(ext[oid], o.yaw_deg, tf) + gap
                 ux, uy = unit(tf)
             else:

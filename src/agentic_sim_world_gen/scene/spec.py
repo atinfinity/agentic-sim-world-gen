@@ -14,7 +14,15 @@ from dataclasses import asdict, fields
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
+from pydantic.json_schema import SkipJsonSchema
 
 from agentic_sim_world_gen.assets.record import AssetRecord
 from agentic_sim_world_gen.scene.columns import Column, FloorArea
@@ -384,7 +392,7 @@ class Layout(BaseModel):
         description="position along the wall, 0..1 (west->east for north/south, south->north for east/west); "
         "omit to pick a free spot; a corner piece: < 0.5 the corner at the start, >= 0.5 at the end",
     )
-    in_front_of: str | None = Field(default=None, description="object id; stand at its front, facing it (chair at desk)")
+    in_front_of: str | None = Field(default=None, description="object id; stand at its front, facing it (chair at desk; an array of chairs in front of an array of desks: array.count chairs at each desk)")
     next_to: str | None = Field(default=None, description="object id; stand beside it with the same facing")
     side: Literal["left", "right"] = Field(default="right", description="for next_to: right/left as seen by a person facing the target's front (sitting at the desk)")
     on: str | None = Field(default=None, description="object id; sit on top of it (lamp on desk)")
@@ -418,6 +426,17 @@ class Layout(BaseModel):
         default=None, description="distance to the wall/target [m]; negative = tuck under (only if the knee space is open, else PhysX "
         "explodes). Left out, a chair in_front_of a desk goes under as far as their measured parts allow"
     )
+    # set by create_scene from the user's remembered in_front_of gap, not shown to the agent: used where gap
+    # is left out and no knee space is measured - a measured tuck or the desk's edge wins
+    remembered_gap: SkipJsonSchema[float | None] = None
+
+    def keeping(self, old: Layout | None) -> Layout:
+        """This layout replacing `old`: the remembered gap stays while it is in front of the same target with gap
+        left out (it is not in the agent's schema, so a new layout never repeats it). A copy when changed."""
+        if (old is None or old.remembered_gap is None or self.remembered_gap is not None or self.gap is not None
+                or not self.in_front_of or self.in_front_of != old.in_front_of):
+            return self
+        return self.model_copy(update={"remembered_gap": old.remembered_gap})
 
     @model_validator(mode="after")
     def _on_only(self) -> Layout:
@@ -432,7 +451,8 @@ class Array(BaseModel):
     """Repeat the object in a grid: `count` units side by side per row, `rows` rows (see agentic_sim_world_gen.layout.array).
     The block is placed by `layout` like one object; its front is the units' front."""
 
-    count: int = Field(default=1, ge=1, description="units side by side in each row")
+    count: int = Field(default=1, ge=1, description="units side by side in each row; chairs in_front_of an array of "
+                       "desks: chairs per desk")
     rows: int = Field(default=1, ge=1)
     spacing: float = Field(default=0.0, ge=0, description="gap between units in a row [m]")
     aisle: float = Field(default=1.2, ge=0, description="gap in front of a row [m] (forklift aisle ~3.0)")
@@ -446,6 +466,10 @@ class Array(BaseModel):
         "(store gondola islands, double-sided shelving: 2 rows = one island with shelves on both sides)",
     )
     back_gap: float = Field(default=0.1, ge=0, description="gap between back-to-back rows [m] (alternate / back_to_back)")
+    seats: list[tuple[str, float, float, float]] = Field(
+        default_factory=list, description="set by the solver when layout.in_front_of is an array of desks: "
+        "(unit, x, y, yaw_deg) per chair, `count` chairs at each desk facing it; rows / spacing / aisle are then unused",
+    )
 
 
 class Fill(BaseModel):
@@ -963,7 +987,7 @@ class ObjectPatch(BaseModel):
     def apply(self, o: ObjectSpec) -> None:
         given = self.model_fields_set
         if "layout" in given:
-            o.layout = self.layout
+            o.layout = self.layout if self.layout is None else self.layout.keeping(o.layout)
             if self.layout is not None:
                 o.opening = o.facing_deg = None
         if "position" in given and self.position is not None:

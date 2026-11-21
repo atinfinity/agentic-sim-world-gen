@@ -4,6 +4,7 @@ import json
 import math
 import struct
 import zlib
+from pathlib import Path
 
 import pytest
 from test_service import SPEC, fake  # noqa: F401  (fixture)
@@ -307,3 +308,25 @@ def test_request_with_a_photo():
     out = plan_questions("この写真 /tmp/a/shop.JPG みたいな酒屋を作って")
     assert out["photos"] == ["/tmp/a/shop.JPG"] and "set_input" in out["hint"] and "compare_photo" in out["hint"]
     assert "photos" not in plan_questions("酒屋を作って")
+
+
+def test_a_scene_named_by_a_relative_path_reaches_isaac_sim_absolute(fake, tmp_path, monkeypatch):  # noqa: F811
+    """Isaac Sim runs in another folder; a relative scene.usda there renders without its ./assets models."""
+    jpeg(tmp_path / "p.jpg", 400, 300)
+    service.create_scene({**SPEC, "inputs": [{"id": "p", "path": str(tmp_path / "p.jpg"), "license": "CC0-1.0",
+                                              "camera": {"position": [1, 0.3, 1.4], "look_at": [1, 2, 1]}}]},
+                         tmp_path / "s")
+    (tmp_path / "s" / "scene.usda").write_text("#usda 1.0\n")
+    seen = []
+
+    def fake_run(script, args, timeout_s):
+        seen.append(args)
+        open(args[args.index("--compare") + 1], "wb").write(b"png")
+        return type("P", (), {"returncode": 0})(), {}
+
+    monkeypatch.setattr(service, "_run_isaac", fake_run)
+    monkeypatch.chdir(tmp_path)
+    assert service.compare_photo("s")["ok"]
+    usd, jobs = Path(seen[0][0]), Path(seen[0][seen[0].index("--jobs") + 1])
+    assert usd.is_absolute() and usd == tmp_path / "s" / "scene.usda"
+    assert all(Path(j["out"]).is_absolute() for j in json.loads(jobs.read_text()))

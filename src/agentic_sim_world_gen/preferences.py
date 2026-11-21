@@ -5,7 +5,8 @@ Only structured corrections are learned (no parsing of the user's words):
 - room (per Room.place, target "place:<place>" or "room" without one): lighting, lighting_scale, floor, walls,
   from set_room(..., correction=True);
 - objects (per kind = the head noun of the query: "chair", "rack"): gap (layout.gap of an in_front_of relation;
-  negative = tucked under the desk) from set_layout(..., correction=True), aisle / spacing (Array) from
+  negative = tucked under the desk; before / after = where it stood, solver.front_gap; applied as
+  layout.remembered_gap, which a measured tuck overrides) from set_layout(..., correction=True), aisle / spacing (Array) from
   set_array(..., correction=True);
 - asset (per query, "office chair"): the candidate the user picked, from select_asset on the preview page
   (by = preview) or select_asset(..., correction=True).
@@ -221,8 +222,10 @@ def apply(spec, placements) -> list[dict[str, Any]]:
             continue
         lay = o.layout
         if lay is not None and lay.in_front_of and lay.gap is None and (e := prefs.get(("gap", k))) is not None:
-            lay.gap = float(e["value"])
-            note("gap", k, lay.gap, o.id)
+            # not lay.gap: that would turn off the measured tuck at desks whose knee space is measured
+            lay.remembered_gap = float(e["value"])
+            note("gap", k, lay.remembered_gap, o.id)
+            rows[-1].value += "。机の下の空間を測れた椅子と机では、測った位置"  # the solver's tuck wins there
         if o.array is not None:
             for item in ("aisle", "spacing"):
                 if item not in o.array.model_fields_set and (e := prefs.get((item, k))) is not None:

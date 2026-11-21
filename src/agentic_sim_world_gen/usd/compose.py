@@ -781,7 +781,7 @@ def _compose(scene: ResolvedScene, out_path: Path, uri_map: dict[str, str] | Non
         if o.label:
             group.SetCustomDataByKey("agentic_sim_world_gen:label", o.label)
         if o.array is not None:
-            group.SetCustomDataByKey("agentic_sim_world_gen:array", o.array.model_dump())
+            group.SetCustomDataByKey("agentic_sim_world_gen:array", o.array.model_dump(exclude={"seats"}))  # the seats are the units
         else:
             group.SetCustomDataByKey("agentic_sim_world_gen:fill", {"on": o.fill.on, "count": len(insts)})
         paths = [f"/World/Objects/{o.id}/{inst.id.replace('.', '_')}" for inst in insts]

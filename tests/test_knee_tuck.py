@@ -218,3 +218,14 @@ def test_record_keeps_the_grid():
     from agentic_sim_world_gen.scene.spec import record_from_dict, record_to_dict
 
     assert record_from_dict(record_to_dict(r)).knee == {"v": 1}
+
+
+def test_measured_and_kept_out_it_stands_at_the_edge(tmp_path, fake):
+    """a modesty panel keeps the chair out; measured, it stands at the desk's edge, not NEAR_GAP off."""
+    GRIDS["https://example.com/desk.usd"] = PANEL
+    try:
+        st = make(tmp_path, {"in_front_of": "desk"})
+    finally:
+        GRIDS["https://example.com/desk.usd"] = DESK
+    o = {x["id"]: x for x in st["objects"]}
+    assert o["chair"]["position"][1] == pytest.approx(2.73 - 0.35 - 0.02 - 0.35 - 0.275 - 0.03)

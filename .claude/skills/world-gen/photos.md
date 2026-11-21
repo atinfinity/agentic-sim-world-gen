@@ -164,11 +164,12 @@ tool).
    | `photo_placement` key | Means | Fix |
    |---|---|---|
    | `misplaced` | placed more than 0.3 m from its located feet (`there` = what stands there now) | place_from_photos moves it; move `there` too |
-   | `located_unknown` | located, but no object has that id | add the object, or fix the locate's `object` |
+   | `located_unknown` | located, but no object has that id | add the object, fix the locate's `object`, or (removed on purpose, e.g. merged into an array) `compose_scene(not_in_photos={id: why})` |
    | `unlocated` | floor furniture with no locate | pick 2-4 feet / corners in the photos, fit_photos again with the scene folder, place_from_photos |
    | `one_point` | rests on one located point | add 1-3 more feet / corners (a diagonal one), fit again, place_from_photos |
 
-   Only an object no photo shows on the floor goes in `compose_scene(not_in_photos={id: why})`; report those.
+   Only an object no photo shows on the floor, or a located id removed on purpose, goes in
+   `compose_scene(not_in_photos={id: why})`; report those.
    Any still `unlocated` at the end are in finish's `report_must_include`: name them in the report.
    Size ranges come from what you estimated (wide ranges: ±30%). Use the windows/doors in room.openings when
    visible, then `fill_windows` with what covers them in the photos: `covers="blind"` (slats, a roller),

@@ -94,6 +94,17 @@ def test_located_unknown(tmp_path):
         lo["object"] = "table"
     f.write_text(json.dumps(j))
     assert service.status(d)["photo_placement"]["located_unknown"] == ["table"]
+    # one removed on purpose (merged into an array) is let go like furniture the photos do not show
+    with pytest.raises(ValueError, match=r"yet \(unlocated: desk, wardrobe\)"):  # those still stop it
+        service.compose_scene(d, not_in_photos={"table": "merged into the desks' array"})
+    assert "located_unknown" not in service.status(d)["photo_placement"]
+    with pytest.raises(ValueError, match="no object or located id tabel"):  # a typo is not kept
+        service.compose_scene(d, not_in_photos={"tabel": "merged"})
+    # the id comes back as an object: it is checked again, the removal's exemption does not hide it
+    f = d / "scene.resolved.json"
+    f.write_text(f.read_text().replace('"desk"', '"table"'))
+    service.move_object(d, "table", position=[0.6, 0.6])
+    assert [m["id"] for m in service.status(d)["photo_placement"]["misplaced"]] == ["table"]
 
 
 def test_fit_warns_without_located_furniture():
