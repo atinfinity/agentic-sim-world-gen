@@ -155,7 +155,8 @@ Write scene.usda. Assets are referenced by URL; localize=True downloads them and
 could not be painted (no material matched, asset not fetched) - fix the materials or say so in the report.
 With photos fitted (photo_fit.json in the scene) it stops while floor furniture is not placed by them
 (status photo_placement: misplaced, unlocated, one_point, located_unknown): locate 2-4 feet of each and
-fit_photos again. not_in_photos={id: why} only for an object no photo shows on the floor (kept; "" removes).
+fit_photos again. not_in_photos={id: why} only for an object no photo shows on the floor, or a located id removed
+on purpose (merged into an array) (kept; "" removes).
 
 - `scene_dir`: str
 - `localize`?: bool
@@ -1242,13 +1243,14 @@ The nested argument types named above.
 Repeat the object in a grid: `count` units side by side per row, `rows` rows (see agentic_sim_world_gen.layout.array).
 The block is placed by `layout` like one object; its front is the units' front.
 
-- `count`?: int — units side by side in each row
+- `count`?: int — units side by side in each row; chairs in_front_of an array of desks: chairs per desk
 - `rows`?: int
 - `spacing`?: num — gap between units in a row [m]
 - `aisle`?: num — gap in front of a row [m] (forklift aisle ~3.0)
 - `alternate`?: bool — rows face each other across aisles and stand back to back otherwise (warehouse racks)
 - `back_to_back`?: bool — like alternate, but rows start back to back, then face each other across aisles (store gondola islands, double-sided shelving: 2 rows = one island with shelves on both sides)
 - `back_gap`?: num — gap between back-to-back rows [m] (alternate / back_to_back)
+- `seats`?: [[str,num,num,num]] — set by the solver when layout.in_front_of is an array of desks: (unit, x, y, yaw_deg) per chair, `count` chairs at each desk facing it; rows / spacing / aisle are then unused
 
 ## Assumption
 
@@ -1429,7 +1431,7 @@ Walls: south y=0, north y=depth, west x=0, east x=width. "Front" is the side a p
 
 - `against_wall`?: str — back to this wall, front facing into the room: north/south/east/west/any, or a plan wall id (w3); a corner piece (candidate with corner: true; measured once chosen, when the name says corner) goes into a corner at an end of the wall, open side in
 - `along`?: num — position along the wall, 0..1 (west->east for north/south, south->north for east/west); omit to pick a free spot; a corner piece: < 0.5 the corner at the start, >= 0.5 at the end
-- `in_front_of`?: str — object id; stand at its front, facing it (chair at desk)
+- `in_front_of`?: str — object id; stand at its front, facing it (chair at desk; an array of chairs in front of an array of desks: array.count chairs at each desk)
 - `next_to`?: str — object id; stand beside it with the same facing
 - `side`?: left|right — for next_to: right/left as seen by a person facing the target's front (sitting at the desk)
 - `on`?: str — object id; sit on top of it (lamp on desk)

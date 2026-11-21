@@ -49,7 +49,10 @@ def test_two_corrections_become_the_default(tmp_path):
     st = make(tmp_path, "c")
     s = service.load(st["scene_dir"])
     assert s.spec.room.lighting == "home"
-    assert s.obj("chair").layout.gap == -0.2
+    lay = s.obj("chair").layout
+    assert lay.gap is None and lay.remembered_gap == -0.2  # not a given gap: a measured tuck would still win
+    from agentic_sim_world_gen.layout.solver import front_gap
+    assert front_gap(s, "chair") == pytest.approx(-0.2, abs=1e-3)  # no knee space measured: it stands there
     rows = by_item(st)
     assert rows[(None, "lighting")]["basis"] == preferences.BASIS and not rows[(None, "lighting")]["given"]
     assert rows[("chair", "gap")]["basis"] == preferences.BASIS

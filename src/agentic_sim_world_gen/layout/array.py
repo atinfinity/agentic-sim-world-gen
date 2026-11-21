@@ -10,6 +10,10 @@ big object (against_wall puts the block's back on the wall).
                      row0 ->front | aisle | <- row1 row2 -> | aisle | <- row3 ...
     back_to_back=True: rows start back to back (store gondola islands, double-sided shelves):
                      <- row0 row1 -> | aisle | <- row2 row3 -> ...
+
+An array of chairs with layout.in_front_of an array of desks is no grid of its own: `count` chairs stand at
+each desk, side by side across its front and facing it, tucked under as far as the knee space allows. The solver
+writes each chair's spot to Array.seats (see solver._seat), and the chairs follow the desks' rows and aisles.
 """
 
 from __future__ import annotations
@@ -80,11 +84,21 @@ def block_size(o: ObjectSpec, a: AssetRecord) -> tuple[float, float]:
     return n * lat + (n - 1) * o.array.spacing, total
 
 
+def fitted(o: ObjectSpec, a: AssetRecord) -> AssetRecord:
+    """`a` with the size it is placed at: stretched by o.fit_scale (a window, a curtain - kept when it is placed
+    by hand or by a layout afterwards), as compose scales it. Centered Z-up bbox, like block_record."""
+    if o.fit_scale is None:
+        return a
+    w, d, h = (v * k for v, k in zip(a.size_m, o.fit_scale, strict=True))
+    s = a.meters_per_unit
+    return replace(a, bbox_min=(-w / 2 / s, -d / 2 / s, 0.0), bbox_max=(w / 2 / s, d / 2 / s, h / s), up_axis="Z")
+
+
 def block_record(o: ObjectSpec, a: AssetRecord) -> AssetRecord:
     """A stand-in record with the block's footprint (in the asset's local axes) for the solver."""
     if o.array is None:
-        return a
-    h = a.size_m[2]
+        return fitted(o, a)
+    h = placed_size(o, a)[2]
     U, V = block_size(o, a)
     bw, bd = (V, U) if _front_on_x(a, o) else (U, V)
     s = a.meters_per_unit
@@ -94,6 +108,21 @@ def block_record(o: ObjectSpec, a: AssetRecord) -> AssetRecord:
     )
 
 
+def seated(o: ObjectSpec) -> bool:
+    """An array of chairs placed at the desks of another array (layout.in_front_of): its units are the
+    solver's Array.seats, not a grid of its own."""
+    return o.array is not None and bool(o.array.seats) and o.layout is not None and bool(o.layout.in_front_of)
+
+
+def n_units(o: ObjectSpec) -> int:
+    """How many copies an array puts in the scene: one per seat for chairs at desks, else count x rows."""
+    if o.array is None:
+        return 1
+    if seated(o):
+        return len(o.array.seats)
+    return o.array.count * (o.array.rows or 1)
+
+
 def instances(o: ObjectSpec, a: AssetRecord) -> list[Instance]:
     if o.fill is not None:  # products on a fixture's shelves (agentic_sim_world_gen.layout.fill writes the slots)
         return [Instance(f"{o.id}.{n}", o.id, (x, y), yaw, z) for n, x, y, yaw, z in o.fill.slots]
@@ -101,6 +130,8 @@ def instances(o: ObjectSpec, a: AssetRecord) -> list[Instance]:
         return []
     if o.array is None:
         return [Instance(o.id, o.id, tuple(o.position), o.yaw_deg, o.z)]
+    if seated(o):  # chairs at an array of desks: the solver wrote where each one stands
+        return [Instance(f"{o.id}.{n}", o.id, (x, y), yaw, o.z) for n, x, y, yaw in o.array.seats]
     lat, dep = unit_size(o, a)
     rows, V = _rows(o, dep)
     n, sp = o.array.count, o.array.spacing

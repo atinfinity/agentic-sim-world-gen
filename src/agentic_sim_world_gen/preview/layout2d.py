@@ -6,7 +6,7 @@ import math
 from html import escape
 from pathlib import Path
 
-from agentic_sim_world_gen.layout.array import instances, placed_size
+from agentic_sim_world_gen.layout.array import instances, n_units, placed_size
 from agentic_sim_world_gen.layout.frame import facing_of, half_extent
 from agentic_sim_world_gen.layout.room import RoomGeometry, centroid
 from agentic_sim_world_gen.layout.validate import check, flat, footprint
@@ -300,7 +300,7 @@ def render_svg(scene: ResolvedScene, px_per_m: float | None = None, margin_px: f
             continue
         if o.z > 0.005:
             out.append(f'<text x="{cx:.1f}" y="{cy + 24:.1f}" text-anchor="middle" fill="#444" font-size="10">z={o.z:.2f}m</text>')
-        label = escape(o.label or o.id) + (f" ×{o.array.count * o.array.rows}" if o.array else "")
+        label = escape(o.label or o.id) + (f" ×{n_units(o)}" if o.array else "")
         out.append(f'<text x="{cx:.1f}" y="{cy - 2:.1f}" text-anchor="middle" font-weight="bold">{label}</text>')
         out.append(
             f'<text x="{cx:.1f}" y="{cy + 12:.1f}" text-anchor="middle" fill="#444" font-size="10">'

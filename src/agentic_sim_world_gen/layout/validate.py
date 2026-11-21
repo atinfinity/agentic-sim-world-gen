@@ -400,7 +400,8 @@ def check(scene: ResolvedScene, tol: float = 0.01, allow_tuck: bool = True) -> l
     issues += [i for _, _, i in sorted(found, key=lambda f: f[:2])]  # the order the pairwise loop gave
     chairs = {k for k, a in assets.items() if (a.rigid_body_count or 0) > 1 and objs[parent[k]].fill is None
               and _kind_words(objs[parent[k]], a) & TUCKERS}
-    return issues + _touching_chairs(chairs, polys, zr, assets, box, tol, parent, objs) + _misaligned_arrays(scene)
+    return (issues + _touching_chairs(chairs, polys, zr, assets, box, tol, parent, objs) + _misaligned_arrays(scene)
+            + _unseated_chairs(scene))
 
 
 def _apart(a: str, b: str, need: float, box: dict, parent: dict, objs: dict) -> tuple[dict, ...]:
@@ -441,6 +442,37 @@ def _touching_chairs(chairs: set[str], polys: dict, zr: dict, assets: dict, box:
                                  f"({assets[a].rigid_body_count} bodies) and PhysX blows them up when they touch, "
                                  f"which stops the GPU physics: leave {JOINT_GAP * 100:.0f} cm (array spacing)",
                                  _apart(a, b, math.ceil((JOINT_GAP - g) * 100 + 1) / 100, box, parent, objs)))
+    return out
+
+
+UNSEATED_NEAR = 0.3  # m between a chair's and a desk's footprints: the chairs are meant for those desks
+
+
+def _unseated_chairs(scene: ResolvedScene) -> list[Issue]:
+    """An array of chairs laid out as a grid of its own among the rows of an array of desks: the rows of
+    the two grids drift apart (a classroom: 5 cm off at the front row, overlapping at the back) and the
+    chairs are not tucked. layout.in_front_of the desks puts `count` chairs at each desk instead."""
+    from agentic_sim_world_gen.layout.array import instances, seated
+
+    arrs = [(scene.obj(p.object_id), p.asset) for p in scene.placements]
+    arrs = [(o, a) for o, a in arrs if o.array is not None and a is not None and o.position is not None]
+    out = []
+    for o, a in arrs:
+        if seated(o) or not _kind_words(o, a) & TUCKERS:
+            continue
+        for t, ta in arrs:
+            if t is o or not _kind_words(t, ta) & OVERS or _kind_words(t, ta) & TUCKERS:
+                continue
+            desks = [footprint(u.position, ta.size_m[:2], u.yaw_deg) for u in instances(t, ta)]
+            near = any(gap(footprint(c.position, a.size_m[:2], c.yaw_deg), d) < UNSEATED_NEAR
+                       for c in instances(o, a) for d in desks)
+            if near:
+                per = max(1, round(o.array.count * o.array.rows / max(1, t.array.count * t.array.rows)))
+                out.append(Issue("unseated_chairs", (o.id, t.id), f"the chairs are a grid of their own among the desks "
+                                 f"of '{t.id}': their rows drift off the desks' rows and are not tucked under. Give "
+                                 f"'{o.id}' layout.in_front_of = '{t.id}' with array.count = chairs per desk "
+                                 f"(here {per}): then each desk gets its chairs, facing it and tucked under"))
+                break
     return out
 
 

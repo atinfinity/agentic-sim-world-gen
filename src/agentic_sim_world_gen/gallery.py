@@ -18,6 +18,7 @@ from html import escape
 from pathlib import Path
 from typing import Any
 
+from agentic_sim_world_gen.layout.array import n_units
 from agentic_sim_world_gen.scene.spec import STORE_PLACES, SceneSpec
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "examples"  # the repository (an editable install)
@@ -59,8 +60,8 @@ def _fixtures(spec: SceneSpec) -> list[str]:
         if o.fill is not None or (o.layout is not None and getattr(o.layout, "on", None)):
             continue
         name = o.label or o.query
-        if o.array is not None and o.array.count * o.array.rows > 1:
-            name += f" ×{o.array.count * o.array.rows}"
+        if o.array is not None and n_units(o) > 1:
+            name += f" ×{n_units(o)}"
         if name not in out:
             out.append(name)
     return out

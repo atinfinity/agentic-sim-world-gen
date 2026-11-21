@@ -143,7 +143,8 @@ def set_provider(p: AssetProvider | None) -> None:
 
 
 def _resolved_path(scene: str | Path) -> Path:
-    p = Path(scene).expanduser()
+    # absolute: Isaac Sim runs in another folder, and a relative scene.usda there drops its ./assets references
+    p = Path(scene).expanduser().absolute()
     return p / RESOLVED if p.is_dir() or p.suffix != ".json" else p
 
 
@@ -604,7 +605,8 @@ KNEE_RETRY_S = 3600  # an asset that could not be read is tried again after this
 
 def _ensure_knees(scene: ResolvedScene) -> None:
     """Measure the parts of each chair in front of a desk and of that desk (how far it goes under; once per
-    selected asset, kept in the candidate so the solver needs no USD). Arrays are not tucked, so not measured.
+    selected asset, kept in the candidate so the solver needs no USD). An array of chairs at an array of desks too
+   ; a single chair at an array or an array at a single desk is not tucked, so not measured.
     Unreadable: {"v", "failed"} (no tuck), measured again after KNEE_RETRY_S or with a new knee.VERSION."""
     import time
 
@@ -616,7 +618,7 @@ def _ensure_knees(scene: ResolvedScene) -> None:
     for o in scene.spec.objects:
         lay = o.layout
         if (lay is None or not lay.in_front_of or lay.gap is not None or lay.in_front_of not in by
-                or o.array is not None or scene.obj(lay.in_front_of).array is not None):
+                or (o.array is None) != (scene.obj(lay.in_front_of).array is None)):  # chairs at desks
             continue
         mine, theirs = by.get(o.id), by[lay.in_front_of]
         if mine is None or mine.asset is None or theirs.asset is None:
@@ -2960,12 +2962,14 @@ def _drop(s: ResolvedScene, ids: set[str]) -> None:
 def _bodies(s: ResolvedScene) -> int:
     """Objects Isaac Sim will simulate: one per array unit, one per shelf product (fill slots, after solve;
     static display stock, Fill.physics, does not count)."""
+    from agentic_sim_world_gen.layout.array import n_units
+
     n = 0
     for o in s.spec.objects:
         if o.fill is not None:
             n += sum(1 for slot in o.fill.slots if o.fill.simulated(slot[0]))
         elif o.array is not None:
-            n += o.array.count * (o.array.rows or 1)
+            n += n_units(o)
         else:
             n += 1
     return n
@@ -2973,10 +2977,12 @@ def _bodies(s: ResolvedScene) -> int:
 
 def _units(o: ObjectSpec) -> int:
     """Copies of the asset object `o` puts in the USD: fill slots (static stock too), array units, or one."""
+    from agentic_sim_world_gen.layout.array import n_units
+
     if o.fill is not None:
         return len(o.fill.slots)
     if o.array is not None:
-        return o.array.count * (o.array.rows or 1)
+        return n_units(o)
     return 1
 
 
@@ -3726,22 +3732,34 @@ def _camera_warnings(s: ResolvedScene, input_id: str | None = None) -> list[str]
     return out
 
 
-def _photo_placement(s: ResolvedScene, d: Path) -> dict[str, Any]:
-    """Furniture placed away from where the photos put it (photo_fit.json's located objects)."""
-    from agentic_sim_world_gen.layout.validate import located_misses
+def _located(d: Path) -> dict[str, Any] | None:
+    """photo_fit.json's located objects by id, or None without a readable fit."""
     from agentic_sim_world_gen.photo_fit import located_objects
 
     f = d / "photo_fit.json"
     if not f.exists():
-        return {}
+        return None
     try:
-        objects, _ = located_objects(json.loads(f.read_text()).get("result", {}).get("located") or [])
+        return located_objects(json.loads(f.read_text()).get("result", {}).get("located") or [])[0]
     except (OSError, ValueError, AttributeError):
+        return None
+
+
+def _photo_placement(s: ResolvedScene, d: Path) -> dict[str, Any]:
+    """Furniture placed away from where the photos put it (photo_fit.json's located objects)."""
+    from agentic_sim_world_gen.layout.validate import located_misses
+
+    objects = _located(d)
+    if objects is None:
         return {}
     exempt = _photo_exempt(d)
+    ids = {o.id for o in s.spec.objects}
+    # removed on purpose (merged into an array); kept apart so one that comes back is checked again
+    gone = {k: v for k, v in _photo_exempt(d, PHOTO_GONE).items() if k not in ids}
     miss, unknown = located_misses(s, objects)
     miss = [m for m in miss if m["id"] not in exempt]
-    ids = {o.id for o in s.spec.objects}
+    unknown = [k for k in unknown if k not in exempt and k not in gone]
+    exempt = {**exempt, **gone}
     unlocated = [o.id for o in s.spec.objects if o.id not in objects and o.id not in exempt and _floor_furniture(o)]
     one_point = [k for k, v in objects.items() if len(v["points"]) == 1 and k in ids and k not in exempt]
     if not miss and not unknown and not unlocated and not one_point:
@@ -3766,36 +3784,50 @@ def _photo_placement(s: ResolvedScene, d: Path) -> dict[str, Any]:
         out["hint"] = ("unlocated: no photo locates these floor pieces (placed by a guess): report these to the user"
                        + ("; one_point: add more feet of these" if one_point else ""))
         return out
-    out["hint"] = ("the photos (fit_photos locate with object) put these elsewhere: place_from_photos moves each "
-                   "to its located feet (the asset's footprint fitted to them) instead of a relation guess"
-                   + ("; `there` is what now stands at that spot - move it too" if any("there" in m for m in miss)
-                      else "")
-                   + ("; located_unknown: no object has that id - add it or fix the locate's object" if unknown
-                      else "")
+    hint = []
+    if miss:
+        hint.append("the photos (fit_photos locate with object) put these elsewhere: place_from_photos moves each "
+                    "to its located feet (the asset's footprint fitted to them) instead of a relation guess"
+                    + ("; `there` is what now stands at that spot - move it too" if any("there" in m for m in miss)
+                       else ""))
+    if unknown:
+        hint.append("located_unknown: no object has that id - add it, fix the locate's object, or (removed on "
+                    "purpose, e.g. merged into an array) compose_scene(not_in_photos={id: why})")
+    out["hint"] = ("; ".join(hint)
                    + ("; unlocated: no photo locates these - report these" if unlocated else "")
                    + ("; one_point: add more feet of these" if one_point else ""))
     return out
 
 
 PHOTO_EXEMPT = "not_in_photos.json"  # {object id: why the photos cannot locate it}, kept across fits
+PHOTO_GONE = "not_in_photos_removed.json"  # {located id no object has: why it was removed}
 
 
-def _photo_exempt(d: Path) -> dict[str, str]:
+def _photo_exempt(d: Path, name: str = PHOTO_EXEMPT) -> dict[str, str]:
     try:
-        j = json.loads((d / PHOTO_EXEMPT).read_text())
+        j = json.loads((d / name).read_text())
     except (OSError, ValueError):
         return {}
     return {str(k): str(v) for k, v in j.items() if v} if isinstance(j, dict) else {}
 
 
-def _set_photo_exempt(d: Path, given: dict[str, str]) -> None:
-    ex = _photo_exempt(d)
+def _set_photo_exempt(d: Path, given: dict[str, str], ids: set[str]) -> None:
+    """Scene objects go to PHOTO_EXEMPT, located ids no object has to PHOTO_GONE; "" removes from both.
+    An id that is neither is a typo: refused rather than kept for good."""
+    located = _located(d) or {}
+    bad = sorted(k for k, v in given.items() if v and k not in ids and k not in located)
+    if bad:
+        raise ValueError(f"not_in_photos: no object or located id {', '.join(bad)} - check the spelling "
+                         "(status objects, photo_placement)")
+    ex, gone = _photo_exempt(d), _photo_exempt(d, PHOTO_GONE)
     for k, v in given.items():
+        ex.pop(k, None)
+        gone.pop(k, None)
         if v:
-            ex[k] = v
-        else:
-            ex.pop(k, None)
+            (ex if k in ids else gone)[k] = v
     (d / PHOTO_EXEMPT).write_text(json.dumps(ex, ensure_ascii=False, indent=1))
+    if gone or (d / PHOTO_GONE).exists():
+        (d / PHOTO_GONE).write_text(json.dumps(gone, ensure_ascii=False, indent=1))
 
 
 def _photo_gate(s: ResolvedScene, d: Path) -> str | None:
@@ -4248,24 +4280,28 @@ def set_layout(
     """Set (or clear with None) an object's relational layout; the solver re-places it.
     front_offset_deg corrects the asset front (180 = it was facing backwards, +-90 = sideways).
     correction: the user asked for this change; the in_front_of gap is remembered per kind."""
-    from agentic_sim_world_gen.layout.solver import NEAR_GAP
+    from agentic_sim_world_gen.layout.solver import NEAR_GAP, front_gap
     from agentic_sim_world_gen.preferences import kind
 
     s = load(scene)
     _placement(s, object_id)
     o = s.obj(object_id)
     old = o.layout
-    before = NEAR_GAP if old is None or not old.in_front_of or old.gap is None else old.gap
-    o.layout = None if layout is None else (layout if isinstance(layout, Layout) else Layout.model_validate(layout))
+    # what it stood at, not NEAR_GAP: a tucked chair or one at the desk's edge was not 0.10 m off
+    before = old.gap if old is not None and old.in_front_of and old.gap is not None else front_gap(s, object_id)
+    before = NEAR_GAP if before is None else before
+    o.layout = None if layout is None else \
+        (layout if isinstance(layout, Layout) else Layout.model_validate(layout)).keeping(old)
     if o.layout is not None:
         o.opening = o.covers = None  # the placement rules exclude each other (covers too)
         o.facing_deg = None  # the layout decides the facing
     if front_offset_deg is not None:
         o.front_offset_deg = front_offset_deg
     _placed_by_user(o, correction)
-    if o.layout is not None and o.layout.in_front_of:
-        _learn(correction, "gap", kind(o.query), _resolved_path(scene).parent, before,
-               NEAR_GAP if o.layout.gap is None else o.layout.gap)
+    # a gap the user gave; left out it is back to the automatic one (measured tuck, desk's edge, NEAR_GAP), which is
+    # no value to remember - a tuck learned so would be applied at desks nobody measured
+    if o.layout is not None and o.layout.in_front_of and o.layout.gap is not None:
+        _learn(correction, "gap", kind(o.query), _resolved_path(scene).parent, before, o.layout.gap)
     return _save(s, _resolved_path(scene).parent, f"{_name(s, object_id)} の配置を変更", object_id)
 
 
@@ -5167,7 +5203,8 @@ def _screens_off(stage) -> list[str]:
 def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bool = False,
                   log: bool = True, not_in_photos: dict[str, str] | None = None) -> dict[str, Any]:
     """log=False: no history entry of its own (the preview page rewrites the USD after each edit) and no photo
-    gate. not_in_photos: {object id: why} for furniture the photos cannot locate (kept; "" removes one)."""
+    gate. not_in_photos: {object id: why} for furniture the photos cannot locate, or a located id removed on
+    purpose (merged into an array) (kept; "" removes one)."""
     from agentic_sim_world_gen.usd.compose import compose
 
     path = _resolved_path(scene)
@@ -5175,7 +5212,7 @@ def compose_scene(scene: str | Path, out: str | Path | None = None, localize: bo
     if s.spec.layout_options and log:
         raise ValueError("layout options are still open: choose_layout(name) with the user's pick, or 'best', first")
     if not_in_photos:
-        _set_photo_exempt(path.parent, not_in_photos)
+        _set_photo_exempt(path.parent, not_in_photos, {o.id for o in s.spec.objects})
     if log and (why := _photo_gate(s, path.parent)):
         raise ValueError(why)
     from agentic_sim_world_gen.assets.providers.isaac_index import rebase_uri

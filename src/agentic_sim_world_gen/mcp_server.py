@@ -69,6 +69,8 @@ spacing, aisle, alternate} (or set_array). The block is placed by its layout lik
 alternate=true makes rows face each other across aisles and stand back to back otherwise.
 back_to_back=true starts with a back-to-back pair (store gondola islands, double-sided shelves).
 Units get ids <id>.r<row>c<col> in issues.
+Chairs at a block of desks: an array of chairs with layout in_front_of the desk array and array.count =
+chairs per desk; each desk gets its chairs (tucked under when the knee space allows), rows follow the desks.
 Stocked shelves (products on a gondola, drinks in a cooler): one object per product with `fill`
 {on: fixture id, levels (0 = lowest board), span (part of the board width, e.g. [0, 0.5]), rows,
 units} (or set_fill). Shelf boards are found from the fixture's geometry; products stand in rows
@@ -922,7 +924,8 @@ def compose_scene(scene_dir: str, localize: bool = False,
     could not be painted (no material matched, asset not fetched) - fix the materials or say so in the report.
     With photos fitted (photo_fit.json in the scene) it stops while floor furniture is not placed by them
     (status photo_placement: misplaced, unlocated, one_point, located_unknown): locate 2-4 feet of each and
-    fit_photos again. not_in_photos={id: why} only for an object no photo shows on the floor (kept; "" removes)."""
+    fit_photos again. not_in_photos={id: why} only for an object no photo shows on the floor, or a located id removed
+    on purpose (merged into an array) (kept; "" removes)."""
     r = service.compose_scene(scene_dir, localize=localize, not_in_photos=not_in_photos)
     return service.with_language(scene_dir, r)
 
