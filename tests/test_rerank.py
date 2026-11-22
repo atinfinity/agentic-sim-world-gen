@@ -354,3 +354,58 @@ def test_with_names_a_modifier_not_the_head():
     assert not score(rec("sofa", "sofa"), "sofa with 3 seats").weak  # a quantity after "with" stays one token
     assert [r.name for r, _ in rerank([cab, desk], "desk with drawers")][0] == "desk"
     assert [r.name for r, _ in rerank([desk, cab], "chest of drawers")] == ["desk", "cab"]  # "of": unchanged order
+
+
+def test_score_reads_an_asset_again_when_it_changes():
+    """score() keeps what it read of an asset by its content: changed tags or a new card are read again."""
+    r = rec("sm_thing_a01", "thing", ["box"], "A thing.")
+    assert score(r, "lamp").score == 0
+    r.tags.append("floor lamp")
+    assert score(r, "floor lamp").matched == ["'floor lamp' in class/tags"]
+    r.tags.clear()
+    assert score(r, "floor lamp").score == 0
+
+
+def test_score_follows_the_asset_cards(tmp_path, monkeypatch):
+    import json
+
+    r = rec("sm_thing_a01", "thing", [], "A thing.")
+    f = tmp_path / "cards.jsonl"
+    monkeypatch.setenv("AGENTIC_SIM_WORLD_GEN_ASSET_CARDS", str(f))
+    assert score(r, "lamp").score == 0  # no card file
+    f.write_text(json.dumps({"key": "example.com/sm_thing_a01", "kind": "lamp"}) + "\n")
+    assert score(r, "lamp").matched == ["card: a lamp"]
+
+
+def test_score_without_a_word_in_common_is_zero():
+    """The shortcut for a query none of whose words the asset has matches the full scoring."""
+    assert score(SOFA, "white board", ["whiteboard"]).score == 0
+    board = rec("sm_board", "whiteboard", [], "")
+    assert score(board, "white board").score > 0  # "white board" read as "whiteboard"
+    assert score(DESK, "white lamp").score > 0  # a modifier alone ("white" in the caption) still counts a little
+
+
+def test_asset_key_keeps_values_apart():
+    """The content key of _asset: None is not "None", a word is not a one-word list, numbers are not words."""
+    from agentic_sim_world_gen.assets.rerank import _key
+
+    assert len({_key(None), _key("None"), _key(["None"]), _key([None]), _key(1), _key("1"), _key([])}) == 7
+    assert _key(["a", "b"]) == _key(("a", "b"))
+    assert _key([None, "a"]) == _key((None, "a")) and _key(["a"]) != _key([["a"]])
+
+
+def test_score_sees_the_cards_file_change(tmp_path, monkeypatch):
+    """The cards file is stat'ed on every call: an edit or AGENTIC_SIM_WORLD_GEN_ASSET_CARDS=0 is seen at once."""
+    import json
+    import os
+
+    r = rec("sm_thing_a01", "thing", [], "A thing.")
+    f = tmp_path / "cards.jsonl"
+    f.write_text(json.dumps({"key": "example.com/sm_thing_a01", "kind": "lamp"}) + "\n")
+    monkeypatch.setenv("AGENTIC_SIM_WORLD_GEN_ASSET_CARDS", str(f))
+    assert score(r, "lamp").matched == ["card: a lamp"]
+    f.write_text(json.dumps({"key": "example.com/sm_thing_a01", "kind": "chair"}) + "\n")
+    os.utime(f, (1, 1))  # another mtime, however fast the file was written
+    assert score(r, "lamp").score < 1 and score(r, "chair").matched == ["card: a chair"]
+    monkeypatch.setenv("AGENTIC_SIM_WORLD_GEN_ASSET_CARDS", "0")
+    assert score(r, "lamp").score == 0

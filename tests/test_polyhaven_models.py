@@ -319,3 +319,47 @@ def test_old_cache_is_rewrapped_without_downloading(site, tmp_path):
     assert m2["files"]["model.usda"] == hashlib.sha256((d / "model.usda").read_bytes()).hexdigest()
     assert _cutout_of(d)[1].sourceName == "r"
     assert ph.fetch("dining_chair_02") == m2  # once
+
+
+def test_records_open_only_fetched_manifests(site, monkeypatch):
+    """records() lists the cache folder once and reads the manifest of a fetched model only."""
+    ph.fetch("dining_chair_02")
+    asked = []
+    real = ph.cached
+    monkeypatch.setattr(ph, "cached", lambda name: asked.append(name) or real(name))
+    recs = {r.name: r for r in PolyHavenProvider().records()}
+    assert asked == ["dining_chair_02"] and set(recs) == {"dining_chair_02", "side_table_01"}
+    assert recs["dining_chair_02"] == ph.to_asset_record(
+        next(r for r in ph._load(str(ph.index_path())) if r["id"] == "dining_chair_02"), real("dining_chair_02"))
+
+
+def test_records_follow_fetch_and_removal(site):
+    """The records are kept between searches, and made again when a model is fetched or removed."""
+    import shutil
+
+    def chair():
+        return next(r for r in PolyHavenProvider().records() if r.name == "dining_chair_02")
+
+    catalog = chair().size_m
+    assert PolyHavenProvider().records() is PolyHavenProvider().records()  # kept
+    ph.fetch("dining_chair_02")
+    measured = chair().size_m
+    assert measured != catalog
+    shutil.rmtree(ph.cache_root() / "dining_chair_02")
+    assert chair().size_m == catalog
+
+
+def test_records_follow_a_new_manifest(site):
+    """A model fetched again (a new manifest.json) makes the records again."""
+    import os
+
+    ph.fetch("dining_chair_02")
+    f = ph.cache_root() / "dining_chair_02" / "manifest.json"
+    before = PolyHavenProvider().records()
+    m = json.loads(f.read_text())
+    m["size_m"] = [9.0, 9.0, 9.0]
+    f.write_text(json.dumps(m))
+    os.utime(f, ns=(1, 1))  # another mtime, however fast the file was written
+    after = PolyHavenProvider().records()
+    assert after is not before
+    assert after == tuple(ph.to_asset_record(r, ph.cached(r["id"])) for r in ph._load(str(ph.index_path())))
