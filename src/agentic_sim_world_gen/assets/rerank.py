@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from functools import lru_cache
+from typing import Any
 
 from agentic_sim_world_gen.assets import cards
 from agentic_sim_world_gen.assets.record import AssetRecord
@@ -237,35 +239,88 @@ class Match:
         return self.score < WEAK
 
 
-def score(rec: AssetRecord, query: str, alt_queries: list[str] | None = None) -> Match:
+@dataclass(frozen=True)
+class _Asset:
+    """What score() reads of an asset, worked out once per content. Shared by every later call: never
+    changed in place (lists, as score() compares them with lists)."""
+    cls: list[str]
+    tags: list[list[str]]
+    cap: list[str]
+    name: list[str]
+    everything: frozenset[str]
+    whole: frozenset[str]
+    known: list[list[str]]
+    vocab: frozenset[str]  # every word above: a query none of whose words is here scores 0
+
+
+_ASSETS: dict[tuple, _Asset] = {}
+_ASSETS_MAX = 50_000  # entries; emptied when full (all the offline indexes together have ~10k assets)
+
+
+def _key(v: Any) -> Any:
+    if v is None or type(v) is str:  # str and None stay apart: "None" is no None
+        return v
+    if isinstance(v, (list, tuple)):  # read the same as a list or a tuple; never the word "seq" alone
+        return ("seq", *v) if all(type(x) is str for x in v) else ("seq", *map(_key, v))
+    return (repr(type(v)), repr(v))
+
+
+def _asset(rec: AssetRecord, card: dict[str, Any]) -> _Asset:
+    # keyed by everything below reads: a record whose tags or card change is read again
+    k = (rec.semantic_class, _key(rec.raw.get("kind")), _key(rec.tags), rec.caption, rec.name,
+         *(_key(card.get(f)) for f in ("colors", "materials", "kind", "also")))
+    if (a := _ASSETS.get(k)) is not None:
+        return a
     # no USD class: a local asset's asset.json slug names the thing just as well ("croissant", "curry bread")
     # class and tags get the same word order as the query: tag "beer can 6pack" names a beer can like "beer can 6 pack"
     cls, tags = phrases(rec)
     cap = words(rec.caption)
     name = words(re.sub(r"[_\-.]|(?<=[a-z])(?=[A-Z])", " ", rec.name))  # also split camelCase
     everything = set(cls) | set(cap) | set(name) | {w for t in tags for w in t}
-    card = cards.of(rec) or {}
     everything |= {w for t in [*(card.get("colors") or []), *(card.get("materials") or [])] for w in words(t)}
     whole = everything - set(cap) | set(_lead(cap))  # the caption's own noun phrase, not its parts
     # what a look at the asset said it is: its names, each with the noun last
     known = [noun_last(words(t), join=True) for t in [card.get("kind"), *(card.get("also") or [])] if t]
+    if len(_ASSETS) >= _ASSETS_MAX:
+        _ASSETS.clear()
     known = [k for k in known if k]
+    a = _ASSETS[k] = _Asset(cls, tags, cap, name, frozenset(everything), frozenset(whole), known,
+                            frozenset(everything).union(*known))
+    return a
+
+
+@lru_cache(maxsize=4096)
+def _asked(terms: tuple[str, ...]) -> tuple[list[list[str]], frozenset[str], frozenset[str], frozenset[str],
+                                            frozenset[str]]:
+    """The query and its synonyms as score() reads them: each with the noun last, and the sets below.
+    Cached: the lists are shared, never changed in place."""
+    tws = [noun_last(words(t), join=True) for t in terms]  # "sofa 3 seat" is a sofa
+    # every modifier of the query and its synonyms: "floor lamp" / "standing lamp" both make a tag
+    # "standing lamp" the same kind, while "table lamp" stays another kind
+    all_mods = {w for tw in tws for w in tw[:-1] if not _measure(w) and w not in _NOT_KIND}
+    # heads asked for with modifiers: a bare synonym "lamp" next to "floor lamp" would let any lamp, bulb or
+    # lantern in as a good match and hide that no floor lamp was found
+    specific = {tw[-1] for tw in tws if any(not _measure(w) for w in tw[:-1])}
+    # one-word heads asked for: a bare synonym "board" next to "chalkboard" names cutting boards and pallet deck
+    # boards, never a chalkboard (it scored 2.25 and made a cutting board a good match)
+    heads = {tw[-1] for tw in tws if tw}
+    # every word a match needs one of: a head or a modifier, also "white board" read as "whiteboard"
+    vocab = {w for tw in tws for w in tw} | {tw[-2] + tw[-1] for tw in tws if len(tw) > 1}
+    return tws, frozenset(all_mods), frozenset(specific), frozenset(heads), frozenset(vocab)
+
+
+def score(rec: AssetRecord, query: str, alt_queries: list[str] | None = None) -> Match:
+    card = cards.of(rec) or {}
+    a = _asset(rec, card)
+    cls, tags, cap, name, everything, whole, known = a.cls, a.tags, a.cap, a.name, a.everything, a.whole, a.known
+    terms = (query, *(alt_queries or []))
+    tws, all_mods, specific, heads, vocab = _asked(terms)
+    if vocab.isdisjoint(a.vocab):  # neither a head nor a modifier asked for is anywhere in it
+        return Match()
 
     W = WEIGHTS
     best = Match()
-    # every modifier of the query and its synonyms: "floor lamp" / "standing lamp" both make a tag
-    # "standing lamp" the same kind, while "table lamp" stays another kind
-    all_mods = {w for t in [query, *(alt_queries or [])] for w in noun_last(words(t), join=True)[:-1]
-                if not _measure(w) and w not in _NOT_KIND}
-    # heads asked for with modifiers: a bare synonym "lamp" next to "floor lamp" would let any lamp, bulb or
-    # lantern in as a good match and hide that no floor lamp was found
-    specific = {tw[-1] for tw in (noun_last(words(t), join=True) for t in [query, *(alt_queries or [])])
-                if any(not _measure(w) for w in tw[:-1])}
-    # one-word heads asked for: a bare synonym "board" next to "chalkboard" names cutting boards and pallet deck
-    # boards, never a chalkboard (it scored 2.25 and made a cutting board a good match)
-    heads = {tw[-1] for tw in (noun_last(words(t), join=True) for t in [query, *(alt_queries or [])]) if tw}
-    for i, term in enumerate([query, *(alt_queries or [])]):
-        tw = noun_last(words(term), join=True)  # "sofa 3 seat" is a sofa
+    for i, (term, tw) in enumerate(zip(terms, tws)):
         if not tw:
             continue
         if not (_names(cls, tw) or any(_names(t, tw) for t in tags)):  # an asset that says "white board" is one

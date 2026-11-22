@@ -40,12 +40,11 @@ HUNG = ("wall", "ceiling")
 
 
 def path() -> Path | None:
-    v = os.environ.get("AGENTIC_SIM_WORLD_GEN_ASSET_CARDS")
-    if v == "0":
-        return None
-    return Path(v).expanduser() if v else DATA / FILE
+    s = _path_str()
+    return Path(s) if s is not None else None
 
 
+@lru_cache(maxsize=65536)  # score() asks for every asset of every search
 def key(uri: str) -> str:
     """Folder and file name of a URI or path, without the query and the extension, lower case."""
     p = PurePosixPath(uri.split("?", 1)[0].replace("\\", "/"))
@@ -69,11 +68,28 @@ def _load(file: str, mtime: float) -> dict[str, dict[str, Any]]:
     return read(Path(file))
 
 
+def _path_str() -> str | None:
+    """path() as a string (score() asks for every asset of every search: no Path built)."""
+    return _path_of(os.environ.get("AGENTIC_SIM_WORLD_GEN_ASSET_CARDS"), DATA, os.environ.get("HOME"))
+
+
+@lru_cache(maxsize=8)
+def _path_of(v: str | None, data: Path, home: str | None) -> str | None:
+    """The cards file for the variable's value (`0`: none). HOME is in the key for "~"."""
+    if v == "0":
+        return None
+    return str(Path(v).expanduser() if v else data / FILE)
+
+
 def all_cards() -> dict[str, dict[str, Any]]:
-    p = path()
-    if p is None or not p.exists():
+    s = _path_str()
+    if s is None:
         return {}
-    return _load(str(p), p.stat().st_mtime)
+    try:
+        mtime = os.stat(s).st_mtime  # one stat; a file that cannot be read still raises in _load
+    except OSError:
+        return {}
+    return _load(s, mtime)
 
 
 def of(rec) -> dict[str, Any] | None:
