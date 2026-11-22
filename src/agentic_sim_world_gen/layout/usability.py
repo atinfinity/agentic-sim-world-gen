@@ -784,7 +784,14 @@ def _photo_aisle(scene: ResolvedScene) -> list[Issue]:
 
 
 def usability(scene: ResolvedScene) -> list[Issue]:
-    """Usability warnings for an indoor scene (none outdoors)."""
+    """Usability warnings for an indoor scene (none outdoors). Inside solver.remembered() (a save), an equal scene
+    gets them once: the auto fix and the status made them again."""
+    from agentic_sim_world_gen.layout.solver import recall
+
+    return recall("usability", scene, lambda: _warnings(scene))
+
+
+def _warnings(scene: ResolvedScene) -> list[Issue]:
     from agentic_sim_world_gen.layout.room import RoomGeometry
 
     room = scene.spec.room

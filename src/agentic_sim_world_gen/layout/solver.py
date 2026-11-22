@@ -8,9 +8,14 @@ one block (agentic_sim_world_gen.layout.array.block_record).
 
 from __future__ import annotations
 
+import copy
+import hashlib
 import math
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
+from typing import Any
 
 from agentic_sim_world_gen.assets.record import AssetRecord
 from agentic_sim_world_gen.layout.array import block_record, fitted, instances, placed_size, unit_size
@@ -459,8 +464,68 @@ def _floor_at(scene: ResolvedScene, geom: RoomGeometry, o: ObjectSpec, p: tuple[
     return o.z or 0.0
 
 
+_memo: ContextVar[dict[tuple[str, bytes], Any] | None] = ContextVar("solve_memo", default=None)
+
+
+@contextmanager
+def remembered() -> Iterator[None]:
+    """Inside: solve() of a scene equal (as JSON) to one already solved inside gives the same objects and issues
+    without solving it again. A save solved the same scene up to three times (the save, the auto fix, the
+    status), ~2 s each for a classroom. Only for one operation: it keeps every scene solved inside, and what
+    the solver reads besides the scene (its constants, which tests change) is no part of the key. The usability
+    warnings are kept the same way (recall)."""
+    tok = _memo.set({}) if _memo.get() is None else None
+    try:
+        yield
+    finally:
+        if tok is not None:
+            _memo.reset(tok)
+
+
 def solve(scene: ResolvedScene) -> list[Issue]:
-    """Fill position/yaw_deg/z of objects that have `layout`. Mutates the scene; returns problems."""
+    """Fill position/yaw_deg/z of objects that have `layout`. Mutates the scene; returns problems. Inside remembered(), a scene
+    solved before is not solved again."""
+    memo = _memo.get()
+    if memo is None:
+        return _solve(scene)
+    key = ("solve", _key(scene))
+    if (hit := memo.get(key)) is not None:
+        for o, saved in zip(scene.spec.objects, hit[0], strict=True):  # in place: callers hold the objects
+            for f, v in saved.items():
+                setattr(o, f, copy.deepcopy(v))
+        return copy.deepcopy(hit[1])
+    out = _solve(scene)
+    # only the objects change (spec.objects; checked over the tests): their fields, as the models themselves
+    got = ([{f: copy.deepcopy(getattr(o, f)) for f in type(o).model_fields} for o in scene.spec.objects],
+           copy.deepcopy(out))
+    # a solved scene solves to itself with the same issues (checked over the tests): the auto fix and the
+    # status solve what the save solved
+    memo[key] = memo["solve", _key(scene)] = got
+    return out
+
+
+def recall[T](kind: str, scene: ResolvedScene, compute: Callable[[], T]) -> T:
+    """compute(), or inside remembered() a copy of what it gave for an equal scene (_key). For what reads
+    only the scene, but not its assumptions (_key leaves them out), and leaves it as it is: the usability warnings,
+    made by the auto fix and the status alike. A miss costs the key (~0.2 ms, 1 % of a usability pass)."""
+    memo = _memo.get()
+    if memo is None:
+        return compute()
+    key = (kind, _key(scene))
+    if key not in memo:
+        memo[key] = compute()
+    return copy.deepcopy(memo[key])
+
+
+def _key(scene: ResolvedScene) -> bytes:
+    """The scene as the solver reads it: the assumptions (which the save records after solving) are no input.
+    The repr of the JSON-mode dump: tuples as lists, as a loaded scene has them in its candidate dicts, while the
+    models' own floats keep NaN and inf apart from None (model_dump_json writes all three as null; in the untyped
+    candidate dicts they are null either way). Hashed: a key per solve stays small."""
+    return hashlib.sha256(repr(scene.model_dump(mode="json", exclude={"spec": {"assumptions"}})).encode()).digest()
+
+
+def _solve(scene: ResolvedScene) -> list[Issue]:
     order, issues = _order(scene)
     geom = RoomGeometry(scene.spec.room)
     placed: list[str] = [o.id for o in scene.spec.objects
