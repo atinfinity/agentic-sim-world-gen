@@ -78,6 +78,8 @@ Later tools (`set_layout`, `select_asset`, `set_room` …) all read this file, c
 4. Runs the static checks and the usability checks (see [5. Checks](#5-checks)).
 5. Rewrites the preview.
 
+Within one save, a scene equal to one already solved (its assumption lines aside) is not solved again: `solve` reuses the earlier answer (`solver.remembered`). A solved layout solves to itself, so the solves in steps 3 and 4 reuse what step 2 solved. The usability checks work the same way: steps 3 and 4 run them once per scene instead of twice (`solver.recall`).
+
 ### create_scene and finish
 
 Steps that are usually called one after another are bundled into one call (the individual tools still exist).

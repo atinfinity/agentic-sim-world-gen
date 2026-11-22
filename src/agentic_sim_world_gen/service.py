@@ -480,6 +480,16 @@ def restore(scene: str | Path, version: int | None = None) -> dict[str, Any]:
 def _save(scene: ResolvedScene, scene_dir: Path, event: str | None = None, focus: str | None = None,
           decor_for: set[str] | None = None, touched: set[str] | None = None,
           windows_missing: list[dict[str, Any]] | None = None, fix: bool = True) -> dict[str, Any]:
+    """_save_scene with each scene solved once (the save, the auto fix and the status solved it again)."""
+    from agentic_sim_world_gen.layout.solver import remembered
+
+    with remembered():
+        return _save_scene(scene, scene_dir, event, focus, decor_for, touched, windows_missing, fix)
+
+
+def _save_scene(scene: ResolvedScene, scene_dir: Path, event: str | None = None, focus: str | None = None,
+                decor_for: set[str] | None = None, touched: set[str] | None = None,
+                windows_missing: list[dict[str, Any]] | None = None, fix: bool = True) -> dict[str, Any]:
     """Solve, save and re-render the previews; `event` is the line shown on preview.html ("what happened").
     decor_for: objects added or given another asset; with Room.density set they get their decor now.
     touched: the objects this call placed, when more than the focus: the automatic fixes leave them.
