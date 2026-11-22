@@ -49,3 +49,45 @@ def _no_knee_scans(monkeypatch):
     from agentic_sim_world_gen.layout import knee
 
     monkeypatch.setattr(knee, "scan", lambda uri, cache_dir: None)
+
+
+@pytest.fixture(autouse=True)
+def _no_layer_downloads(request, monkeypatch):
+    """The shelf and hook scans (assets.shelves.scan) fetch the selected asset's USD: the tests' fake assets
+    point at example.com, which the default run reached over a hundred times. Refused here as a failed fetch, before
+    _no_network (local_path gives None, as the 404 did); tests of the fetcher give it their own session, and
+    network tests keep it."""
+    if request.node.get_closest_marker("network"):
+        return
+    from agentic_sim_world_gen.assets import remote_layers
+
+    class Refuse:
+        def get(self, url, timeout=None):
+            raise OSError(f"tests do not download ({url})")
+
+    monkeypatch.setattr(remote_layers._Fetcher, "session", lambda self: Refuse())
+
+
+@pytest.fixture(autouse=True)
+def _no_network(request, monkeypatch):
+    """Nothing but this machine (the preview server, a live Isaac Sim) is reached from the default run:
+    a connection elsewhere fails the test instead of passing it on a 404. Network tests keep the network."""
+    if request.node.get_closest_marker("network"):
+        return
+    import ipaddress
+    import socket
+
+    connect = socket.socket.connect
+
+    def local_only(self, address):
+        host = address[0] if isinstance(address, tuple) else None
+        if host is not None:
+            try:
+                local = ipaddress.ip_address(host.split("%")[0]).is_loopback
+            except ValueError:
+                local = host == "localhost"
+            if not local:
+                raise OSError(f"tests do not reach the network ({host})")
+        return connect(self, address)
+
+    monkeypatch.setattr(socket.socket, "connect", local_only)

@@ -5,7 +5,7 @@ import pytest
 from agentic_sim_world_gen import service
 from agentic_sim_world_gen.photo_measure import KNOWN_SIZES, View
 from agentic_sim_world_gen.scene.spec import PhotoCamera
-from tests.test_photo_tilt import SIZE, _scene
+from tests.test_photo_tilt import SIZE, _scene, fake  # noqa: F401  (the fake catalog: the scene is built offline)
 
 SET = {"position": [3.0, 0.5, 1.5], "look_at": [3.0, 8.0, 1.5], "hfov_deg": 70}  # the camera as somebody set it
 TRUE_W = 2.4
