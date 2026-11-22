@@ -20,13 +20,14 @@ _RECORDS_KEPT = 4  # index / cache folder pairs
 _LOCK = threading.Lock()
 
 
-def _stamp(p: Path) -> tuple[int, int, int] | None:
-    """When the file was written: the time, and the inode and size where the clock is coarse (FAT, some mounts)."""
+def _stamp(p: Path) -> tuple[int, ...] | None:
+    """When the file was written: its mtime, and ctime, inode and size for where the mtime is coarse (FAT, some
+    mounts) and the file was replaced or rewritten within one tick."""
     try:
         st = p.stat()
     except OSError:
         return None
-    return st.st_mtime_ns, st.st_ino, st.st_size
+    return st.st_mtime_ns, st.st_ctime_ns, st.st_ino, st.st_size
 
 
 class PolyHavenProvider:
