@@ -70,12 +70,13 @@ def _load(file: str, mtime: float) -> dict[str, dict[str, Any]]:
 
 def _path_str() -> str | None:
     """path() as a string (score() asks for every asset of every search: no Path built)."""
-    return _path_of(os.environ.get("AGENTIC_SIM_WORLD_GEN_ASSET_CARDS"), DATA, os.environ.get("HOME"))
+    e = os.environ
+    return _path_of(e.get("AGENTIC_SIM_WORLD_GEN_ASSET_CARDS"), DATA, e.get("HOME"), e.get("USERPROFILE"))
 
 
 @lru_cache(maxsize=8)
-def _path_of(v: str | None, data: Path, home: str | None) -> str | None:
-    """The cards file for the variable's value (`0`: none). HOME is in the key for "~"."""
+def _path_of(v: str | None, data: Path, home: str | None, profile: str | None) -> str | None:
+    """The cards file for the variable's value (`0`: none). HOME and USERPROFILE (Windows) are in the key for "~"."""
     if v == "0":
         return None
     return str(Path(v).expanduser() if v else data / FILE)
