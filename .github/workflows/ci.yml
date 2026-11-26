@@ -25,7 +25,7 @@ jobs:
     name: test (${{ matrix.name }})
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: astral-sh/setup-uv@v10.3.3
+      - uses: astral-sh/setup-uv@v10.4.0
         with:
           python-version: "3.12"
       # the same for every matrix entry: once is enough. Pinned: a new ruff adds rules (the version is also in
